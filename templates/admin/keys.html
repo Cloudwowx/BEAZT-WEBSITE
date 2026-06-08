@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+{% block admin_content %}
+<div class="page-header-admin">
+  <h1>All Keys</h1>
+  <p>Manage every license key in the system.</p>
+</div>
+
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>ID</th><th>Key</th><th>User</th><th>Product</th>
+      <th>Status</th><th>Created</th><th>Expires</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for k in keys.items %}
+    <tr>
+      <td>{{ k.id }}</td>
+      <td><code>{{ k.key_value }}</code></td>
+      <td>{{ k.user.username if k.user else '-' }}</td>
+      <td>{{ k.product.name if k.product else '-' }}</td>
+      <td><span class="badge-sm {{ 'badge-green' if k.is_active else 'badge-red' }}">{{ 'Active' if k.is_active else 'Expired' }}</span></td>
+      <td>{{ k.created_at.strftime('%d %b') }}</td>
+      <td>{{ k.expires_at.strftime('%d %b %Y') if k.expires_at else '-' }}</td>
+      <td style="display:flex;gap:0.35rem;">
+        <form method="POST" action="{{ url_for('admin.toggle_key', key_id=k.id) }}" style="display:inline;">
+          <button type="submit" class="btn-xs {{ 'btn-danger' if k.is_active else 'btn-success-sm' }}">
+            {{ 'Revoke' if k.is_active else 'Activate' }}
+          </button>
+        </form>
+        <form method="POST" action="{{ url_for('admin.delete_key', key_id=k.id) }}" style="display:inline;" onsubmit="return confirm('Delete this key permanently?')">
+          <button type="submit" class="btn-xs btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if keys.pages > 1 %}
+<div class="pagination">
+  {% for p in range(1, keys.pages + 1) %}
+    {% if p == keys.page %}
+      <span class="current">{{ p }}</span>
+    {% else %}
+      <a href="?page={{ p }}">{{ p }}</a>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

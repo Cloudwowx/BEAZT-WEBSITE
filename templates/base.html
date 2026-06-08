@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#060A14">
+  <meta name="description" content="BeaZt Cheats — Premium undetected Rust enhancements. Private-slot external cheat with signature rotation.">
+
+  <meta property="og:title" content="BeaZt Cheats — Undetected Rust Enhancements">
+  <meta property="og:description" content="Private-slot external cheat. Signature rotation. Stream-proof. Instant delivery.">
+  <meta property="og:type" content="website">
+
+  <link rel="icon" href="/static/icons/logo.svg" type="image/svg+xml">
+
+  <title>{% block title %}BeaZt Cheats — Undetected Rust Enhancements{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined">
+
+  <script defer src="https://unpkg.com/alpinejs@3/dist/cdn.min.js"></script>
+  <script defer src="https://unpkg.com/scrollreveal@4/dist/scrollreveal.min.js"></script>
+
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <canvas id="code-canvas" aria-hidden="true"></canvas>
+
+  <div class="main-content">
+    <header class="navbar" x-data="{ mobileOpen: false }">
+      <div class="container nav-inner">
+        <a href="/" class="nav-logo" aria-label="BeaZt Cheats">
+          <img src="/static/icons/logo.svg" alt="BeaZt" class="nav-logo-img">
+          BEAZT
+        </a>
+
+        <nav class="nav-links">
+          <a href="{{ url_for('main.index') }}#products" class="nav-link">Products</a>
+          <a href="{{ url_for('main.feedback') }}" class="nav-link">Reviews</a>
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.my_keys') }}" class="nav-link">My Keys</a>
+            {% if current_user.is_admin %}
+              <a href="{{ url_for('admin.dashboard') }}" class="nav-link" style="color:var(--accent-h);">Admin</a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="nav-link">Login</a>
+            <a href="{{ url_for('auth.signup') }}" class="nav-cta">Sign Up</a>
+          {% endif %}
+        </nav>
+
+        <button type="button" class="nav-burger" @click="mobileOpen = !mobileOpen" aria-label="Menu">
+          <span class="material-symbols-outlined" x-show="!mobileOpen">menu</span>
+          <span class="material-symbols-outlined" x-show="mobileOpen" x-cloak>close</span>
+        </button>
+      </div>
+
+      <div class="mobile-menu" :class="{ 'is-open': mobileOpen }" x-cloak>
+        <a href="{{ url_for('main.index') }}#products" class="nav-link" @click="mobileOpen = false">Products</a>
+        <a href="{{ url_for('main.feedback') }}" class="nav-link" @click="mobileOpen = false">Reviews</a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('main.my_keys') }}" class="nav-link" @click="mobileOpen = false">My Keys</a>
+          {% if current_user.is_admin %}
+            <a href="{{ url_for('admin.dashboard') }}" class="nav-link" @click="mobileOpen = false" style="color:var(--accent-h);">Admin</a>
+          {% endif %}
+          <a href="{{ url_for('auth.logout') }}" class="nav-link" @click="mobileOpen = false">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="nav-link" @click="mobileOpen = false">Login</a>
+          <a href="{{ url_for('auth.signup') }}" class="nav-link" @click="mobileOpen = false">Sign Up</a>
+        {% endif %}
+      </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span class="footer-left">&copy; BEAZT CHEATS 2026</span>
+        <div class="footer-links">
+          <a href="{{ url_for('main.terms') }}">Terms</a>
+          <a href="{{ url_for('main.feedback') }}">Reviews</a>
+          <a href="{{ config.DISCORD_INVITE }}" target="_blank" rel="noopener noreferrer">Discord</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static/js/script.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

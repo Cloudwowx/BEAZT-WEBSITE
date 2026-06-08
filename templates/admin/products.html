@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% block admin_content %}
+<div class="page-header-admin">
+  <h1>Products</h1>
+  <p>Manage products and their pricing tiers.</p>
+</div>
+
+<table class="admin-table">
+  <thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Private</th><th>Tiers</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for p in products %}
+    <tr>
+      <td>{{ p.id }}</td>
+      <td>{{ p.name }}</td>
+      <td><code>{{ p.slug }}</code></td>
+      <td>{{ 'Yes' if p.is_private else 'No' }}</td>
+      <td>{{ p.tiers.count() }}</td>
+      <td>
+        <a href="{{ url_for('admin.product_tiers', product_id=p.id) }}" class="btn-xs" style="background:var(--accent-g3);color:var(--accent-h);border:1px solid rgba(59,130,246,0.25);text-decoration:none;">
+          Manage Tiers
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

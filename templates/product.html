@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Rust External Private | BeaZt Cheats{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 2rem;">
+  <div class="container">
+    <div class="page-header reveal" style="margin-bottom: 2rem;">
+      <span class="section-eyebrow">Rust External — Private Slot</span>
+      <h1 class="t-h1">Select Your Access Duration</h1>
+      <p class="text-muted">Hardened external cheat. Signature rotation. Stream-proof overlay. Secure Stripe checkout.</p>
+    </div>
+
+    <div class="pricing-section">
+      {% if tiers %}
+        <form method="POST" action="{{ url_for('checkout.create_session') }}" x-data="{ selected: null }">
+          <div class="pricing-grid reveal">
+            {% for tier in tiers %}
+              <label class="pricing-card {{ 'is-recommended' if tier.duration_days == 30 else '' }}" :class="{ 'is-selected': selected === '{{ tier.id }}' }" @click="selected = '{{ tier.id }}'">
+                <input type="radio" name="tier_id" value="{{ tier.id }}" class="sr-only" x-model="selected">
+                {% if tier.duration_days == 30 %}
+                  <span class="badge">Most Popular</span>
+                {% elif tier.duration_days == 365 %}
+                  <span class="badge badge-save">Save 33%</span>
+                {% endif %}
+                <span class="material-symbols-outlined pricing-icon">{% if tier.duration_days == 1 %}timer{% elif tier.duration_days == 7 %}calendar_view_week{% elif tier.duration_days == 30 %}star{% else %}diamond{% endif %}</span>
+                <span class="duration">{{ tier.label }}</span>
+                <span class="price"><span class="currency">&pound;</span>{{ "%.0f"|format(tier.price_pounds) }}</span>
+                {% if tier.duration_days == 1 %}
+                  <span class="per">&pound;9.00 / day</span>
+                {% elif tier.duration_days == 7 %}
+                  <span class="per">&pound;3.57 / day</span>
+                {% elif tier.duration_days == 30 %}
+                  <span class="per">&pound;1.63 / day</span>
+                {% elif tier.duration_days == 365 %}
+                  <span class="per">&pound;33 / month</span>
+                {% endif %}
+              </label>
+            {% endfor %}
+          </div>
+
+          <div class="pricing-cta">
+            <div class="pricing-cta-inner">
+              {% if current_user.is_authenticated %}
+                <button type="submit" class="btn btn-primary btn-lg btn-full" :disabled="!selected">
+                  <span class="material-symbols-outlined">shopping_cart</span>
+                  Purchase Access
+                </button>
+              {% else %}
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg btn-full">
+                  <span class="material-symbols-outlined">person_add</span>
+                  Create Account to Purchase
+                </a>
+              {% endif %}
+              <p class="checkout-note">
+                <span class="material-symbols-outlined">lock</span>
+                Secured by Stripe &middot; Instant key delivery
+              </p>
+            </div>
+          </div>
+        </form>
+      {% else %}
+        <div class="empty-state reveal">
+          <span class="material-symbols-outlined empty-icon">inventory_2</span>
+          <h2>Pricing Coming Soon</h2>
+          <p>Tiers are being configured. Check back shortly.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" style="padding-top: 0;">
+  <div class="container">
+    <div class="page-header reveal" style="margin-bottom: 1.5rem;">
+      <span class="section-eyebrow">Features</span>
+      <h2 class="t-h1">What You Get</h2>
+    </div>
+
+    <div class="feature-grid reveal">
+      <div class="feature-card">
+        <span class="material-symbols-outlined feature-icon">shield_lock</span>
+        <h3>Signature Rotation</h3>
+        <p>Unique binary signature per slot. No two builds share the same fingerprint.</p>
+      </div>
+      <div class="feature-card">
+        <span class="material-symbols-outlined feature-icon">visibility_off</span>
+        <h3>Stream-Proof Overlay</h3>
+        <p>Custom rendering pipeline bypasses OBS, Discord, and capture cards.</p>
+      </div>
+      <div class="feature-card">
+        <span class="material-symbols-outlined feature-icon">memory</span>
+        <h3>External Architecture</h3>
+        <p>Read-only memory access. No DLL injection. No hooks. Minimal footprint.</p>
+      </div>
+      <div class="feature-card">
+        <span class="material-symbols-outlined feature-icon">autorenew</span>
+        <h3>Instant Updates</h3>
+        <p>Build refreshed within hours of every Rust patch. Zero downtime.</p>
+      </div>
+      <div class="feature-card">
+        <span class="material-symbols-outlined feature-icon">groups</span>
+        <h3>Limited Slot Pool</h3>
+        <p>Capped capacity keeps detection vectors quiet. Private community.</p>
+      </div>
+      <div class="feature-card">
+        <span class="material-symbols-outlined feature-icon">ads_click</span>
+        <h3>ESP &amp; Aimbot</h3>
+        <p>Player ESP, loot ESP, configurable aim assist. Sub-1ms updates.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

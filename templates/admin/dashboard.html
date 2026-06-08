@@ -1,0 +1,67 @@
+{% extends "admin/base.html" %}
+{% block admin_content %}
+<div class="page-header-admin">
+  <h1>Dashboard</h1>
+  <p>Overview of your BeaZt Cheats operation.</p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-num">{{ total_users }}</div>
+    <div class="stat-lbl">Total Users</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ total_keys }}</div>
+    <div class="stat-lbl">Total Keys</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ active_keys }}</div>
+    <div class="stat-lbl">Active Keys</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">&pound;{{ "%.2f"|format(revenue_pounds) }}</div>
+    <div class="stat-lbl">Total Revenue</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ completed_orders }}/{{ total_orders }}</div>
+    <div class="stat-lbl">Completed Orders</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ total_products }}</div>
+    <div class="stat-lbl">Products</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+  <div>
+    <h3 style="font-size:0.85rem;font-weight:600;margin-bottom:0.75rem;">Recent Users</h3>
+    <table class="admin-table">
+      <thead><tr><th>User</th><th>Email</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for u in recent_users %}
+        <tr>
+          <td><a href="{{ url_for('admin.user_detail', user_id=u.id) }}">{{ u.username }}</a></td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h3 style="font-size:0.85rem;font-weight:600;margin-bottom:0.75rem;">Recent Keys</h3>
+    <table class="admin-table">
+      <thead><tr><th>Key</th><th>Status</th><th>Expires</th></tr></thead>
+      <tbody>
+        {% for k in recent_keys %}
+        <tr>
+          <td><code>{{ k.key_value[:20] }}...</code></td>
+          <td><span class="badge-sm {{ 'badge-green' if k.is_active else 'badge-red' }}">{{ 'Active' if k.is_active else 'Expired' }}</span></td>
+          <td>{{ k.expires_at.strftime('%d %b %Y') if k.expires_at else '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

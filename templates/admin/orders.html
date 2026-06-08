@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% block admin_content %}
+<div class="page-header-admin">
+  <h1>Orders</h1>
+  <p>
+    Filter:
+    <a href="{{ url_for('admin.orders') }}" class="btn-xs" style="text-decoration:none;background:var(--bg);border:1px solid var(--border);color:var(--text-dim);">All</a>
+    <a href="?status=completed" class="btn-xs" style="text-decoration:none;background:var(--bg);border:1px solid var(--border);color:var(--text-dim);">Completed</a>
+    <a href="?status=pending" class="btn-xs" style="text-decoration:none;background:var(--bg);border:1px solid var(--border);color:var(--text-dim);">Pending</a>
+  </p>
+</div>
+
+<table class="admin-table">
+  <thead>
+    <tr><th>ID</th><th>User</th><th>Product</th><th>Tier</th><th>Price</th><th>Status</th><th>Date</th></tr>
+  </thead>
+  <tbody>
+    {% for o in orders.items %}
+    <tr>
+      <td>{{ o.id }}</td>
+      <td>{{ o.user.username if o.user else '-' }}</td>
+      <td>{{ o.tier.product.name if o.tier and o.tier.product else '-' }}</td>
+      <td>{{ o.tier.label if o.tier else '-' }}</td>
+      <td>&pound;{{ "%.2f"|format(o.tier.price_pounds) if o.tier else '-' }}</td>
+      <td><span class="badge-sm {{ 'badge-green' if o.status == 'completed' else 'badge-yellow' }}">{{ o.status }}</span></td>
+      <td>{{ o.created_at.strftime('%d %b %Y %H:%M') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if orders.pages > 1 %}
+<div class="pagination">
+  {% for p in range(1, orders.pages + 1) %}
+    {% if p == orders.page %}
+      <span class="current">{{ p }}</span>
+    {% else %}
+      <a href="?page={{ p }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ p }}</a>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

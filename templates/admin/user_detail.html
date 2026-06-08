@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% block admin_content %}
+<div class="page-header-admin">
+  <a href="{{ url_for('admin.users') }}" style="font-size:0.8rem;color:var(--accent-h);">&larr; Back to Users</a>
+  <h1>{{ target_user.username }}</h1>
+  <p>{{ target_user.email }} &middot; {{ 'Admin' if target_user.is_admin else 'User' }} &middot; {{ 'Active' if target_user.is_active else 'Disabled' }}</p>
+</div>
+
+<h3 style="font-size:0.85rem;font-weight:600;margin-bottom:0.75rem;">Keys ({{ keys|length }})</h3>
+<table class="admin-table" style="margin-bottom:2rem;">
+  <thead><tr><th>Key</th><th>Product</th><th>Status</th><th>Created</th><th>Expires</th></tr></thead>
+  <tbody>
+    {% for k in keys %}
+    <tr>
+      <td><code>{{ k.key_value }}</code></td>
+      <td>{{ k.product.name if k.product else '-' }}</td>
+      <td><span class="badge-sm {{ 'badge-green' if k.is_active else 'badge-red' }}">{{ 'Active' if k.is_active else 'Expired' }}</span></td>
+      <td>{{ k.created_at.strftime('%d %b %Y') }}</td>
+      <td>{{ k.expires_at.strftime('%d %b %Y') if k.expires_at else '-' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" style="color:var(--text-mut);">No keys found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3 style="font-size:0.85rem;font-weight:600;margin-bottom:0.75rem;">Orders ({{ orders|length }})</h3>
+<table class="admin-table">
+  <thead><tr><th>ID</th><th>Product</th><th>Status</th><th>Date</th></tr></thead>
+  <tbody>
+    {% for o in orders %}
+    <tr>
+      <td>{{ o.id }}</td>
+      <td>{{ o.tier.product.name if o.tier and o.tier.product else '-' }} ({{ o.tier.label if o.tier else '-' }})</td>
+      <td><span class="badge-sm {{ 'badge-green' if o.status == 'completed' else 'badge-yellow' }}">{{ o.status }}</span></td>
+      <td>{{ o.created_at.strftime('%d %b %Y') }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" style="color:var(--text-mut);">No orders found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

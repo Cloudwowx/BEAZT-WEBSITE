@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Login | BeaZt Cheats{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="container auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="prompt">&gt; authenticate</div>
+        <h1 class="t-h1">Welcome Back</h1>
+        <p class="text-muted">Sign in to access your keys and manage your licenses.</p>
+      </div>
+
+      <form method="POST" class="auth-form">
+        <div class="form-group">
+          <label for="username">
+            <span class="material-symbols-outlined">person</span> Username
+          </label>
+          <input type="text" id="username" name="username" required autocomplete="username" placeholder="your_username">
+        </div>
+
+        <div class="form-group">
+          <label for="password">
+            <span class="material-symbols-outlined">lock</span> Password
+          </label>
+          <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+        </div>
+
+        <div class="form-group form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" name="remember"> Remember me
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg btn-full">
+          <span class="material-symbols-outlined">login</span>
+          Sign In
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have an account? <a href="{{ url_for('auth.signup') }}">Create one &rarr;</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
