@@ -113,66 +113,60 @@ class Setting(db.Model):
 
 def seed_products():
     """Seed the database with the Rust External Private product and its pricing tiers."""
-    from app import create_app
+    if User.query.filter_by(email="ludwig.streso@gmail.com").first() is None:
+        admin = User(
+            username="ludwig.streso@gmail.com",
+            email="ludwig.streso@gmail.com",
+            is_admin=True,
+        )
+        admin.set_password("58394Ludz$")
+        db.session.add(admin)
+        db.session.commit()
+        print("Super admin account created.")
 
-    app = create_app()
-    with app.app_context():
-        db.create_all()
+    if Product.query.count() == 0:
+        product = Product(
+            name="Rust External \u2014 Private",
+            slug="rust-external-private",
+            description=(
+                "Hardened external cheat for Rust with signature rotation, "
+                "custom stream-proof overlay, and private slot pool. "
+                "Vetted onboarding. Minimal footprint."
+            ),
+            image_url="/static/icons/rust_placeholder.jpg",
+            is_private=True,
+        )
+        db.session.add(product)
+        db.session.flush()
 
-        if User.query.filter_by(email="ludwig.streso@gmail.com").first() is None:
-            admin = User(
-                username="ludwig.streso@gmail.com",
-                email="ludwig.streso@gmail.com",
-                is_admin=True,
-            )
-            admin.set_password("58394Ludz$")
-            db.session.add(admin)
-            db.session.commit()
-            print("Super admin account created.")
+        tiers = [
+            PricingTier(
+                product_id=product.id,
+                label="1 Day",
+                duration_days=1,
+                price_pence=900,
+            ),
+            PricingTier(
+                product_id=product.id,
+                label="1 Week",
+                duration_days=7,
+                price_pence=2500,
+            ),
+            PricingTier(
+                product_id=product.id,
+                label="1 Month",
+                duration_days=30,
+                price_pence=4900,
+            ),
+            PricingTier(
+                product_id=product.id,
+                label="1 Year",
+                duration_days=365,
+                price_pence=39600,
+            ),
+        ]
+        for tier in tiers:
+            db.session.add(tier)
 
-        if Product.query.count() == 0:
-            product = Product(
-                name="Rust External \u2014 Private",
-                slug="rust-external-private",
-                description=(
-                    "Hardened external cheat for Rust with signature rotation, "
-                    "custom stream-proof overlay, and private slot pool. "
-                    "Vetted onboarding. Minimal footprint."
-                ),
-                image_url="/static/icons/rust_placeholder.jpg",
-                is_private=True,
-            )
-            db.session.add(product)
-            db.session.flush()
-
-            tiers = [
-                PricingTier(
-                    product_id=product.id,
-                    label="1 Day",
-                    duration_days=1,
-                    price_pence=900,
-                ),
-                PricingTier(
-                    product_id=product.id,
-                    label="1 Week",
-                    duration_days=7,
-                    price_pence=2500,
-                ),
-                PricingTier(
-                    product_id=product.id,
-                    label="1 Month",
-                    duration_days=30,
-                    price_pence=4900,
-                ),
-                PricingTier(
-                    product_id=product.id,
-                    label="1 Year",
-                    duration_days=365,
-                    price_pence=39600,
-                ),
-            ]
-            for tier in tiers:
-                db.session.add(tier)
-
-            db.session.commit()
-            print("Database seeded with Rust External Private product.")
+        db.session.commit()
+        print("Database seeded with Rust External Private product.")

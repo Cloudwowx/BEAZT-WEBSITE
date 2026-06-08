@@ -5,18 +5,26 @@ load_dotenv()
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+_is_vercel = os.environ.get("VERCEL") == "1"
+
+if _is_vercel:
+    _db_path = "/tmp/beazt.db"
+else:
+    _db_path = os.path.join(basedir, "instance", "beazt.db")
+
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-in-production")
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
-        "sqlite:///" + os.path.join(basedir, "instance", "beazt.db"),
+        "sqlite:///" + _db_path,
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
     STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
     STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
     SITE_URL = os.getenv("SITE_URL", "http://localhost:5000")
+    DISCORD_INVITE = os.getenv("DISCORD_INVITE", "https://discord.gg/beazt")
 
 
 def get_stripe_config():
@@ -48,4 +56,3 @@ def _db_or_env(key, env_default):
     except Exception:
         pass
     return env_default
-    DISCORD_INVITE = os.getenv("DISCORD_INVITE", "https://discord.gg/beazt")
