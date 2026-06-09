@@ -20,10 +20,10 @@
   --success: #22f6a6;
   --warn: #ffb347;
   --danger: #ff6b97;
-  --font-display: "Chakra Petch", "Space Grotesk", "Sora", system-ui, sans-serif;
-  --font-body: "Sora", "Space Grotesk", "Chakra Petch", system-ui, sans-serif;
+  --font-display: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+  --font-body: "DM Sans", "Space Grotesk", system-ui, sans-serif;
   --display: var(--font-display);
-  --mono: "Space Grotesk", "Sora", system-ui, sans-serif;
+  --mono: "DM Sans", "Space Grotesk", system-ui, sans-serif;
   --radius: 20px;
   --radius-sm: 12px;
   --radius-pill: 999px;
@@ -48,8 +48,8 @@ html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-body);
   font-size: 16px;
-  line-height: 1.7;
-  letter-spacing: 0.01em;
+  line-height: 1.62;
+  letter-spacing: 0;
   min-height: 100vh;
   overflow-x: hidden;
   color: var(--text);
@@ -62,7 +62,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   color: var(--text);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 p { margin-bottom: var(--space-sm); color: var(--text-soft); }
@@ -187,13 +187,13 @@ img { max-width: 100%; display: block; }
 .nav-mark {
   font-family: var(--font-display);
   font-weight: 700;
-  letter-spacing: 0.32em;
-  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  font-size: 0.82rem;
 }
 
 .nav-tag {
   font-size: 0.6rem;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -217,7 +217,7 @@ img { max-width: 100%; display: block; }
   padding: 0.55rem 1.15rem;
   font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .nav-link { color: var(--text-muted); font-weight: 600; }
@@ -422,16 +422,16 @@ img { max-width: 100%; display: block; }
 }
 
 .hero-overlay-label {
-  font: 700 clamp(2rem, 5vw, 3.4rem)/1 var(--display);
-  letter-spacing: 0.5em;
+  font: 700 clamp(1.6rem, 4.4vw, 2.8rem)/1.02 var(--display);
+  letter-spacing: 0.12em;
   color: #fff;
   text-transform: uppercase;
   text-align: center;
-  padding: 0.45rem 1.5rem;
-  text-shadow: 0 12px 35px rgba(0, 0, 0, 0.65), 0 0 25px rgba(255, 255, 255, 0.45);
-  background: rgba(2, 3, 8, 0.35);
+  padding: 0.45rem 1.3rem;
+  text-shadow: 0 10px 24px rgba(0, 0, 0, 0.65), 0 0 12px rgba(255, 255, 255, 0.22);
+  background: linear-gradient(180deg, rgba(1, 2, 8, 0.08), rgba(1, 2, 8, 0.52));
   border-radius: 999px;
-  box-shadow: 0 0 45px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
 }
 
 .beazt-intro.is-live .beazt-hero-image { animation: heroBreath 5.2s ease-in-out infinite; }
@@ -453,7 +453,7 @@ img { max-width: 100%; display: block; }
   font-size: 0.78rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
 }
 
 .dot {
@@ -465,8 +465,8 @@ img { max-width: 100%; display: block; }
 }
 
 .t-display {
-  font: 700 clamp(2.4rem, 6vw, 4.4rem) / 1.08 var(--display);
-  letter-spacing: 0.06em;
+  font: 700 clamp(2.2rem, 5.3vw, 3.8rem) / 1.08 var(--display);
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   text-shadow: 0 8px 48px rgba(84, 123, 255, 0.45);
 }
@@ -495,7 +495,7 @@ img { max-width: 100%; display: block; }
   align-items: center;
   justify-content: space-between;
   font-size: 0.78rem;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.08em;
   color: var(--text-dim);
 }
 .terminal-led {
@@ -510,7 +510,7 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius-pill);
   border: 1px solid rgba(146, 193, 255, 0.4);
   font-size: 0.68rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
 }
 
 .terminal-grid {
@@ -527,7 +527,7 @@ img { max-width: 100%; display: block; }
 .terminal-label {
   text-transform: uppercase;
   font-size: 0.7rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 .terminal-value {
@@ -560,7 +560,7 @@ img { max-width: 100%; display: block; }
   color: var(--text-soft);
   font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.06em;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -593,14 +593,14 @@ img { max-width: 100%; display: block; }
 .hud-label {
   display: block;
   font-size: 0.7rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 .hud-value {
   font-size: 0.95rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.01em;
   color: var(--accent-l);
 }
 
@@ -642,7 +642,7 @@ img { max-width: 100%; display: block; }
   color: var(--accent-2);
   font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.1em;
   padding: 0.25rem 0.85rem;
   border: 1px solid rgba(54, 240, 255, 0.4);
   border-radius: var(--radius-pill);
@@ -651,13 +651,13 @@ img { max-width: 100%; display: block; }
 }
 
 .t-h1 {
-  font: 600 clamp(1.9rem, 4.4vw, 2.85rem) / 1.18 var(--display);
+  font: 700 clamp(1.9rem, 4.1vw, 2.75rem) / 1.15 var(--display);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
 }
 .t-h2 {
-  font: 600 clamp(1.4rem, 3.5vw, 2.1rem) / 1.18 var(--display);
-  letter-spacing: 0.05em;
+  font: 700 clamp(1.35rem, 3.2vw, 2rem) / 1.18 var(--display);
+  letter-spacing: 0.01em;
 }
 
 .text-muted {
@@ -758,6 +758,16 @@ img { max-width: 100%; display: block; }
 .step-card,
 .feature-card {
   padding: var(--space-lg);
+}
+
+.step-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+.feature-card {
   display: flex;
   gap: var(--space-md);
   align-items: flex-start;
@@ -772,7 +782,7 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   font-family: var(--display);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   color: #04112f;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   box-shadow: var(--shadow-glow);
@@ -781,8 +791,16 @@ img { max-width: 100%; display: block; }
 .step-card h3,
 .feature-card h3 {
   margin-bottom: 0.5rem;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
+}
+
+.step-card p,
+.feature-card p {
+  margin-bottom: 0;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  color: var(--text-soft);
 }
 
 .feature-icon-ring {
@@ -805,7 +823,7 @@ img { max-width: 100%; display: block; }
   flex-wrap: wrap;
   gap: 0.3rem;
 }
-.feature-card .chip { font-size: 0.7rem; letter-spacing: 0.08em; }
+.feature-card .chip { font-size: 0.72rem; letter-spacing: 0.03em; }
 
 .pricing-section { width: min(1120px, 100%); margin-inline: auto; }
 
@@ -842,7 +860,7 @@ img { max-width: 100%; display: block; }
   color: #d8e8ff;
   font-size: 0.71rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.05em;
   padding: 0.28rem 0.75rem;
   margin-bottom: 0.55rem;
 }
@@ -857,7 +875,7 @@ img { max-width: 100%; display: block; }
   padding: 0.2rem 0.6rem;
   font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .status-online {
@@ -1026,7 +1044,7 @@ img { max-width: 100%; display: block; }
   border: 1px solid rgba(124, 58, 237, 0.35);
   background: rgba(124, 58, 237, 0.12);
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-soft);
 }
@@ -1083,7 +1101,7 @@ img { max-width: 100%; display: block; }
   padding: 0.2rem 0.54rem;
   font-size: 0.69rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #1a0f00;
   background: var(--accent-warm);
@@ -1091,8 +1109,8 @@ img { max-width: 100%; display: block; }
 
 .badge-save { background: var(--warn); color: #2d1900; }
 .pricing-icon { color: #f8faff; width: 2.3rem; height: 2.3rem; }
-.duration { color: #fefefe; font-weight: 600; letter-spacing: 0.16em; }
-.price { font: 600 clamp(2.2rem, 4vw, 2.9rem)/1 var(--display); letter-spacing: 0.08em; }
+.duration { color: #fefefe; font-weight: 600; letter-spacing: 0.04em; }
+.price { font: 600 clamp(2.2rem, 4vw, 2.9rem)/1 var(--display); letter-spacing: 0.03em; }
 .currency { font-size: 1.18rem; vertical-align: super; }
 .per { color: rgba(241, 244, 255, 0.82); font-size: 0.85rem; }
 
@@ -1560,37 +1578,34 @@ textarea::placeholder {
   .container { width: min(100%, 100% - 1.5rem); }
   .pricing-grid { grid-template-columns: 1fr; }
   .pricing-shell { padding: var(--space-lg); }
-  .rust-stack { justify-content: flex-start; }
+  .rust-stack { justify-content: center; }
   .feature-panel-grid { grid-template-columns: 1fr; }
   .pricing-card { min-height: 0; }
   .hero-cta { flex-direction: column; }
   .hero-stats { gap: 1rem; }
-  .trust-badges { justify-content: flex-start; }
+  .trust-badges { justify-content: center; }
   .footer-inner { flex-direction: column; align-items: flex-start; }
   .terminal-grid { grid-template-columns: 1fr; }
   .hud-card { min-width: 0; width: 100%; }
   .beazt-intro { width: 100%; border-radius: 20px; aspect-ratio: 16/10; }
   .hero { padding-top: var(--space-2xl); }
   .hero-copy .t-display { font-size: clamp(2.1rem, 10vw, 2.8rem); }
-  .btn { width: 100%; font-size: 1rem; }
-  .trust-badge, .stack-chip, .chip, .cta-badge { width: 100%; justify-content: center; }
+  .btn { width: min(100%, 420px); font-size: 0.98rem; }
+  .hero-cta .btn { width: min(100%, 320px); }
+  .trust-badge, .stack-chip, .cta-badge { width: auto; justify-content: center; }
+  .chip { width: auto; }
   .feature-card { flex-direction: column; gap: 0.7rem; }
   .feature-card-chips { width: 100%; }
   .plan-summary { width: 100%; justify-content: center; }
   .pricing-cta-inner { width: 100%; padding-inline: 0.5rem; }
   .auth-card { padding: 2rem 1.3rem; }
-  .auth-benefits .chip { width: 100%; justify-content: center; }
-}
-
-.hero-overlay-label {
-  font: 700 clamp(1.6rem, 6vw, 3.4rem)/1 var(--display);
-  letter-spacing: 0.3em;
+  .auth-benefits .chip { justify-content: center; }
 }
 
 @media (max-width: 480px) {
   .hero { padding-bottom: var(--space-xl); }
   .beazt-intro { aspect-ratio: 16/11; }
-  .hero-overlay-label { letter-spacing: 0.2em; padding: 0.35rem 1rem; }
+  .hero-overlay-label { letter-spacing: 0.08em; padding: 0.32rem 0.9rem; }
   .hero-terminal { padding: var(--space-sm); }
   .trust-badges { padding: 0.7rem; }
   .feature-panel { padding: var(--space-md); }
