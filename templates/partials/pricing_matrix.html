@@ -20,7 +20,7 @@
 
 <div class="pricing-section pricing-shell">
   {% if tiers %}
-    <form method="POST" action="{{ url_for('checkout.create_session') }}" x-data="{ selected: '{{ ns.default_selected_id }}', selectedLabel: '', selectedPrice: '', showFeatures: false }" x-init="(() => { const el = $el.querySelector('input[name=tier_id]:checked'); if (el) { selected = el.value; selectedLabel = el.dataset.label; selectedPrice = el.dataset.price; } })()">
+    <form method="POST" action="{{ url_for('checkout.create_session') }}" x-data="{ selected: '{{ ns.default_selected_id }}', selectedLabel: '', selectedPrice: '' }" x-init="(() => { const el = $el.querySelector('input[name=tier_id]:checked'); if (el) { selected = el.value; selectedLabel = el.dataset.label; selectedPrice = el.dataset.price; } })()">
       <div class="plan-topline reveal">
         <span class="plan-tag">{{ product_features['label'] if product_features and product_features['label'] else product.name }}</span>
         {% if cheat_status %}
@@ -30,23 +30,65 @@
         </span>
         {% endif %}
         <p class="plan-subtitle">Built for legit-focused playstyle. No rage-style defaults. All plans include the same full feature set and only duration changes.</p>
-        <button type="button" class="btn btn-ghost feature-toggle" @click="showFeatures = !showFeatures" :aria-expanded="showFeatures.toString()">
-          <span class="material-symbols-outlined" x-show="!showFeatures">visibility</span>
-          <span class="material-symbols-outlined" x-show="showFeatures" x-cloak>visibility_off</span>
-          <span x-text="showFeatures ? 'Hide Features' : 'View Features'"></span>
-        </button>
       </div>
 
-      <div class="feature-panel reveal" x-show="showFeatures" x-transition.opacity.duration.200ms x-cloak>
-        <h3>{{ product_features['label'] if product_features and product_features['label'] else product.name }} Included Features</h3>
-        <div class="feature-panel-grid">
-          {% for feature in product_features['items'] %}
-            <div class="feature-panel-item">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>{{ feature }}</span>
+      <div class="feature-panel reveal">
+        <div class="feature-story-grid">
+          <article class="feature-story-card">
+            <span class="material-symbols-outlined feature-story-icon">radar</span>
+            <div>
+              <h3>Legit ESP Stack</h3>
+              <p>Layered bones, distance bands, and occlusion cues built for stream-safe capture. Toggle only the intel you need while keeping screens clean.</p>
+              <ul class="feature-points">
+                <li>Player / sleeper / vehicle filters</li>
+                <li>Range culling + smart fade</li>
+              </ul>
             </div>
-          {% endfor %}
+          </article>
+          <article class="feature-story-card">
+            <span class="material-symbols-outlined feature-story-icon">task_alt</span>
+            <div>
+              <h3>Aim Assistance</h3>
+              <p>Humanized curve profiles with velocity-aware smoothing. Built to feel controller-clean with legit recoil management presets.</p>
+              <ul class="feature-points">
+                <li>Per-weapon configs stored in cloud</li>
+                <li>Instant swap via radial hotkeys</li>
+              </ul>
+            </div>
+          </article>
+          <article class="feature-story-card">
+            <span class="material-symbols-outlined feature-story-icon">shield</span>
+            <div>
+              <h3>Safety & Delivery</h3>
+              <p>In-house loader, HWID resets, and Discord verification on every ticket. Status pings keep you informed before you launch.</p>
+              <ul class="feature-points">
+                <li>Stripe + crypto key vending</li>
+                <li>Auto-refresh keys if node blips</li>
+              </ul>
+            </div>
+          </article>
+          <article class="feature-story-card">
+            <span class="material-symbols-outlined feature-story-icon">stadia_controller</span>
+            <div>
+              <h3>Utility Suite</h3>
+              <p>Radar, compass lines, loot priority, and cinematic debug camera for creators. All optimized for < 3% CPU overhead.</p>
+              <ul class="feature-points">
+                <li>Per-monitor calibration stored</li>
+                <li>Night mode + streamer cloak</li>
+              </ul>
+            </div>
+          </article>
         </div>
+        {% if product_features and product_features['items'] %}
+          <div class="feature-panel-grid">
+            {% for feature in product_features['items'] %}
+              <div class="feature-panel-item">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>{{ feature }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       <div class="pricing-grid reveal">
@@ -54,7 +96,18 @@
           {% set regular_total = (ns.base_daily * tier.duration_days) if ns.base_daily else tier.price_pounds %}
           {% set savings_pct = ((regular_total - tier.price_pounds) / regular_total * 100) if regular_total > tier.price_pounds else 0 %}
           {% set per_day = tier.price_pounds / tier.duration_days %}
-          <label class="pricing-card {{ 'is-recommended' if tier.duration_days == 30 else '' }}" :class="{ 'is-selected': selected === '{{ tier.id }}' }" @click="selected = '{{ tier.id }}'; selectedLabel = '{{ tier.label }}'; selectedPrice = '{{ '%.0f'|format(tier.price_pounds) }}'">
+          {% if tier.duration_days <= 1 %}
+            {% set plan_style = 'plan-style-daily' %}
+          {% elif tier.duration_days <= 7 %}
+            {% set plan_style = 'plan-style-weekly' %}
+          {% elif tier.duration_days <= 30 %}
+            {% set plan_style = 'plan-style-monthly' %}
+          {% elif tier.duration_days <= 90 %}
+            {% set plan_style = 'plan-style-quarterly' %}
+          {% else %}
+            {% set plan_style = 'plan-style-elite' %}
+          {% endif %}
+          <label class="pricing-card {{ 'is-recommended' if tier.duration_days == 30 else '' }} {{ plan_style }}" :class="{ 'is-selected': selected === '{{ tier.id }}' }" @click="selected = '{{ tier.id }}'; selectedLabel = '{{ tier.label }}'; selectedPrice = '{{ '%.0f'|format(tier.price_pounds) }}'">
             <input type="radio" name="tier_id" value="{{ tier.id }}" class="sr-only" x-model="selected" data-label="{{ tier.label }}" data-price="{{ '%.0f'|format(tier.price_pounds) }}" {% if tier.id|string == ns.default_selected_id %}checked{% endif %}>
             {% if tier.duration_days == 30 %}
               <span class="badge">Most Chosen</span>

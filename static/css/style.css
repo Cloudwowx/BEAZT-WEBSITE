@@ -767,21 +767,6 @@ img { max-width: 100%; display: block; }
   font-size: 0.93rem;
 }
 
-.feature-toggle {
-  margin-top: 0.75rem;
-  background: linear-gradient(135deg, rgba(181, 107, 255, 0.3), rgba(255, 109, 201, 0.24));
-  border-color: rgba(226, 170, 255, 0.68);
-  color: #ffe8fb;
-  box-shadow: 0 0 20px rgba(197, 116, 255, 0.28);
-}
-
-.feature-toggle:hover,
-.feature-toggle:focus-visible {
-  background: linear-gradient(135deg, rgba(194, 122, 255, 0.46), rgba(255, 131, 209, 0.36));
-  border-color: rgba(239, 194, 255, 0.82);
-  color: #fff7fe;
-}
-
 .feature-panel {
   border-radius: 20px;
   border: 1px solid rgba(123, 174, 255, 0.36);
@@ -789,14 +774,7 @@ img { max-width: 100%; display: block; }
   padding: var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.feature-panel h3 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #d7e9ff;
+  gap: var(--space-md);
 }
 
 .feature-panel-grid {
@@ -817,6 +795,55 @@ img { max-width: 100%; display: block; }
   color: var(--text-soft);
 }
 
+.feature-story-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--space-md);
+}
+
+.feature-story-card {
+  border-radius: 18px;
+  border: 1px solid rgba(152, 200, 255, 0.3);
+  background: rgba(8, 14, 36, 0.85);
+  padding: var(--space-sm);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-sm);
+}
+
+.feature-story-icon {
+  font-size: 1.6rem;
+  color: var(--accent-l);
+  padding: 0.4rem;
+  border-radius: 12px;
+  background: rgba(110, 157, 255, 0.18);
+}
+
+.feature-story-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.05em;
+}
+
+.feature-story-card p {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  margin-bottom: 0.35rem;
+}
+
+.feature-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
 .feature-panel-item .material-symbols-outlined {
   color: var(--accent-l);
   font-size: 1rem;
@@ -833,6 +860,14 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
   cursor: pointer;
   min-height: 0;
+  color: #f5f7ff;
+  text-shadow: 0 10px 26px rgba(3, 5, 12, 0.65);
+  background-image:
+    linear-gradient(140deg, var(--plan-overlay-start, rgba(7, 12, 32, 0.8)) 0%, var(--plan-overlay-end, rgba(4, 7, 22, 0.95)) 70%),
+    url("/static/images/rust.jpg");
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(146, 194, 255, 0.35);
 }
 
 .pricing-card::before {
@@ -870,11 +905,11 @@ img { max-width: 100%; display: block; }
 }
 
 .badge-save { background: var(--warn); color: #2d1900; }
-.pricing-icon { color: var(--accent-l); font-size: 2.2rem; }
-.duration { color: var(--text-soft); }
+.pricing-icon { color: #f8faff; font-size: 2.2rem; }
+.duration { color: #fefefe; font-weight: 600; letter-spacing: 0.16em; }
 .price { font: 600 clamp(2.2rem, 4vw, 2.9rem)/1 var(--display); letter-spacing: 0.08em; }
 .currency { font-size: 1.18rem; vertical-align: super; }
-.per { color: var(--text-muted); font-size: 0.85rem; }
+.per { color: rgba(241, 244, 255, 0.82); font-size: 0.85rem; }
 
 .plan-metrics {
   display: flex;
@@ -891,6 +926,36 @@ img { max-width: 100%; display: block; }
   border: 1px solid rgba(145, 193, 255, 0.35);
   background: rgba(113, 164, 255, 0.18);
   padding: 0.2rem 0.7rem;
+}
+
+.plan-style-daily {
+  --plan-overlay-start: rgba(19, 216, 210, 0.42);
+  --plan-overlay-end: rgba(4, 15, 42, 0.92);
+  box-shadow: 0 20px 50px rgba(7, 203, 192, 0.3), inset 0 0 0 1px rgba(132, 254, 250, 0.45);
+}
+
+.plan-style-weekly {
+  --plan-overlay-start: rgba(142, 108, 255, 0.52);
+  --plan-overlay-end: rgba(18, 7, 45, 0.9);
+  box-shadow: 0 20px 50px rgba(142, 108, 255, 0.32), inset 0 0 0 1px rgba(186, 158, 255, 0.4);
+}
+
+.plan-style-monthly {
+  --plan-overlay-start: rgba(255, 174, 87, 0.52);
+  --plan-overlay-end: rgba(38, 12, 2, 0.9);
+  box-shadow: 0 20px 55px rgba(255, 174, 87, 0.35), inset 0 0 0 1px rgba(255, 210, 153, 0.45);
+}
+
+.plan-style-quarterly {
+  --plan-overlay-start: rgba(255, 87, 134, 0.45);
+  --plan-overlay-end: rgba(22, 4, 18, 0.92);
+  box-shadow: 0 20px 55px rgba(255, 87, 134, 0.32), inset 0 0 0 1px rgba(255, 172, 198, 0.4);
+}
+
+.plan-style-elite {
+  --plan-overlay-start: rgba(132, 223, 82, 0.45);
+  --plan-overlay-end: rgba(8, 22, 4, 0.92);
+  box-shadow: 0 20px 55px rgba(132, 223, 82, 0.32), inset 0 0 0 1px rgba(186, 255, 151, 0.4);
 }
 
 .rust-stack {
