@@ -8,7 +8,12 @@ login_manager = LoginManager()
 login_manager.login_view = "auth.login"
 login_manager.login_message_category = "info"
 
-app = Flask(__name__)
+_basedir = os.path.dirname(os.path.abspath(__file__))
+app = Flask(
+    __name__,
+    static_folder=os.path.join(_basedir, "static"),
+    static_url_path="/static",
+)
 app.config.from_object(Config)
 
 db.init_app(app)

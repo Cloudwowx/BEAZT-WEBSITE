@@ -6,48 +6,33 @@
   <div class="container auth-container">
     <div class="auth-card">
       <div class="auth-header">
-        <div class="prompt">&gt; register</div>
+        <div class="prompt">Join BeaZt</div>
         <h1 class="t-h1">Create Account</h1>
-        <p class="text-muted">Join BeaZt and get access to private slot builds.</p>
+        <p class="text-muted">Get access to private slot builds and instant key delivery.</p>
       </div>
-
       <form method="POST" class="auth-form">
         <div class="form-group">
-          <label for="username">
-            <span class="material-symbols-outlined">person</span> Username
-          </label>
+          <label for="username"><span class="material-symbols-outlined">person</span> Username</label>
           <input type="text" id="username" name="username" required autocomplete="username" placeholder="choose_username" minlength="3">
         </div>
-
         <div class="form-group">
-          <label for="email">
-            <span class="material-symbols-outlined">email</span> Email
-          </label>
+          <label for="email"><span class="material-symbols-outlined">email</span> Email</label>
           <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com">
         </div>
-
         <div class="form-group">
-          <label for="password">
-            <span class="material-symbols-outlined">lock</span> Password
-          </label>
+          <label for="password"><span class="material-symbols-outlined">lock</span> Password</label>
           <input type="password" id="password" name="password" required autocomplete="new-password" placeholder="min 8 characters" minlength="8">
         </div>
-
         <div class="form-group">
-          <label for="confirm_password">
-            <span class="material-symbols-outlined">lock_reset</span> Confirm Password
-          </label>
+          <label for="confirm_password"><span class="material-symbols-outlined">lock_reset</span> Confirm Password</label>
           <input type="password" id="confirm_password" name="confirm_password" required autocomplete="new-password" placeholder="re-enter password">
         </div>
-
         <button type="submit" class="btn btn-primary btn-lg btn-full">
-          <span class="material-symbols-outlined">person_add</span>
-          Create Account
+          <span class="material-symbols-outlined">person_add</span> Create Account
         </button>
       </form>
-
       <div class="auth-footer">
-        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Sign in &rarr;</a></p>
+        <p>Already registered? <a href="{{ url_for('auth.login') }}">Sign in &rarr;</a></p>
       </div>
     </div>
   </div>
