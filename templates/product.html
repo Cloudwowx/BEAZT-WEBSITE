@@ -93,45 +93,44 @@
       </article>
     </div>
 
-    <div class="product-tabs-shell reveal">
-      <div class="product-tab-head">
-        <span class="section-eyebrow">Included Scope</span>
-        <h2 class="t-h2">Everything in the active package</h2>
-      </div>
-
-      <div class="feature-panel-grid">
+    <div class="terminal-panel reveal">
+      <header class="terminal-header">
+        <span class="terminal-title">ACTIVE_PACKAGE :: OUTPUT</span>
+        <span class="terminal-badge">ACTIVE</span>
+      </header>
+      <ul class="terminal-list">
         {% for feature in product_features['items'] %}
-          <article class="feature-panel-item">
-            <span class="icon icon-sm" data-lucide="check-circle-2"></span>
+          <li class="terminal-line">
+            <span class="terminal-prompt">&gt;</span>
             <span>{{ feature }}</span>
-          </article>
+          </li>
         {% endfor %}
-      </div>
+      </ul>
     </div>
 
-    <div class="product-tabs-shell reveal">
-      <div class="product-tab-head">
-        <span class="section-eyebrow">Buyer Clarity</span>
-        <h2 class="t-h2">What to expect before and after purchase</h2>
-      </div>
-      <div class="feature-panel-grid">
-        <article class="feature-panel-item">
-          <span class="icon icon-sm" data-lucide="monitor"></span>
-          <span>Target environment: Windows desktop with stable Rust installation</span>
-        </article>
-        <article class="feature-panel-item">
-          <span class="icon icon-sm" data-lucide="clock-8"></span>
-          <span>Onboarding window: usually minutes with guided Discord setup</span>
-        </article>
-        <article class="feature-panel-item">
-          <span class="icon icon-sm" data-lucide="life-buoy"></span>
-          <span>Support path: ticketed help for setup, HWID changes, and maintenance</span>
-        </article>
-        <article class="feature-panel-item">
-          <span class="icon icon-sm" data-lucide="shield-alert"></span>
-          <span>Risk note: no product can guarantee zero enforcement risk</span>
-        </article>
-      </div>
+    <div class="terminal-panel terminal-panel--info reveal">
+      <header class="terminal-header">
+        <span class="terminal-title">BUYER_CLARITY :: NOTES</span>
+        <span class="terminal-badge terminal-badge--cyan">INFO</span>
+      </header>
+      <ul class="terminal-list">
+        <li class="terminal-line">
+          <span class="terminal-prompt">#</span>
+          <span>Windows desktop with stable Rust install</span>
+        </li>
+        <li class="terminal-line">
+          <span class="terminal-prompt">#</span>
+          <span>Minutes-long onboarding with Discord setup</span>
+        </li>
+        <li class="terminal-line">
+          <span class="terminal-prompt">#</span>
+          <span>Ticketed help for setup, HWID and maintenance</span>
+        </li>
+        <li class="terminal-line terminal-line--warn">
+          <span class="terminal-prompt">!</span>
+          <span>No product guarantees zero enforcement risk</span>
+        </li>
+      </ul>
     </div>
   </div>
 </section>
