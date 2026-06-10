@@ -35,6 +35,16 @@
   </form>
 </div>
 
+<div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;">
+  <a href="{{ url_for('admin.export_products') }}" class="btn-xs" style="background:rgba(34,197,94,0.12);color:var(--success);border:1px solid rgba(34,197,94,0.25);text-decoration:none;">
+    Export JSON
+  </a>
+  <form method="POST" action="{{ url_for('admin.import_products') }}" enctype="multipart/form-data" style="display:flex;gap:0.5rem;align-items:center;">
+    <input type="file" name="products_file" accept=".json" style="font-size:0.72rem;color:var(--text-dim);">
+    <button type="submit" class="btn-xs" style="background:rgba(59,130,246,0.12);color:var(--accent-l);border:1px solid rgba(59,130,246,0.25);">Import JSON</button>
+  </form>
+</div>
+
 <table class="admin-table">
   <thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Private</th><th>Source</th><th>CF Cheat ID</th><th>Tiers</th><th>Actions</th></tr></thead>
   <tbody>
@@ -54,6 +64,9 @@
         <a href="{{ url_for('admin.product_keys', product_id=p.id) }}" class="btn-xs" style="background:rgba(90,206,168,0.18);color:var(--accent-2);border:1px solid rgba(90,206,168,0.35);text-decoration:none;">
           Keys
         </a>
+        <form method="POST" action="{{ url_for('admin.delete_product', product_id=p.id) }}" style="display:inline;" onsubmit="return confirm('Delete {{ p.name }} and all associated keys / orders?')">
+          <button type="submit" class="btn-xs btn-danger">Del</button>
+        </form>
       </td>
     </tr>
     {% endfor %}

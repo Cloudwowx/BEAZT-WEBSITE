@@ -1,8 +1,9 @@
 from functools import wraps
 import secrets
 import re
+import json
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app
+from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app, Response
 from flask_login import login_required, current_user
 from models import db, User, Product, PricingTier, Order, Key, Setting
 from config import get_stripe_config, get_chairfbi_config, get_loader_config
@@ -206,6 +207,108 @@ def create_product():
     return redirect(url_for("admin.product_tiers", product_id=product.id))
 
 
+@admin_bp.route("/products/<int:product_id>/delete", methods=["POST"])
+@admin_required
+def delete_product(product_id):
+    product = db.session.get(Product, product_id)
+    if not product:
+        abort(404)
+    Order.query.filter(Order.tier.has(product_id=product.id)).delete(synchronize_session="fetch")
+    Key.query.filter_by(product_id=product.id).delete(synchronize_session="fetch")
+    PricingTier.query.filter_by(product_id=product.id).delete(synchronize_session="fetch")
+    db.session.delete(product)
+    db.session.commit()
+    flash(f"Product '{product.name}' and all associated keys/orders deleted.", "success")
+    return redirect(url_for("admin.products"))
+
+
+@admin_bp.route("/products/export")
+@admin_required
+def export_products():
+    products = Product.query.order_by(Product.created_at.asc()).all()
+    data = []
+    for p in products:
+        tiers = []
+        for t in PricingTier.query.filter_by(product_id=p.id).order_by(PricingTier.duration_days).all():
+            tiers.append({
+                "label": t.label,
+                "duration_days": t.duration_days,
+                "price_pence": t.price_pence,
+            })
+        data.append({
+            "name": p.name,
+            "slug": p.slug,
+            "description": p.description,
+            "features_text": p.features_text,
+            "key_source": p.key_source,
+            "chairfbi_cheat_id": p.chairfbi_cheat_id,
+            "is_private": p.is_private,
+            "tiers": tiers,
+        })
+    return Response(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        mimetype="application/json",
+        headers={"Content-Disposition": "attachment;filename=beazt_products.json"}
+    )
+
+
+@admin_bp.route("/products/import", methods=["POST"])
+@admin_required
+def import_products():
+    file = request.files.get("products_file")
+    if not file or file.filename == "":
+        flash("Please select a JSON file to import.", "error")
+        return redirect(url_for("admin.products"))
+
+    try:
+        data = json.loads(file.read().decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        flash(f"Invalid JSON file: {e}", "error")
+        return redirect(url_for("admin.products"))
+
+    if not isinstance(data, list):
+        flash("JSON must be an array of products.", "error")
+        return redirect(url_for("admin.products"))
+
+    created = 0
+    updated = 0
+    for entry in data:
+        slug = entry.get("slug", "").strip()
+        if not slug:
+            continue
+
+        product = Product.query.filter_by(slug=slug).first()
+        if not product:
+            product = Product(slug=slug)
+            db.session.add(product)
+            created += 1
+        else:
+            updated += 1
+
+        product.name = entry.get("name", product.name or slug)
+        product.description = entry.get("description") or None
+        product.features_text = entry.get("features_text") or None
+        product.key_source = entry.get("key_source", "chairfbi")
+        product.chairfbi_cheat_id = entry.get("chairfbi_cheat_id") or None
+        product.is_private = entry.get("is_private", True)
+        db.session.flush()
+
+        tiers_data = entry.get("tiers", [])
+        PricingTier.query.filter_by(product_id=product.id).delete(synchronize_session="fetch")
+        for t_entry in tiers_data:
+            tier = PricingTier(
+                product_id=product.id,
+                label=t_entry.get("label", "Untitled"),
+                duration_days=int(t_entry.get("duration_days", 1)),
+                price_pence=int(t_entry.get("price_pence", 0)),
+            )
+            db.session.add(tier)
+
+    db.session.commit()
+    flash(f"Import complete: {created} created, {updated} updated.", "success")
+    return redirect(url_for("admin.products"))
+
+
 @admin_bp.route("/products/<int:product_id>/tiers", methods=["GET", "POST"])
 @admin_required
 def product_tiers(product_id):
@@ -222,6 +325,8 @@ def product_tiers(product_id):
                 product.chairfbi_cheat_id = None
                 cheat_id = None
         product.chairfbi_cheat_id = cheat_id if cheat_id else None
+        product.description = request.form.get("description", "").strip() or None
+        product.features_text = request.form.get("features_text", "").strip() or None
         db.session.commit()
         flash("Product settings updated.", "success")
         return redirect(url_for("admin.product_tiers", product_id=product.id))

@@ -38,6 +38,7 @@ class Product(db.Model):
     is_private = db.Column(db.Boolean, default=True)
     chairfbi_cheat_id = db.Column(db.String(64), nullable=True)
     key_source = db.Column(db.String(16), default="chairfbi")
+    features_text = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     tiers = db.relationship("PricingTier", backref="product", lazy="dynamic")

@@ -35,6 +35,23 @@ def get_product_features(slug):
     return feature_sets.get(slug, default_set)
 
 
+def _get_product_features_from_db(product):
+    items = []
+    if product and product.features_text:
+        items = [line.strip() for line in product.features_text.splitlines() if line.strip()]
+    if not items:
+        items = [
+            "Core external toolkit",
+            "Visualization modules",
+            "Update maintenance",
+            "Private support channel",
+        ]
+    return {
+        "label": product.name if product else "Features",
+        "items": items,
+    }
+
+
 def _get_chairfbi_cheat_status(product):
     if not product or not product.chairfbi_cheat_id:
         return None
@@ -88,7 +105,7 @@ def index():
             .order_by(PricingTier.duration_days)
             .all()
         )
-        product_features = get_product_features(product.slug)
+        product_features = _get_product_features_from_db(product)
         cheat_status = _get_chairfbi_cheat_status(product)
     return render_template("index.html", product=product, tiers=tiers, product_features=product_features, cheat_status=cheat_status, all_products=all_products, cheat_statuses_home=cheat_statuses_home)
 
@@ -115,7 +132,7 @@ def product_detail(slug):
     product = Product.query.filter_by(slug=slug).first()
     if not product:
         abort(404)
-    product_features = get_product_features(product.slug)
+    product_features = _get_product_features_from_db(product)
     cheat_status = _get_chairfbi_cheat_status(product)
     tiers = (
         PricingTier.query
@@ -152,7 +169,7 @@ def plan_detail(tier_id):
         .order_by(PricingTier.duration_days)
         .all()
     )
-    product_features = get_product_features(product.slug)
+    product_features = _get_product_features_from_db(product)
     cheat_status = _get_chairfbi_cheat_status(product)
     gallery_images = _get_product_gallery(product.slug, product.image_url)
 
