@@ -488,7 +488,7 @@ def settings():
 def chairfbi_dashboard():
     cfg = get_chairfbi_config()
     api_token = cfg.get("api_token", "")
-    api_base = cfg.get("api_base", "https://access.chairfbi.se")
+    api_base = cfg.get("api_base", "https://access.chairfbi.com")
 
     balance = None
     cheats = []
@@ -543,7 +543,7 @@ def chairfbi_dashboard():
 def chairfbi_import_all():
     cfg = get_chairfbi_config()
     api_token = cfg.get("api_token", "")
-    api_base = cfg.get("api_base", "https://access.chairfbi.se")
+    api_base = cfg.get("api_base", "https://access.chairfbi.com")
 
     if not api_token:
         flash("ChairFBI API token not configured.", "error")
@@ -604,7 +604,7 @@ def chairfbi_revoke(key_id):
 
     cfg = get_chairfbi_config()
     api_token = cfg.get("api_token", "")
-    api_base = cfg.get("api_base", "https://access.chairfbi.se")
+    api_base = cfg.get("api_base", "https://access.chairfbi.com")
 
     try:
         from utils.chairfbi import ChairFBI
@@ -629,7 +629,7 @@ def chairfbi_hwid_reset(key_id):
 
     cfg = get_chairfbi_config()
     api_token = cfg.get("api_token", "")
-    api_base = cfg.get("api_base", "https://access.chairfbi.se")
+    api_base = cfg.get("api_base", "https://access.chairfbi.com")
 
     try:
         from utils.chairfbi import ChairFBI
@@ -655,7 +655,7 @@ def chairfbi_vouche(key_id):
 
     cfg = get_chairfbi_config()
     api_token = cfg.get("api_token", "")
-    api_base = cfg.get("api_base", "https://access.chairfbi.se")
+    api_base = cfg.get("api_base", "https://access.chairfbi.com")
 
     try:
         from utils.chairfbi import ChairFBI

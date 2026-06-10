@@ -26,7 +26,7 @@ class Config:
     SITE_URL = os.getenv("SITE_URL", "http://localhost:5000")
     DISCORD_INVITE = os.getenv("DISCORD_INVITE", "https://discord.gg/R75TJZSUbU")
     CHAIRFBI_API_TOKEN = os.getenv("CHAIRFBI_API_TOKEN", "")
-    CHAIRFBI_API_BASE = os.getenv("CHAIRFBI_API_BASE", "https://access.chairfbi.se")
+    CHAIRFBI_API_BASE = os.getenv("CHAIRFBI_API_BASE", "https://access.chairfbi.com")
     CHAIRFBI_RUST_CHEAT_ID = os.getenv("CHAIRFBI_RUST_CHEAT_ID", "")
     LOADER_TOKEN = os.getenv("LOADER_TOKEN", "")
     LOADER_URL = os.getenv("LOADER_URL", "")

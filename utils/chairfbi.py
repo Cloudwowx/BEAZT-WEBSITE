@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 class ChairFBI:
-    BASE = "https://access.chairfbi.se"
+    BASE = "https://access.chairfbi.com"
     TIMEOUT = 15
 
     def __init__(self, api_token=None, base_url=None):
