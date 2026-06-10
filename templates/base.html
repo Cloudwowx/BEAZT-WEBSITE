@@ -31,15 +31,12 @@
           <img src="/static/images/BeaztLogo.png" alt="BEAZT" class="nav-logo-img">
           <span class="nav-logo-text">
             <span class="nav-mark">BEAZT</span>
-          <span class="nav-tag">Legit Stack</span>
           </span>
         </a>
-        <div class="nav-meta">
-          <span class="status-chip status-online" aria-live="polite">
-            <span class="icon icon-sm" data-lucide="activity" aria-hidden="true"></span>
-            Node Live
-          </span>
-        </div>
+        <span class="nav-status" aria-live="polite">
+          <span class="nav-status-dot"></span>
+          Systems Online
+        </span>
         <nav class="nav-links" aria-label="Main navigation">
           <a href="{{ url_for('main.index') }}#pricing" class="nav-link {{ 'is-active' if request.endpoint == 'main.index' else '' }}">Plans</a>
           <a href="{{ url_for('main.product_detail', slug='rust-external-private') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.product_detail' else '' }}">Stack</a>
