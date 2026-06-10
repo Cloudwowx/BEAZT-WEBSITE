@@ -51,6 +51,38 @@
   </div>
 </section>
 
+{% if all_products %}
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="section-header reveal" style="text-align:center;margin-bottom:1.5rem;">
+      <span class="section-eyebrow">Catalog</span>
+      <h2 class="t-h2">Available Cheats</h2>
+      <a href="{{ url_for('main.cheats') }}" style="font-size:0.78rem;color:var(--accent-h);">View all &rarr;</a>
+    </div>
+    <div class="cheats-grid reveal" style="margin-bottom:0;">
+      {% for p in all_products %}
+        <a href="{{ url_for('main.product_detail', slug=p.slug) }}" class="cheat-card">
+          <div class="cheat-card-top">
+            <span class="cheat-card-status {{ 'status-online' if cheat_statuses_home.get(p.id, '') == 'online' else 'status-offline' if cheat_statuses_home.get(p.id, '') == 'offline' else 'status-unknown' }}"></span>
+            {% if p.key_source == 'pool' %}
+            <span class="cheat-source-badge">Private</span>
+            {% endif %}
+          </div>
+          <h3 class="cheat-card-name">{{ p.name }}</h3>
+          {% if p.tiers.count() > 0 %}
+          <div class="cheat-card-pricing">
+            <span class="cheat-card-tier">From &pound;{{ "%.2f"|format(p.tiers[0].price_pounds) }}</span>
+          </div>
+          {% else %}
+          <p class="cheat-card-noprice">Coming soon</p>
+          {% endif %}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <section id="pricing" class="pricing-section-page section" style="scroll-margin-top:5rem;">
   <div class="container">
     {% include "partials/pricing_matrix.html" %}

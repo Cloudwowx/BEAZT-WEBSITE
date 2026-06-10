@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}All Cheats | BEAZT{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="container">
+    <div class="page-header reveal">
+      <span class="section-eyebrow">Inventory</span>
+      <h1 class="t-h1">All Cheats</h1>
+      <p class="text-muted">Browse our full catalog. Click any cheat for details and purchase options.</p>
+    </div>
+
+    <div class="cheats-grid reveal">
+      {% for p in products %}
+        {% set status = cheat_statuses.get(p.id) %}
+        <a href="{{ url_for('main.product_detail', slug=p.slug) }}" class="cheat-card">
+          <div class="cheat-card-top">
+            <span class="cheat-card-status {{ 'status-online' if status == 'online' else 'status-offline' if status == 'offline' else 'status-unknown' }}"></span>
+            {% if p.key_source == 'pool' %}
+            <span class="cheat-source-badge">Private</span>
+            {% endif %}
+          </div>
+          <h3 class="cheat-card-name">{{ p.name }}</h3>
+          {% set tiers = product_tiers.get(p.id, []) %}
+          {% if tiers %}
+          <div class="cheat-card-pricing">
+            {% for t in tiers[:3] %}
+              <span class="cheat-card-tier">&pound;{{ "%.2f"|format(t.price_pounds) }} <span class="cheat-card-days">/ {{ t.duration_days }}d</span></span>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="cheat-card-noprice">No pricing yet</p>
+          {% endif %}
+          <span class="cheat-card-arrow">&rarr;</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

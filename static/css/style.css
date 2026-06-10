@@ -1983,6 +1983,49 @@ textarea::placeholder {
   padding: 1.25rem 1.4rem;
 }
 
+/* ── Cheat Cards ────────────────────────────── */
+.cheats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.2rem;
+}
+.cheat-card {
+  display: flex; flex-direction: column;
+  border: 1px solid rgba(116, 168, 255, 0.18);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(9,14,35,0.88), rgba(7,11,27,0.94));
+  padding: 1.2rem 1.3rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  position: relative;
+}
+.cheat-card:hover {
+  border-color: rgba(116, 168, 255, 0.45);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.08);
+}
+.cheat-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem; }
+.cheat-card-status { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.cheat-card-status.status-online { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+.cheat-card-status.status-offline { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.4); }
+.cheat-card-status.status-unknown { background: #6b7280; }
+.cheat-source-badge {
+  font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;
+  padding:0.1rem 0.5rem; border-radius:50px;
+  background:rgba(196,162,106,0.15); color:var(--accent-l); border:1px solid rgba(196,162,106,0.3);
+}
+.cheat-card-name { font-size:1.05rem; font-weight:700; margin-bottom:0.6rem; }
+.cheat-card-pricing { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.5rem; }
+.cheat-card-tier {
+  font-size:0.75rem; padding:0.15rem 0.55rem; border-radius:8px;
+  background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.18);
+  color:var(--accent-l); font-family:var(--mono);
+}
+.cheat-card-days { font-size:0.62rem; color:var(--text-dim); }
+.cheat-card-noprice { color:var(--text-muted); font-size:0.78rem; font-style:italic; }
+.cheat-card-arrow { position:absolute; bottom:1rem; right:1.2rem; color:var(--text-dim); font-size:1.1rem; opacity:0; transition:opacity var(--transition); }
+.cheat-card:hover .cheat-card-arrow { opacity:1; }
+
 /* ── Product Detail ────────────────────────────── */
 .product-detail-page { padding-top: var(--space-3xl); }
 

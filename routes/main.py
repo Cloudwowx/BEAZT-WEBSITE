@@ -74,6 +74,10 @@ def _get_product_gallery(slug, fallback_image=None):
 @main_bp.route("/")
 def index():
     product = Product.query.filter_by(slug="rust-external-private").first()
+    all_products = Product.query.order_by(Product.created_at.asc()).all()
+    cheat_statuses_home = {}
+    for p in all_products:
+        cheat_statuses_home[p.id] = _get_chairfbi_cheat_status(p)
     tiers = []
     product_features = {"label": "Game Access", "items": []}
     cheat_status = None
@@ -86,7 +90,24 @@ def index():
         )
         product_features = get_product_features(product.slug)
         cheat_status = _get_chairfbi_cheat_status(product)
-    return render_template("index.html", product=product, tiers=tiers, product_features=product_features, cheat_status=cheat_status)
+    return render_template("index.html", product=product, tiers=tiers, product_features=product_features, cheat_status=cheat_status, all_products=all_products, cheat_statuses_home=cheat_statuses_home)
+
+
+@main_bp.route("/cheats")
+def cheats():
+    products = Product.query.order_by(Product.created_at.asc()).all()
+    cheat_statuses = {}
+    product_tiers = {}
+    for p in products:
+        status = _get_chairfbi_cheat_status(p)
+        cheat_statuses[p.id] = status
+        product_tiers[p.id] = (
+            PricingTier.query
+            .filter_by(product_id=p.id)
+            .order_by(PricingTier.duration_days)
+            .all()
+        )
+    return render_template("cheats.html", products=products, cheat_statuses=cheat_statuses, product_tiers=product_tiers)
 
 
 @main_bp.route("/product/<slug>")
