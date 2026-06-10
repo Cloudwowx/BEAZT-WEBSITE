@@ -97,19 +97,21 @@ def handle_checkout_completed(session_data):
     if order.status == "completed":
         return
 
-    order.status = "completed"
-
     metadata = session_data.get("metadata", {})
     duration_days = int(metadata.get("duration_days", 30))
     product_id = int(metadata.get("product_id", order.tier.product_id if order.tier else 1))
     tier_id = int(metadata.get("tier_id", order.tier_id if order.tier_id else 0))
     expires_at = datetime.utcnow() + timedelta(days=duration_days)
 
+    from models import Product
+    product = db.session.get(Product, product_id)
+    key_source = product.key_source if product else "chairfbi"
+
     key_value = ""
     chairfbi_key_id = None
     chairfbi_cheat_id = None
 
-    # 1) Try pool key first
+    # 1) Try pool key first (always)
     pool_key = (
         Key.query
         .filter_by(product_id=product_id, tier_id=tier_id, user_id=None, is_active=False)
@@ -123,10 +125,21 @@ def handle_checkout_completed(session_data):
         pool_key.expires_at = expires_at
         pool_key.assigned_at = datetime.utcnow()
         pool_key.is_active = True
+        order.status = "completed"
         db.session.commit()
         return
 
-    # 2) Fallback: ChairFBI generation
+    # 2) Pool-only product with empty pool -> mark awaiting_keys
+    if key_source == "pool":
+        order.status = "awaiting_keys"
+        db.session.commit()
+        current_app.logger.warning(
+            "Pool depleted for product %s (id=%s). Order %s awaiting keys.",
+            product.name if product else "unknown", product_id, order.id,
+        )
+        return
+
+    # 3) ChairFBI product -> generate key via API
     cfg = get_chairfbi_config()
     api_token = cfg.get("api_token", "")
     cheat_id = ""
@@ -151,6 +164,8 @@ def handle_checkout_completed(session_data):
 
     if not key_value:
         key_value = "BEAZT-" + secrets.token_hex(16).upper()
+
+    order.status = "completed"
 
     key = Key(
         user_id=order.user_id,

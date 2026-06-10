@@ -27,6 +27,10 @@
     <div class="stat-lbl">Completed Orders</div>
   </div>
   <div class="stat-card">
+    <div class="stat-num" style="{% if awaiting_keys > 0 %}color:var(--warn){% endif %}">{{ awaiting_keys }}</div>
+    <div class="stat-lbl">Awaiting Keys</div>
+  </div>
+  <div class="stat-card">
     <div class="stat-num">{{ total_products }}</div>
     <div class="stat-lbl">Products</div>
   </div>
@@ -52,6 +56,13 @@
 <div class="cf-alert cf-alert-error">
   <span class="icon icon-sm" data-lucide="triangle-alert"></span>
   Could not fetch ChairFBI balance: {{ cf_balance_error }}
+</div>
+{% endif %}
+
+{% if awaiting_keys > 0 %}
+<div class="cf-alert cf-alert-warn">
+  <span class="icon icon-sm" data-lucide="inbox"></span>
+  <strong>{{ awaiting_keys }} order(s) awaiting keys.</strong> The key pool is empty for these products. <a href="{{ url_for('admin.orders', status='awaiting_keys') }}">View orders</a> &mdash; upload more keys to the product's Key Pool.
 </div>
 {% endif %}
 

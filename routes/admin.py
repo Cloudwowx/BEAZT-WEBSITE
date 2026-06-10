@@ -1,10 +1,11 @@
 from functools import wraps
 import secrets
+import re
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app
 from flask_login import login_required, current_user
 from models import db, User, Product, PricingTier, Order, Key, Setting
-from config import get_stripe_config, get_chairfbi_config
+from config import get_stripe_config, get_chairfbi_config, get_loader_config
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -27,6 +28,7 @@ def dashboard():
     active_keys = Key.query.filter_by(is_active=True).count()
     total_orders = Order.query.count()
     completed_orders = Order.query.filter_by(status="completed").count()
+    awaiting_keys = Order.query.filter_by(status="awaiting_keys").count()
     total_products = Product.query.count()
     recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
     recent_keys = Key.query.order_by(Key.created_at.desc()).limit(5).all()
@@ -59,6 +61,7 @@ def dashboard():
         active_keys=active_keys,
         total_orders=total_orders,
         completed_orders=completed_orders,
+        awaiting_keys=awaiting_keys,
         total_products=total_products,
         revenue_pounds=revenue_pence / 100,
         recent_users=recent_users,
@@ -168,6 +171,45 @@ def products():
     return render_template("admin/products.html", products=products_list)
 
 
+@admin_bp.route("/products/create", methods=["POST"])
+@admin_required
+def create_product():
+    name = request.form.get("name", "").strip()
+    slug = request.form.get("slug", "").strip()
+    key_source = request.form.get("key_source", "chairfbi").strip()
+    chairfbi_cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
+    description = request.form.get("description", "").strip()
+    image_url = request.form.get("image_url", "").strip()
+
+    if not name:
+        flash("Product name is required.", "error")
+        return redirect(url_for("admin.products"))
+    if not slug:
+        slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    if Product.query.filter_by(slug=slug).first():
+        flash(f"Slug '{slug}' already exists. Choose a different name.", "error")
+        return redirect(url_for("admin.products"))
+    if key_source not in ("pool", "chairfbi"):
+        flash("Key source must be pool or chairfbi.", "error")
+        return redirect(url_for("admin.products"))
+    if key_source == "pool":
+        chairfbi_cheat_id = None
+
+    product = Product(
+        name=name,
+        slug=slug,
+        description=description or None,
+        image_url=image_url or None,
+        is_private=True,
+        key_source=key_source,
+        chairfbi_cheat_id=chairfbi_cheat_id or None,
+    )
+    db.session.add(product)
+    db.session.commit()
+    flash(f"Product '{name}' created.", "success")
+    return redirect(url_for("admin.product_tiers", product_id=product.id))
+
+
 @admin_bp.route("/products/<int:product_id>/tiers", methods=["GET", "POST"])
 @admin_required
 def product_tiers(product_id):
@@ -177,9 +219,15 @@ def product_tiers(product_id):
 
     if request.method == "POST":
         cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
+        key_source_val = request.form.get("key_source", "").strip()
+        if key_source_val in ("pool", "chairfbi"):
+            product.key_source = key_source_val
+            if key_source_val == "pool":
+                product.chairfbi_cheat_id = None
+                cheat_id = None
         product.chairfbi_cheat_id = cheat_id if cheat_id else None
         db.session.commit()
-        flash("Product ChairFBI cheat ID updated.", "success")
+        flash("Product settings updated.", "success")
         return redirect(url_for("admin.product_tiers", product_id=product.id))
 
     tiers = PricingTier.query.filter_by(product_id=product.id).order_by(PricingTier.duration_days).all()
@@ -248,7 +296,59 @@ def orders():
     if status_filter:
         query = query.filter_by(status=status_filter)
     orders_list = query.paginate(page=page, per_page=30, error_out=False)
-    return render_template("admin/orders.html", orders=orders_list, status_filter=status_filter)
+
+    pool_products = Product.query.filter_by(key_source="pool").all()
+    pool_product_ids = [p.id for p in pool_products]
+    pool_empty = {}
+    for pid in pool_product_ids:
+        count = Key.query.filter_by(product_id=pid, user_id=None, is_active=False).count()
+        pool_empty[pid] = count
+
+    return render_template(
+        "admin/orders.html",
+        orders=orders_list,
+        status_filter=status_filter,
+        pool_products=pool_products,
+        pool_empty=pool_empty,
+    )
+
+
+@admin_bp.route("/orders/<int:order_id>/fulfill", methods=["POST"])
+@admin_required
+def fulfill_order(order_id):
+    order = db.session.get(Order, order_id)
+    if not order:
+        abort(404)
+    if order.status != "awaiting_keys":
+        flash("This order is not awaiting keys.", "error")
+        return redirect(url_for("admin.orders"))
+
+    tier = order.tier
+    product_id = tier.product_id if tier else None
+    tier_id = tier.id if tier else None
+    duration_days = tier.duration_days if tier else 30
+    expires_at = datetime.utcnow() + timedelta(days=duration_days)
+
+    pool_key = (
+        Key.query
+        .filter_by(product_id=product_id, tier_id=tier_id, user_id=None, is_active=False)
+        .order_by(Key.created_at.asc())
+        .first()
+    )
+    if not pool_key:
+        flash("Still no pool keys available for this product/tier. Upload more keys first.", "error")
+        return redirect(url_for("admin.orders", status="awaiting_keys"))
+
+    pool_key.user_id = order.user_id
+    pool_key.order_id = order.id
+    pool_key.tier_id = tier_id
+    pool_key.expires_at = expires_at
+    pool_key.assigned_at = datetime.utcnow()
+    pool_key.is_active = True
+    order.status = "completed"
+    db.session.commit()
+    flash(f"Order #{order.id} fulfilled with key {pool_key.key_value[:20]}...", "success")
+    return redirect(url_for("admin.orders"))
 
 
 @admin_bp.route("/products/<int:product_id>/keys", methods=["GET", "POST"])
@@ -358,6 +458,8 @@ def settings():
             "chairfbi_api_token": "ChairFBI API Token",
             "chairfbi_api_base": "ChairFBI API Base URL",
             "chairfbi_rust_cheat_id": "ChairFBI Rust Cheat ID",
+            "loader_token": "Loader Token",
+            "loader_url": "Loader Download URL",
         }
         for key, label in fields.items():
             val = request.form.get(key, "").strip()
@@ -368,6 +470,7 @@ def settings():
 
     cfg = get_stripe_config()
     cf_cfg = get_chairfbi_config()
+    loader_cfg = get_loader_config()
     return render_template("admin/settings.html",
         stripe_secret=cfg["secret_key"],
         stripe_publishable=cfg["publishable_key"],
@@ -375,7 +478,9 @@ def settings():
         site_url=cfg["site_url"],
         chairfbi_api_token=cf_cfg["api_token"],
         chairfbi_api_base=cf_cfg["api_base"],
-        chairfbi_rust_cheat_id=cf_cfg["rust_cheat_id"])
+        chairfbi_rust_cheat_id=cf_cfg["rust_cheat_id"],
+        loader_token=loader_cfg["loader_token"],
+        loader_url=loader_cfg["loader_url"])
 
 
 @admin_bp.route("/chairfbi")
@@ -431,6 +536,62 @@ def chairfbi_dashboard():
         products=products,
         local_cf_keys=local_cf_keys,
     )
+
+
+@admin_bp.route("/chairfbi/import-all", methods=["POST"])
+@admin_required
+def chairfbi_import_all():
+    cfg = get_chairfbi_config()
+    api_token = cfg.get("api_token", "")
+    api_base = cfg.get("api_base", "https://access.chairfbi.se")
+
+    if not api_token:
+        flash("ChairFBI API token not configured.", "error")
+        return redirect(url_for("admin.chairfbi_dashboard"))
+
+    try:
+        from utils.chairfbi import ChairFBI
+        cf = ChairFBI(api_token=api_token, base_url=api_base)
+        cheats_data = cf.get_cheats()
+        cheats = cheats_data if isinstance(cheats_data, list) else []
+
+        created = 0
+        skipped = 0
+        for cheat in cheats:
+            cheat_id = str(cheat.get("id", ""))
+            cheat_name = cheat.get("name", "Unknown Cheat").strip()
+            if not cheat_name:
+                continue
+
+            slug = re.sub(r"[^a-z0-9]+", "-", cheat_name.lower()).strip("-")
+            if not slug:
+                slug = f"cf-cheat-{cheat_id}"
+
+            existing = Product.query.filter_by(slug=slug).first()
+            if existing:
+                if not existing.chairfbi_cheat_id or existing.chairfbi_cheat_id != cheat_id:
+                    existing.chairfbi_cheat_id = cheat_id
+                    existing.key_source = "chairfbi"
+                skipped += 1
+                continue
+
+            product = Product(
+                name=cheat_name,
+                slug=slug,
+                description=None,
+                key_source="chairfbi",
+                chairfbi_cheat_id=cheat_id,
+                is_private=True,
+            )
+            db.session.add(product)
+            created += 1
+
+        db.session.commit()
+        flash(f"Imported {created} new cheat(s) from ChairFBI. {skipped} already exist.", "success")
+    except Exception as e:
+        flash(f"ChairFBI import failed: {e}", "error")
+
+    return redirect(url_for("admin.chairfbi_dashboard"))
 
 
 @admin_bp.route("/chairfbi/revoke/<int:key_id>", methods=["POST"])

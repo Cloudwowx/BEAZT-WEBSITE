@@ -4,15 +4,27 @@
   <h1>Orders</h1>
   <p>
     Filter:
-    <a href="{{ url_for('admin.orders') }}" class="btn-xs" style="text-decoration:none;background:var(--bg);border:1px solid var(--border);color:var(--text-dim);">All</a>
-    <a href="?status=completed" class="btn-xs" style="text-decoration:none;background:var(--bg);border:1px solid var(--border);color:var(--text-dim);">Completed</a>
-    <a href="?status=pending" class="btn-xs" style="text-decoration:none;background:var(--bg);border:1px solid var(--border);color:var(--text-dim);">Pending</a>
+    <a href="{{ url_for('admin.orders') }}" class="btn-xs" style="text-decoration:none;background:{% if not status_filter %}var(--accent-g3){% else %}var(--bg){% endif %};border:1px solid var(--border);color:{% if not status_filter %}var(--accent-h){% else %}var(--text-dim){% endif %};">All</a>
+    <a href="?status=completed" class="btn-xs" style="text-decoration:none;background:{% if status_filter == 'completed' %}var(--accent-g3){% else %}var(--bg){% endif %};border:1px solid var(--border);color:{% if status_filter == 'completed' %}var(--accent-h){% else %}var(--text-dim){% endif %};">Completed</a>
+    <a href="?status=pending" class="btn-xs" style="text-decoration:none;background:{% if status_filter == 'pending' %}var(--accent-g3){% else %}var(--bg){% endif %};border:1px solid var(--border);color:{% if status_filter == 'pending' %}var(--accent-h){% else %}var(--text-dim){% endif %};">Pending</a>
+    <a href="?status=awaiting_keys" class="btn-xs" style="text-decoration:none;background:{% if status_filter == 'awaiting_keys' %}var(--accent-g3){% else %}var(--bg){% endif %};border:1px solid var(--border);color:{% if status_filter == 'awaiting_keys' %}var(--accent-h){% else %}var(--text-dim){% endif %};">Awaiting Keys</a>
   </p>
 </div>
 
+{% if status_filter == 'awaiting_keys' and orders.items %}
+<div class="cf-alert cf-alert-warn">
+  <span class="icon icon-sm" data-lucide="inbox"></span>
+  These orders are waiting for pool keys. Upload keys to the product's Key Pool page.
+  {% for p in pool_products %}
+    {% set count = pool_empty.get(p.id, 0) %}
+    <a href="{{ url_for('admin.product_keys', product_id=p.id) }}" style="margin-left:0.5rem;">{{ p.name }} ({{ count }} in pool)</a>
+  {% endfor %}
+</div>
+{% endif %}
+
 <table class="admin-table">
   <thead>
-    <tr><th>ID</th><th>User</th><th>Product</th><th>Tier</th><th>Price</th><th>Status</th><th>Date</th></tr>
+    <tr><th>ID</th><th>User</th><th>Product</th><th>Tier</th><th>Price</th><th>Status</th><th>Date</th><th></th></tr>
   </thead>
   <tbody>
     {% for o in orders.items %}
@@ -22,8 +34,19 @@
       <td>{{ o.tier.product.name if o.tier and o.tier.product else '-' }}</td>
       <td>{{ o.tier.label if o.tier else '-' }}</td>
       <td>&pound;{{ "%.2f"|format(o.tier.price_pounds) if o.tier else '-' }}</td>
-      <td><span class="badge-sm {{ 'badge-green' if o.status == 'completed' else 'badge-yellow' }}">{{ o.status }}</span></td>
+      <td>
+        <span class="badge-sm {{ 'badge-green' if o.status == 'completed' else ('badge-yellow' if o.status == 'pending' else ('badge-orange' if o.status == 'awaiting_keys' else '')) }}">
+          {{ o.status.replace('_', ' ') }}
+        </span>
+      </td>
       <td>{{ o.created_at.strftime('%d %b %Y %H:%M') }}</td>
+      <td>
+        {% if o.status == 'awaiting_keys' %}
+        <form method="POST" action="{{ url_for('admin.fulfill_order', order_id=o.id) }}">
+          <button type="submit" class="btn-xs" style="background:var(--accent);color:#fff;border:none;">Fulfill</button>
+        </form>
+        {% endif %}
+      </td>
     </tr>
     {% endfor %}
   </tbody>

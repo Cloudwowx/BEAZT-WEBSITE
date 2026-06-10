@@ -42,6 +42,7 @@
           <a href="{{ url_for('main.product_detail', slug='rust-external-private') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.product_detail' else '' }}">Stack</a>
           <a href="{{ url_for('main.feedback') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.feedback' else '' }}">Proof</a>
           <a href="{{ url_for('main.faq') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.faq' else '' }}">FAQ</a>
+          <a href="{{ url_for('main.loader') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.loader' else '' }}">Loader</a>
           <a href="{{ config.DISCORD_INVITE }}" target="_blank" rel="noopener noreferrer" class="nav-link nav-discord">Discord</a>
           {% if current_user.is_authenticated %}
             <a href="{{ url_for('main.my_keys') }}" class="nav-link">My Keys</a>
@@ -64,6 +65,7 @@
         <a href="{{ url_for('main.product_detail', slug='rust-external-private') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.product_detail' else '' }}" @click="mobileOpen = false">Stack</a>
         <a href="{{ url_for('main.feedback') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.feedback' else '' }}" @click="mobileOpen = false">Proof</a>
         <a href="{{ url_for('main.faq') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.faq' else '' }}" @click="mobileOpen = false">FAQ</a>
+        <a href="{{ url_for('main.loader') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.loader' else '' }}" @click="mobileOpen = false">Loader</a>
         <a href="{{ config.DISCORD_INVITE }}" target="_blank" rel="noopener noreferrer" class="nav-link" @click="mobileOpen = false">Discord</a>
         {% if current_user.is_authenticated %}
           <a href="{{ url_for('main.my_keys') }}" class="nav-link" @click="mobileOpen = false">My Keys</a>

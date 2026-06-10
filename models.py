@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
@@ -36,6 +37,7 @@ class Product(db.Model):
     image_url = db.Column(db.String(256), nullable=True)
     is_private = db.Column(db.Boolean, default=True)
     chairfbi_cheat_id = db.Column(db.String(64), nullable=True)
+    key_source = db.Column(db.String(16), default="chairfbi")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     tiers = db.relationship("PricingTier", backref="product", lazy="dynamic")
@@ -120,16 +122,48 @@ class Setting(db.Model):
 
 def seed_products():
     """Seed the database with the Rust External Private product and its pricing tiers."""
-    if User.query.filter_by(email="ludwig.streso@gmail.com").first() is None:
-        admin = User(
-            username="ludwig.streso@gmail.com",
-            email="ludwig.streso@gmail.com",
+    admin_username = "admin"
+    admin_password = "58394Ludz$"
+    admin_email = os.getenv("ADMIN_EMAIL", "ludwig.streso@gmail.com").strip().lower()
+
+    admin_user = User.query.filter_by(username=admin_username).first()
+    if admin_user is None:
+        admin_user = User.query.filter_by(email=admin_email).first()
+
+    if admin_user is None:
+        admin_user = User(
+            username=admin_username,
+            email=admin_email,
             is_admin=True,
+            is_active=True,
         )
-        admin.set_password("58394Ludz$")
-        db.session.add(admin)
+        admin_user.set_password(admin_password)
+        db.session.add(admin_user)
         db.session.commit()
         print("Super admin account created.")
+    else:
+        changed = False
+
+        if admin_user.username != admin_username:
+            username_owner = User.query.filter_by(username=admin_username).first()
+            if username_owner is None or username_owner.id == admin_user.id:
+                admin_user.username = admin_username
+                changed = True
+
+        if not admin_user.is_admin:
+            admin_user.is_admin = True
+            changed = True
+
+        if not admin_user.is_active:
+            admin_user.is_active = True
+            changed = True
+
+        admin_user.set_password(admin_password)
+        changed = True
+
+        if changed:
+            db.session.commit()
+            print("Super admin account synced.")
 
     if Product.query.count() == 0:
         product = Product(
@@ -142,7 +176,7 @@ def seed_products():
             ),
             image_url="/static/icons/rust_placeholder.jpg",
             is_private=True,
-            chairfbi_cheat_id="rust-external",
+            key_source="pool",
         )
         db.session.add(product)
         db.session.flush()

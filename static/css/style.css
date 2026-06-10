@@ -1975,6 +1975,14 @@ textarea::placeholder {
 }
 .key-copy-btn:hover { background: rgba(196, 162, 106, 0.22); border-color: var(--border-strong); }
 
+.loader-card {
+  border: 1px solid rgba(116, 168, 255, 0.28);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(9, 14, 35, 0.94), rgba(7, 11, 27, 0.96));
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.06), inset 0 0 0 1px rgba(116, 168, 255, 0.04);
+  padding: 1.25rem 1.4rem;
+}
+
 /* ── Product Detail ────────────────────────────── */
 .product-detail-page { padding-top: var(--space-3xl); }
 

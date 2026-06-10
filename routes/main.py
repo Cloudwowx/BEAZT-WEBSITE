@@ -3,6 +3,7 @@ from pathlib import Path
 from flask import Blueprint, render_template, abort, current_app
 from flask_login import login_required, current_user
 from models import db, Product, Key, PricingTier
+from config import get_loader_config
 
 main_bp = Blueprint("main", __name__)
 
@@ -145,8 +146,10 @@ def plan_detail(tier_id):
     )
 
 
-@main_bp.route("/feedback")
-def feedback():
+@main_bp.route("/loader")
+def loader():
+    loader = get_loader_config()
+    return render_template("loader.html", loader_token=loader["loader_token"], loader_url=loader["loader_url"])
     return render_template("feedback.html")
 
 
@@ -174,4 +177,5 @@ def my_keys():
         .order_by(Key.created_at.desc())
         .all()
     )
-    return render_template("keys.html", keys=keys)
+    loader = get_loader_config()
+    return render_template("keys.html", keys=keys, loader_token=loader["loader_token"], loader_url=loader["loader_url"])

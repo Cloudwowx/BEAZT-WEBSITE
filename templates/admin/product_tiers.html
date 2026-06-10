@@ -8,13 +8,23 @@
 
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem;">
   <form method="POST" class="form-inline">
-    <div style="flex:1;">
-      <label style="display:block;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem;text-transform:uppercase;letter-spacing:0.06em;">ChairFBI Cheat ID</label>
-      <input type="text" name="chairfbi_cheat_id" value="{{ product.chairfbi_cheat_id or '' }}" placeholder="e.g. rust-external" style="width:100%;">
+    <div style="flex:1;min-width:180px;">
+      <label style="display:block;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem;text-transform:uppercase;letter-spacing:0.06em;">Key Source</label>
+      <select name="key_source" style="width:100%;">
+        <option value="chairfbi" {% if product.key_source == 'chairfbi' %}selected{% endif %}>ChairFBI (API + pool)</option>
+        <option value="pool" {% if product.key_source == 'pool' %}selected{% endif %}>Pool Only (bulk upload)</option>
+      </select>
     </div>
-    <button type="submit" class="btn-xs" style="background:var(--accent);color:#fff;border:none;">Update Cheat ID</button>
+    <div style="flex:1;min-width:180px;">
+      <label style="display:block;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem;text-transform:uppercase;letter-spacing:0.06em;">ChairFBI Cheat ID</label>
+      <input type="text" name="chairfbi_cheat_id" value="{{ product.chairfbi_cheat_id or '' }}" placeholder="e.g. rust-external" style="width:100%;" {% if product.key_source == 'pool' %}disabled{% endif %}>
+    </div>
+    <button type="submit" class="btn-xs" style="background:var(--accent);color:#fff;border:none;align-self:end;">Save Settings</button>
   </form>
-  <p style="font-size:0.68rem;color:var(--text-muted);margin-top:0.4rem;">Maps this product to a ChairFBI cheat. Leave empty if not using ChairFBI for this product.</p>
+  <p style="font-size:0.68rem;color:var(--text-muted);margin-top:0.4rem;">
+    <strong>Pool Only:</strong> Keys come from bulk upload only. No external API. Use for privately hosted cheats.<br>
+    <strong>ChairFBI:</strong> Pool first, then auto-generate via ChairFBI API on purchase.
+  </p>
 </div>
 
 <table class="admin-table" style="margin-bottom:2rem;">

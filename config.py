@@ -28,6 +28,8 @@ class Config:
     CHAIRFBI_API_TOKEN = os.getenv("CHAIRFBI_API_TOKEN", "")
     CHAIRFBI_API_BASE = os.getenv("CHAIRFBI_API_BASE", "https://access.chairfbi.se")
     CHAIRFBI_RUST_CHEAT_ID = os.getenv("CHAIRFBI_RUST_CHEAT_ID", "")
+    LOADER_TOKEN = os.getenv("LOADER_TOKEN", "")
+    LOADER_URL = os.getenv("LOADER_URL", "")
 
 
 def get_stripe_config():
@@ -77,4 +79,22 @@ def get_chairfbi_config():
         "api_token": _lookup("chairfbi_api_token", Config.CHAIRFBI_API_TOKEN),
         "api_base": _lookup("chairfbi_api_base", Config.CHAIRFBI_API_BASE),
         "rust_cheat_id": _lookup("chairfbi_rust_cheat_id", Config.CHAIRFBI_RUST_CHEAT_ID),
+    }
+
+
+def get_loader_config():
+    from models import Setting
+
+    def _lookup(key, default):
+        try:
+            val = Setting.get(key)
+            if val:
+                return val
+        except Exception:
+            pass
+        return default
+
+    return {
+        "loader_token": _lookup("loader_token", Config.LOADER_TOKEN),
+        "loader_url": _lookup("loader_url", Config.LOADER_URL),
     }

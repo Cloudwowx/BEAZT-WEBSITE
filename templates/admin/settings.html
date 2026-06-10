@@ -95,6 +95,32 @@
         </div>
       </div>
 
+      <!-- ===== LOADER SECTION ===== -->
+      <div>
+        <h3 style="font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:1rem;letter-spacing:0.04em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;">
+          <span class="icon icon-sm" data-lucide="download"></span> Loader
+        </h3>
+
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+          <div style="display:flex;flex-direction:column;gap:0.35rem;">
+            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Loader Token</label>
+            <div style="display:flex;gap:0.5rem;">
+              <input :type="reveal.loader_token ? 'text' : 'password'" name="loader_token" value="{{ loader_token }}" placeholder="Loader authentication token" style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
+              <button type="button" @click="reveal.loader_token = !reveal.loader_token" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.loader_token ? 'HIDE' : 'SHOW'"></button>
+            </div>
+            {% if loader_token %}<span style="font-size:0.68rem;color:var(--success);">Set ({{ loader_token[:12] }}...)</span>{% else %}<span style="font-size:0.68rem;color:var(--text-mut);">Shown to customers on their My Keys page.</span>{% endif %}
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:0.35rem;">
+            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Loader Download URL</label>
+            <input type="text" name="loader_url" value="{{ loader_url }}" placeholder="https://example.com/loader.zip" style="padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
+            {% if loader_url %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--text-mut);">Direct download link for the loader.</span>{% endif %}
+          </div>
+
+        </div>
+      </div>
+
       <button type="submit" class="btn btn-primary" style="align-self:flex-start;">
         <span class="icon" data-lucide="save"></span>
         Save settings
