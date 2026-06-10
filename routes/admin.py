@@ -46,11 +46,7 @@ def dashboard():
         try:
             from utils.chairfbi import ChairFBI
             cf = ChairFBI(api_token=cf_config["api_token"], base_url=cf_config.get("api_base"))
-            balance_data = cf.get_balance()
-            if isinstance(balance_data, dict):
-                cf_balance = balance_data.get("balance")
-            else:
-                cf_balance = balance_data
+            cf_balance = cf.get_balance()
         except Exception as e:
             cf_balance_error = str(e)
 
@@ -457,7 +453,6 @@ def settings():
             "site_url": "Site URL",
             "chairfbi_api_token": "ChairFBI API Token",
             "chairfbi_api_base": "ChairFBI API Base URL",
-            "chairfbi_rust_cheat_id": "ChairFBI Rust Cheat ID",
             "loader_token": "Loader Token",
             "loader_url": "Loader Download URL",
         }
@@ -478,7 +473,6 @@ def settings():
         site_url=cfg["site_url"],
         chairfbi_api_token=cf_cfg["api_token"],
         chairfbi_api_base=cf_cfg["api_base"],
-        chairfbi_rust_cheat_id=cf_cfg["rust_cheat_id"],
         loader_token=loader_cfg["loader_token"],
         loader_url=loader_cfg["loader_url"])
 
@@ -504,8 +498,7 @@ def chairfbi_dashboard():
             cf = ChairFBI(api_token=api_token, base_url=api_base)
 
             try:
-                balance_data = cf.get_balance()
-                balance = balance_data.get("balance") if isinstance(balance_data, dict) else balance_data
+                cf_balance = cf.get_balance()
             except Exception as e:
                 balance_error = str(e)
 
@@ -517,7 +510,7 @@ def chairfbi_dashboard():
 
             try:
                 keys_data = cf.list_keys(per_page=20)
-                recent_cf_keys = keys_data.get("data", []) if isinstance(keys_data, dict) else []
+                recent_cf_keys = keys_data.get("data", []) if isinstance(keys_data, dict) else keys_data if isinstance(keys_data, list) else []
             except Exception:
                 pass
         except Exception as e:
@@ -528,7 +521,7 @@ def chairfbi_dashboard():
 
     return render_template(
         "admin/chairfbi.html",
-        balance=balance,
+        balance=cf_balance,
         balance_error=balance_error,
         cheats=cheats,
         recent_cf_keys=recent_cf_keys,
@@ -634,11 +627,11 @@ def chairfbi_hwid_reset(key_id):
     try:
         from utils.chairfbi import ChairFBI
         cf = ChairFBI(api_token=api_token, base_url=api_base)
-        resp = cf._request("POST", f"/keys/{key.chairfbi_key_id}/hwid-reset")
-        if resp.status_code in (200, 204):
+        resp = cf.update_keys(keys=[key.chairfbi_key_id], hwid=True)
+        if resp.get("errors", 0) == 0:
             flash("HWID reset successful.", "success")
         else:
-            flash(f"HWID reset failed: {resp.text}", "error")
+            flash("HWID reset failed.", "error")
     except Exception as e:
         flash(f"HWID reset failed: {e}", "error")
 
@@ -660,11 +653,11 @@ def chairfbi_vouche(key_id):
     try:
         from utils.chairfbi import ChairFBI
         cf = ChairFBI(api_token=api_token, base_url=api_base)
-        resp = cf._request("POST", f"/keys/{key.chairfbi_key_id}/vouche")
-        if resp.status_code in (200, 204):
+        resp = cf.update_keys(keys=[key.chairfbi_key_id], vouche=True)
+        if resp.get("errors", 0) == 0:
             flash("Vouche (6 hours) added successfully.", "success")
         else:
-            flash(f"Vouche failed: {resp.text}", "error")
+            flash("Vouche failed.", "error")
     except Exception as e:
         flash(f"Vouche failed: {e}", "error")
 

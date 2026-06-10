@@ -65,8 +65,8 @@
       <tr>
         <td><strong>{{ c.name if c.name else c.id }}</strong></td>
         <td>
-          <span class="badge-sm {{ 'badge-green' if c.status == 'online' else ('badge-yellow' if c.status == 'maintenance' else 'badge-red') }}">
-            {{ c.status if c.status else 'unknown' }}
+          <span class="badge-sm {{ 'badge-green' if c.active else 'badge-red' }}">
+            {{ 'Online' if c.active else 'Offline' }}
           </span>
         </td>
         <td>

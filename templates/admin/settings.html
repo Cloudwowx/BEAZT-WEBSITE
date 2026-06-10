@@ -76,12 +76,6 @@
             <span style="font-size:0.68rem;color:var(--text-mut);">ChairFBI API endpoint.</span>
           </div>
 
-          <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Rust External Cheat ID</label>
-            <input type="text" name="chairfbi_rust_cheat_id" value="{{ chairfbi_rust_cheat_id }}" placeholder="e.g. rust_external or UUID" style="padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-            <span style="font-size:0.68rem;color:var(--text-mut);">ChairFBI cheat identifier for creating keys.</span>
-          </div>
-
           <div>
             <form method="POST" action="{{ url_for('admin.test_chairfbi') }}" style="display:inline;">
               <input type="hidden" name="chairfbi_api_token" :value="document.querySelector('input[name=chairfbi_api_token]').value">

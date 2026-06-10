@@ -146,8 +146,6 @@ def handle_checkout_completed(session_data):
 
     if order.tier and order.tier.product and order.tier.product.chairfbi_cheat_id:
         cheat_id = order.tier.product.chairfbi_cheat_id
-    else:
-        cheat_id = cfg.get("rust_cheat_id", "")
 
     if cheat_id and api_token:
         try:
@@ -156,8 +154,9 @@ def handle_checkout_completed(session_data):
             cf = ChairFBI(api_token=api_token, base_url=cfg.get("api_base"))
             result = cf.create_key(cheat_id=cheat_id, days=duration_days)
 
-            key_value = result.get("license_key") or result.get("key") or ""
-            chairfbi_key_id = str(result.get("key_id") or result.get("id") or "")
+            keys = result.get("keys", [])
+            key_value = keys[0] if keys else ""
+            chairfbi_key_id = key_value
             chairfbi_cheat_id = cheat_id
         except Exception:
             current_app.logger.exception("ChairFBI key creation failed")

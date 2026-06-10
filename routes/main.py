@@ -50,7 +50,7 @@ def _get_chairfbi_cheat_status(product):
             cid = str(c.get("id", ""))
             cname = c.get("name", "")
             if cid == product.chairfbi_cheat_id or cname == product.chairfbi_cheat_id:
-                return c.get("status", "unknown")
+                return "online" if c.get("active") else "offline"
     except Exception:
         pass
     return None
