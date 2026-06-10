@@ -2,6 +2,7 @@ from functools import wraps
 import secrets
 import re
 import json
+import os
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app, Response
 from flask_login import login_required, current_user
@@ -332,7 +333,23 @@ def product_tiers(product_id):
         product.description = request.form.get("description", "").strip() or None
         product.features_text = request.form.get("features_text", "").strip() or None
         product.buyer_notes = request.form.get("buyer_notes", "").strip() or None
-        product.image_url = request.form.get("image_url", "").strip() or None
+
+        image_file = request.files.get("image_file")
+        if image_file and image_file.filename:
+            ext = os.path.splitext(image_file.filename)[1].lower()
+            if ext in (".png", ".jpg", ".jpeg"):
+                upload_dir = os.path.join(current_app.root_path, "static", "images", "products", product.slug)
+                os.makedirs(upload_dir, exist_ok=True)
+                path = os.path.join(upload_dir, f"banner{ext}")
+                image_file.save(path)
+                product.image_url = f"/static/images/products/{product.slug}/banner{ext}"
+            else:
+                flash("Only PNG and JPEG files are accepted.", "error")
+                return redirect(url_for("admin.product_tiers", product_id=product.id))
+        else:
+            image_url_val = request.form.get("image_url", "").strip()
+            product.image_url = image_url_val if image_url_val else None
+
         db.session.commit()
         flash("Product settings updated.", "success")
         return redirect(url_for("admin.product_tiers", product_id=product.id))

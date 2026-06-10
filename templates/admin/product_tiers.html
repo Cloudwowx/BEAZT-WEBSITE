@@ -28,7 +28,7 @@
 </div>
 
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem;">
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
     <h3 style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.8rem;">Product Content</h3>
     <div style="display:flex;flex-direction:column;gap:1rem;">
       <div style="display:flex;flex-direction:column;gap:0.3rem;">
@@ -44,7 +44,18 @@
         <textarea name="buyer_notes" rows="4" style="width:100%;font-family:var(--mono);font-size:0.82rem;padding:0.6rem 0.8rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);resize:vertical;" placeholder="Windows desktop with a stable Rust install&#10;Fast onboarding with Discord walkthroughs&#10;Ticketed help for setup, HWID, and maintenance">{{ product.buyer_notes or '' }}</textarea>
       </div>
       <div style="display:flex;flex-direction:column;gap:0.3rem;">
-        <label style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Custom Image URL <span style="font-weight:400;">(overrides auto-generated banner)</span></label>
+        <label style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Banner Image</label>
+        <div style="display:flex;gap:0.6rem;align-items:end;flex-wrap:wrap;">
+          <div style="flex:1;min-width:220px;">
+            <input type="file" name="image_file" accept=".png,.jpg,.jpeg" style="font-size:0.72rem;color:var(--text-dim);">
+          </div>
+          {% if product.image_url %}
+          <a href="{{ product.image_url }}" target="_blank" style="font-size:0.68rem;color:var(--accent-h);white-space:nowrap;">View current</a>
+          {% endif %}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.3rem;">
+        <label style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Custom Image URL <span style="font-weight:400;">(or upload above)</span></label>
         <input type="text" name="image_url" value="{{ product.image_url or '' }}" placeholder="https://example.com/cheat-banner.png" style="width:100%;font-family:var(--mono);font-size:0.82rem;padding:0.6rem 0.8rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);">
       </div>
       <button type="submit" class="btn-xs" style="background:var(--accent);color:#fff;border:none;align-self:flex-start;">Save Content</button>
