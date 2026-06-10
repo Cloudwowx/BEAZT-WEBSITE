@@ -2,48 +2,29 @@
 {% block title %}BEAZT Legit Stack{% endblock %}
 
 {% block content %}
-<section class="hero">
-  <div class="container">
-    <div class="hero-visual" aria-hidden="true">
-      <div class="hero-visual-glow"></div>
-      <div class="beazt-intro">
-        <div class="beazt-lightning beazt-lightning-left"></div>
-        <div class="beazt-lightning beazt-lightning-right"></div>
-        <img src="/static/images/hero.png" alt="" class="beazt-hero-image">
-        <div class="eyes-aura"></div>
-        <div class="eyes-flare eyes-flare-left"></div>
-        <div class="eyes-flare eyes-flare-right"></div>
-        <div class="storm-particles"></div>
-        <div class="hero-overlay">
-          <span class="hero-overlay-label">BEAZT CHEATS</span>
-        </div>
-      </div>
-      <div class="hero-hud">
-        <div class="hud-card">
-          <span class="hud-label">ESP Layer</span>
-          <span class="hud-value">Legit-Locked</span>
-        </div>
-        <div class="hud-card">
-          <span class="hud-label">Aimbot</span>
-          <span class="hud-value">Humanized Curve</span>
-        </div>
-        <div class="hud-card">
-          <span class="hud-label">Delivery</span>
-          <span class="hud-value">&lt;15s Stripe</span>
-        </div>
-      </div>
-    </div>
+<section class="hero command-hero">
+  <div class="container hero-grid">
+    <div class="hero-console reveal">
+      <span class="console-eyebrow">Premium Command Deck · Rust External</span>
+      <h1 class="hero-title">Play sharper with a disciplined legit stack.</h1>
+      <p class="hero-subhead">External architecture, polished legit presets, and delivery infrastructure tuned for fast activation and stable sessions.</p>
 
-    <div class="hero-copy">
-      <div class="hero-tagline">
-        <span class="hero-tag">Encrypted storefront</span>
+      <div class="console-meta">
+        <div class="console-meta-row">
+          <span class="meta-label">Architecture</span>
+          <strong>External / encrypted pipeline</strong>
+        </div>
+        <div class="console-meta-row">
+          <span class="meta-label">Checkout</span>
+          <strong>Stripe + crypto settlement</strong>
+        </div>
+        <div class="console-meta-row">
+          <span class="meta-label">Positioning</span>
+          <strong>Legit-first behavior profiles</strong>
+        </div>
       </div>
-      <h1 class="t-display" data-typewriter="BEAZT CHEATS">
-        Stealth-grade cheats.<br>Instant access.
-      </h1>
-      <p class="subhead">External, legit-focused tooling with instant key vending, live health telemetry, and private Discord support.</p>
 
-      <div class="hero-cta">
+      <div class="hero-cta-group">
         <a href="#pricing" class="btn btn-primary btn-lg">
           <span class="icon" data-lucide="zap"></span>
           Deploy Access
@@ -56,90 +37,156 @@
         {% else %}
           <a href="{{ url_for('auth.signup') }}" class="btn btn-ghost btn-lg">
             <span class="icon" data-lucide="user-plus"></span>
-            Join BEAZT
+            Join Ops Desk
           </a>
         {% endif %}
       </div>
 
-      <div class="hero-telemetry">
-        <div class="hero-telemetry-head">
-          <span class="hero-telemetry-title"><span class="nav-status-dot"></span>Stack telemetry</span>
-          <span class="telemetry-chip">Encrypted</span>
-        </div>
-        <div class="hero-telemetry-grid">
-          <div class="telemetry-row">
-            <span>Build</span>
-            <strong>BEAZT v9.5</strong>
-          </div>
-          <div class="telemetry-row">
-            <span>Status</span>
-            <strong class="text-success">99.9% online</strong>
-          </div>
-          <div class="telemetry-row">
-            <span>Delivery</span>
-            <strong>Instant keys</strong>
-          </div>
-          <div class="telemetry-row">
-            <span>Mode</span>
-            <strong>Legit focus</strong>
-          </div>
+      <ul class="console-tags" aria-label="Stack assurances">
+        <li>Predictable delivery flow</li>
+        <li>Ops-led setup support</li>
+        <li>Account continuity tooling</li>
+      </ul>
+    </div>
+
+    <div class="hero-scope reveal">
+      <div class="hero-holo-screen" aria-hidden="true">
+        <div class="hero-holo-gridlines"></div>
+        <img src="/static/images/hero.png" alt="BEAZT operator" class="hero-holo-image">
+        <div class="hero-holo-veil"></div>
+        <div class="hero-holo-caption">
+          <span>Rust external</span>
+          <span class="hero-holo-badge">Kernel safe</span>
         </div>
       </div>
-
-      <div class="hero-metrics">
-        <article class="metric-card">
-          <span class="icon icon-sm" data-lucide="headset"></span>
+      <div class="hero-telemetry-panel" role="region" aria-label="Stack telemetry">
+        <header>
+          <span>BEAZT telemetry (rolling 30d)</span>
+          <span class="badge-live">Live</span>
+        </header>
+        <dl class="telemetry-list">
           <div>
-            <span class="metric-title">Operator desk</span>
-            <span class="metric-copy">Live 24/7 on Discord</span>
+            <dt>Activation queue</dt>
+            <dd>Low latency routing</dd>
           </div>
-        </article>
-        <article class="metric-card">
-          <span class="icon icon-sm" data-lucide="zap"></span>
           <div>
-            <span class="metric-title">Key vending</span>
-            <span class="metric-copy">Stripe + crypto in seconds</span>
+            <dt>Status stream</dt>
+            <dd class="text-success">Continuously posted</dd>
           </div>
-        </article>
-        <article class="metric-card">
-          <span class="icon icon-sm" data-lucide="shield-check"></span>
           <div>
-            <span class="metric-title">Preset discipline</span>
-            <span class="metric-copy">Legit curves only</span>
+            <dt>Loader profile</dt>
+            <dd>Read-only external mode</dd>
           </div>
-        </article>
+          <div>
+            <dt>Support model</dt>
+            <dd>Ticketed Discord desk</dd>
+          </div>
+        </dl>
+        <div class="hero-waveform" aria-hidden="true">
+          <span class="wave wave-a"></span>
+          <span class="wave wave-b"></span>
+          <span class="wave wave-c"></span>
+        </div>
+        <div class="trust-ticker" role="status">
+          <span>Payment receipts issued instantly</span>
+          <span>Support threads triaged by humans</span>
+          <span>Status updates posted before relaunches</span>
+        </div>
       </div>
+    </div>
+  </div>
+  <a href="#pricing" class="scroll-cue" aria-label="Scroll to pricing">
+    <span class="icon" data-lucide="arrow-down"></span>
+    Scroll
+  </a>
+</section>
 
-      <a href="#pricing" class="scroll-cue" aria-label="Scroll to pricing">
-        <span class="icon" data-lucide="arrow-down"></span>
-        Scroll
-      </a>
+<section class="mission-timeline">
+  <div class="container">
+    <div class="page-header reveal">
+      <span class="section-eyebrow">Conversion Path</span>
+      <h2 class="t-h1">A cleaner purchase journey from click to cockpit</h2>
+      <p class="text-muted">We sell confidence through predictable steps: clear pricing, secure checkout, immediate delivery, and visible support.</p>
+    </div>
+    <div class="timeline-grid reveal">
+      <article class="timeline-node">
+        <span class="timeline-index">01</span>
+        <div class="timeline-body">
+          <h3>Pick a duration</h3>
+          <p>Choose day, week, or month. Core toolkit stays identical so decision load stays low.</p>
+          <div class="timeline-tags">
+            <span class="tag">Day</span>
+            <span class="tag">Week</span>
+            <span class="tag">Month</span>
+          </div>
+        </div>
+      </article>
+      <article class="timeline-node">
+        <span class="timeline-index">02</span>
+        <div class="timeline-body">
+          <h3>Complete payment</h3>
+          <p>Stripe card flow or crypto settlement with immediate confirmation and receipt trace.</p>
+          <div class="timeline-tags">
+            <span class="tag">Stripe</span>
+            <span class="tag">Crypto</span>
+          </div>
+        </div>
+      </article>
+      <article class="timeline-node">
+        <span class="timeline-index">03</span>
+        <div class="timeline-body">
+          <h3>Provisioning</h3>
+          <p>License mapping and account routing happen right after payment, with ops desk fallback if needed.</p>
+          <div class="timeline-tags">
+            <span class="tag">HWID lock</span>
+            <span class="tag">Discord verify</span>
+          </div>
+        </div>
+      </article>
+      <article class="timeline-node">
+        <span class="timeline-index">04</span>
+        <div class="timeline-body">
+          <h3>Operate with support</h3>
+          <p>Dashboard access, setup flow, and support channels are available from first session.</p>
+          <div class="timeline-tags">
+            <span class="tag">Legit ESP</span>
+            <span class="tag">Aim curves</span>
+            <span class="tag">Debug cam</span>
+          </div>
+        </div>
+      </article>
     </div>
   </div>
 </section>
 
-<section class="section">
+<section class="proof-section section-alt">
   <div class="container">
     <div class="page-header reveal">
-      <span class="section-eyebrow">Protocol</span>
-      <h2 class="t-h1">Boot in 3 steps</h2>
+      <span class="section-eyebrow">Proof Infrastructure</span>
+      <h2 class="t-h1">Why this storefront converts like a premium product</h2>
+      <p class="text-muted">The design is intentionally backed by credibility rails: transparent operations, documented updates, and direct human support.</p>
     </div>
-    <div class="steps-grid reveal">
-      <div class="step-card">
-        <div class="step-num">1</div>
-        <h3>Select duration</h3>
-        <p>Choose a day, week, or month. Same toolkit every tier.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">2</div>
-        <h3>Stripe checkout</h3>
-        <p>Encrypted Stripe billing with 3DS and instant confirmation.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">3</div>
-        <h3>Instant key</h3>
-        <p>Key drops in seconds with launcher link + Discord ping.</p>
-      </div>
+    <div class="proof-grid reveal">
+      <article class="proof-card">
+        <span class="icon" data-lucide="shield-check"></span>
+        <h3>Trust before pressure</h3>
+        <p>Security, delivery, and support are explained before purchase CTAs so buyers feel informed instead of rushed.</p>
+      </article>
+      <article class="proof-card">
+        <span class="icon" data-lucide="message-square-heart"></span>
+        <h3>Support as product</h3>
+        <p>The Discord desk is positioned as operational continuity, not just marketing garnish.</p>
+      </article>
+      <article class="proof-card">
+        <span class="icon" data-lucide="activity"></span>
+        <h3>Status-led confidence</h3>
+        <p>Live status signaling and maintenance communication reduce uncertainty at checkout.</p>
+      </article>
+      <article class="proof-card">
+        <span class="icon" data-lucide="layout-panel-top"></span>
+        <h3>Friction-light funnel</h3>
+        <p>Tier selection, checkout handoff, and key retrieval are compact and visually consistent across pages.</p>
+      </article>
     </div>
   </div>
 </section>
@@ -147,9 +194,9 @@
 <section id="pricing" class="section section-alt" style="scroll-margin-top:5rem;">
   <div class="container">
     <div class="page-header reveal">
-      <span class="section-eyebrow">Rust External · BEAZT Stack</span>
-      <h2 class="t-h1">Choose your access plan</h2>
-      <p class="text-muted">Human aim curves, ESP overlays, debug cam, and status pings. Duration is the only switch.</p>
+      <span class="section-eyebrow">Pricing Architecture</span>
+      <h2 class="t-h1">Choose access by time, not by feature lock</h2>
+      <p class="text-muted">Every plan includes the same toolkit. Only duration changes, which keeps comparisons simple and increases buying confidence.</p>
     </div>
 
     {% include "partials/pricing_matrix.html" %}
@@ -162,62 +209,149 @@
   </div>
 </section>
 
-<section class="section feature-section">
+<section class="ops-grid-section" id="stack">
   <div class="container">
-    <div class="feature-head reveal">
-      <span class="section-eyebrow">System briefing</span>
-      <h2 class="t-h1">What you actually get</h2>
-      <p class="text-muted">Every license includes the exact same toolkit. Pick a duration, boot, and you’re live.</p>
+    <div class="page-header reveal">
+      <span class="section-eyebrow">Product Surface</span>
+      <h2 class="t-h1">What buyers actually get after activation</h2>
+      <p class="text-muted">Feature depth, delivery safety, and support readiness are presented as one connected product experience.</p>
     </div>
 
-    <div class="feature-showcase reveal">
-      <article class="feature-story">
-        <div class="story-icon"><span class="icon" data-lucide="cpu"></span></div>
-        <div class="story-body">
+    <div class="ops-grid reveal">
+      <article class="ops-card">
+        <div class="ops-icon"><span class="icon" data-lucide="cpu"></span></div>
+        <div>
           <h3>Stealth loader</h3>
-          <p>External architecture with encrypted boot and zero injection.</p>
-          <div class="story-tags">
-            <span class="chip">Read-only</span>
-            <span class="chip">Kernel safe</span>
+          <p>Read-only external shell with encrypted boot and no injection surface.</p>
+          <div class="ops-tags">
+            <span>Kernel safe</span>
+            <span>Zero writes</span>
           </div>
         </div>
       </article>
 
-      <article class="feature-story">
-        <div class="story-icon"><span class="icon" data-lucide="radar"></span></div>
-        <div class="story-body">
+      <article class="ops-card">
+        <div class="ops-icon"><span class="icon" data-lucide="radar"></span></div>
+        <div>
           <h3>Visual intel</h3>
-          <p>Legit ESP layers, streamer cloak, and per-monitor storage.</p>
-          <div class="story-tags">
-            <span class="chip">Cloaked ESP</span>
-            <span class="chip">Per monitor</span>
+          <p>Layered ESP filters, streamer cloak, and per-monitor profiles.</p>
+          <div class="ops-tags">
+            <span>Cloaked ESP</span>
+            <span>Per monitor</span>
           </div>
         </div>
       </article>
 
-      <article class="feature-story">
-        <div class="story-icon"><span class="icon" data-lucide="zap"></span></div>
-        <div class="story-body">
-          <h3>Aim curves</h3>
-          <p>Velocity-aware smoothing with cloud configs and instant swaps.</p>
-          <div class="story-tags">
-            <span class="chip">Cloud presets</span>
-            <span class="chip">Instant swap</span>
+      <article class="ops-card">
+        <div class="ops-icon"><span class="icon" data-lucide="target"></span></div>
+        <div>
+          <h3>Aim assistance</h3>
+          <p>Velocity-aware curves with cloud configs and instant hotkeys.</p>
+          <div class="ops-tags">
+            <span>Cloud presets</span>
+            <span>Human curves</span>
           </div>
         </div>
       </article>
 
-      <article class="feature-story">
-        <div class="story-icon"><span class="icon" data-lucide="shield"></span></div>
-        <div class="story-body">
+      <article class="ops-card">
+        <div class="ops-icon"><span class="icon" data-lucide="camera"></span></div>
+        <div>
+          <h3>Debug camera</h3>
+          <p>Cinematic cam, radar, compass, and distance tools under 3% CPU.</p>
+          <div class="ops-tags">
+            <span>Range culling</span>
+            <span>Night mode</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ops-card">
+        <div class="ops-icon"><span class="icon" data-lucide="credit-card"></span></div>
+        <div>
+          <h3>Safety & delivery</h3>
+          <p>Stripe + crypto vending, instant receipts, and auto-refresh keys.</p>
+          <div class="ops-tags">
+            <span>Stripe pay</span>
+            <span>Auto refresh</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="ops-card">
+        <div class="ops-icon"><span class="icon" data-lucide="headset"></span></div>
+        <div>
           <h3>Ops support</h3>
-          <p>24/7 operator desk for setup, HWID resets, and live status.</p>
-          <div class="story-tags">
-            <span class="chip">Discord desk</span>
-            <span class="chip">Live status</span>
+          <p>Discord operator desk for setup, HWID resets, and live status pings.</p>
+          <div class="ops-tags">
+            <span>24/7 desk</span>
+            <span>HWID resets</span>
           </div>
         </div>
       </article>
+    </div>
+
+    <div class="ops-capabilities reveal">
+      <span>Legit ESP suite</span>
+      <span>Velocity aim curves</span>
+      <span>Player/resource overlays</span>
+      <span>Distance + visibility tools</span>
+      <span>Private build updates</span>
+      <span>Discord setup support</span>
+    </div>
+  </div>
+</section>
+
+<section class="positioning-section">
+  <div class="container">
+    <div class="page-header reveal">
+      <span class="section-eyebrow">Positioning</span>
+      <h2 class="t-h1">How BEAZT is positioned to outperform generic providers</h2>
+      <p class="text-muted">Most storefronts sell hype. This build sells reliability, operational clarity, and predictable delivery.</p>
+    </div>
+    <div class="positioning-grid reveal">
+      <article class="positioning-card">
+        <h3>Generic provider pattern</h3>
+        <ul>
+          <li>Flashy claims with thin evidence</li>
+          <li>Inconsistent support pathways</li>
+          <li>Confusing tier differences</li>
+          <li>Unclear update communication</li>
+        </ul>
+      </article>
+      <article class="positioning-card positioning-card--accent">
+        <h3>BEAZT premium pattern</h3>
+        <ul>
+          <li>Confidence-focused funnel language</li>
+          <li>Visible support and status rails</li>
+          <li>Unified feature model by duration</li>
+          <li>Clean post-purchase continuity</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="uptime-rail" aria-live="polite">
+  <div class="container uptime-inner">
+    <div class="uptime-metric">
+      <span class="uptime-label">Operational model</span>
+      <strong>Status-first communication</strong>
+    </div>
+    <div class="uptime-metric">
+      <span class="uptime-label">Support path</span>
+      <strong>Ticketed Discord workflow</strong>
+    </div>
+    <div class="uptime-metric">
+      <span class="uptime-label">Delivery</span>
+      <strong>Automated key routing</strong>
+    </div>
+    <div class="uptime-actions">
+      <a href="{{ config.DISCORD_INVITE }}" class="btn btn-ghost btn-compact" target="_blank" rel="noopener noreferrer">Join Discord</a>
+      <div class="payment-badges" aria-label="Payment options">
+        <span>Stripe</span>
+        <span>Crypto</span>
+      </div>
     </div>
   </div>
 </section>

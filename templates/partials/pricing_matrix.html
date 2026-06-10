@@ -12,10 +12,10 @@
 {% endif %}
 
 <div class="trust-badges reveal" style="margin-bottom:1.2rem">
-  <div class="trust-badge"><span class="icon icon-sm" data-lucide="shield-check"></span> Stripe verified</div>
-  <div class="trust-badge"><span class="icon icon-sm" data-lucide="lock"></span> SSL encrypted</div>
-  <div class="trust-badge"><span class="icon icon-sm" data-lucide="zap"></span> Instant delivery</div>
-  <div class="trust-badge"><span class="icon icon-sm" data-lucide="headset"></span> Discord desk</div>
+  <div class="trust-badge"><span class="icon icon-sm" data-lucide="shield-check"></span> Stripe-secured checkout</div>
+  <div class="trust-badge"><span class="icon icon-sm" data-lucide="file-check-2"></span> Receipt-backed orders</div>
+  <div class="trust-badge"><span class="icon icon-sm" data-lucide="zap"></span> Automated key fulfillment</div>
+  <div class="trust-badge"><span class="icon icon-sm" data-lucide="headset"></span> Human support desk</div>
 </div>
 
 <div class="pricing-region">
@@ -30,7 +30,7 @@
           {{ cheat_status }}
         </span>
         {% endif %}
-        <p class="plan-subtitle">Legit presets, ESP layers, and debug cam. Same toolkit across every tier.</p>
+        <p class="plan-subtitle">Premium legit stack with unified features across all tiers. Pick the duration that matches your usage rhythm.</p>
       </div>
 
       <div class="feature-panel reveal">
@@ -120,9 +120,9 @@
           <label class="pricing-card {{ 'is-recommended' if tier.duration_days == 30 else '' }} {{ plan_style }}" :class="{ 'is-selected': selected === '{{ tier.id }}' }" @click="window.location='{{ url_for('main.plan_detail', tier_id=tier.id) }}'">
             <input type="radio" name="tier_id" value="{{ tier.id }}" class="sr-only" x-model="selected" data-label="{{ tier.label }}" data-price="{{ '%.0f'|format(tier.price_pounds) }}" {% if tier.id|string == ns.default_selected_id %}checked{% endif %}>
             {% if tier.duration_days == 30 %}
-              <span class="badge">Most Chosen</span>
+              <span class="badge">Best Value</span>
             {% elif savings_pct >= 40 %}
-              <span class="badge badge-save">Max Savings</span>
+              <span class="badge badge-save">Highest Savings</span>
             {% elif savings_pct > 0 %}
               <span class="badge badge-save">Save {{ savings_pct|round(0)|int }}%</span>
             {% endif %}
@@ -136,9 +136,9 @@
               {% endif %}
             </div>
             {% if savings_pct > 0 %}
-              <span class="plan-saving">You save {{ savings_pct|round(0)|int }}% vs daily access</span>
+              <span class="plan-saving">{{ savings_pct|round(0)|int }}% more efficient than daily access</span>
             {% else %}
-              <span class="plan-saving">Best for fast trial sessions</span>
+              <span class="plan-saving">Best for short evaluation sessions</span>
             {% endif %}
           </label>
         {% endfor %}
@@ -149,28 +149,28 @@
           <span class="icon icon-sm" data-lucide="layers"></span>
           <div>
             <h4>Unified toolkit</h4>
-            <p>Same features on every tier.</p>
+            <p>No feature gating between plans.</p>
           </div>
         </article>
         <article class="plan-highlight">
           <span class="icon icon-sm" data-lucide="clock-8"></span>
           <div>
             <h4>Duration only</h4>
-            <p>Pick time, not features.</p>
+            <p>Decision stays simple at checkout.</p>
           </div>
         </article>
         <article class="plan-highlight">
           <span class="icon icon-sm" data-lucide="shield"></span>
           <div>
             <h4>Legit presets</h4>
-            <p>No rage toggles or script bloat.</p>
+            <p>Tuned for controlled usage patterns.</p>
           </div>
         </article>
         <article class="plan-highlight">
           <span class="icon icon-sm" data-lucide="headset"></span>
           <div>
             <h4>Live operators</h4>
-            <p>Discord desk for setup + HWIDs.</p>
+            <p>Real support for setup and account continuity.</p>
           </div>
         </article>
       </div>
@@ -184,7 +184,7 @@
           {% if current_user.is_authenticated %}
             <button type="submit" class="btn btn-primary btn-lg btn-full" :disabled="!selected">
               <span class="icon" data-lucide="shopping-cart"></span>
-              Activate {{ product_features['label'] if product_features and product_features['label'] else product.name }}
+              Continue to Secure Checkout
             </button>
           {% else %}
             <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg btn-full">
@@ -193,11 +193,11 @@
             </a>
           {% endif %}
           <div class="cta-badges">
-            <span class="cta-badge"><span class="icon icon-sm" data-lucide="lock"></span>Stripe secured</span>
-            <span class="cta-badge"><span class="icon icon-sm" data-lucide="zap"></span>Instant key drop</span>
-            <span class="cta-badge"><span class="icon icon-sm" data-lucide="shield"></span>Legit presets</span>
+            <span class="cta-badge"><span class="icon icon-sm" data-lucide="lock"></span>Encrypted checkout handoff</span>
+            <span class="cta-badge"><span class="icon icon-sm" data-lucide="zap"></span>Fast key issuance</span>
+            <span class="cta-badge"><span class="icon icon-sm" data-lucide="shield"></span>Ops monitored delivery</span>
           </div>
-          <p class="risk-note"><span class="icon icon-sm" data-lucide="alert-triangle"></span>No tool can guarantee zero enforcement risk. Legit setup discipline and responsible use matter.</p>
+          <p class="risk-note"><span class="icon icon-sm" data-lucide="alert-triangle"></span>All software use includes enforcement risk. Discipline, moderation, and responsible setup remain essential.</p>
           <div class="trust-strip trust-strip-alt">
             <span class="trust-strip-item"><span class="icon icon-sm" data-lucide="credit-card"></span> Cards accepted</span>
             <span class="trust-strip-item"><span class="icon icon-sm" data-lucide="timer"></span> Activation in seconds</span>
