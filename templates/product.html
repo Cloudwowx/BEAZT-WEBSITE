@@ -114,18 +114,25 @@
         <span class="terminal-badge terminal-badge--cyan">INFO</span>
       </header>
       <ul class="terminal-list">
-        <li class="terminal-line">
-          <span class="terminal-prompt">#</span>
-          <span>Windows desktop with a stable Rust install</span>
-        </li>
-        <li class="terminal-line">
-          <span class="terminal-prompt">#</span>
-          <span>Fast onboarding with Discord walkthroughs</span>
-        </li>
-        <li class="terminal-line">
-          <span class="terminal-prompt">#</span>
-          <span>Ticketed help for setup, HWID, and maintenance</span>
-        </li>
+        {% if product.buyer_notes %}
+          {% for line in product.buyer_notes.splitlines() %}
+            {% if line.strip() %}
+            <li class="terminal-line">
+              <span class="terminal-prompt">#</span>
+              <span>{{ line.strip() }}</span>
+            </li>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <li class="terminal-line">
+            <span class="terminal-prompt">#</span>
+            <span>Fast onboarding with Discord walkthroughs</span>
+          </li>
+          <li class="terminal-line">
+            <span class="terminal-prompt">#</span>
+            <span>Ticketed help for setup, HWID, and maintenance</span>
+          </li>
+        {% endif %}
         <li class="terminal-line terminal-line--warn">
           <span class="terminal-prompt">!</span>
           <span>No product guarantees zero enforcement risk</span>

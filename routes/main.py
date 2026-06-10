@@ -42,10 +42,10 @@ def _get_product_features_from_db(product):
         items = [line.strip() for line in product.features_text.splitlines() if line.strip()]
     if not items:
         items = [
-            "Core external toolkit",
-            "Visualization modules",
-            "Update maintenance",
-            "Private support channel",
+            "Core external toolkit with visual overlays",
+            "Regular update maintenance included",
+            "Private Discord support channel",
+            "Configure features in Admin -> Tiers -> Product Content",
         ]
     return {
         "label": product.name if product else "Features",

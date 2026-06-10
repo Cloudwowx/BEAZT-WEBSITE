@@ -240,6 +240,8 @@ def export_products():
             "slug": p.slug,
             "description": p.description,
             "features_text": p.features_text,
+            "buyer_notes": p.buyer_notes,
+            "image_url": p.image_url,
             "key_source": p.key_source,
             "chairfbi_cheat_id": p.chairfbi_cheat_id,
             "is_private": p.is_private,
@@ -288,6 +290,8 @@ def import_products():
         product.name = entry.get("name", product.name or slug)
         product.description = entry.get("description") or None
         product.features_text = entry.get("features_text") or None
+        product.buyer_notes = entry.get("buyer_notes") or None
+        product.image_url = entry.get("image_url") or None
         product.key_source = entry.get("key_source", "chairfbi")
         product.chairfbi_cheat_id = entry.get("chairfbi_cheat_id") or None
         product.is_private = entry.get("is_private", True)
@@ -327,6 +331,7 @@ def product_tiers(product_id):
         product.chairfbi_cheat_id = cheat_id if cheat_id else None
         product.description = request.form.get("description", "").strip() or None
         product.features_text = request.form.get("features_text", "").strip() or None
+        product.buyer_notes = request.form.get("buyer_notes", "").strip() or None
         product.image_url = request.form.get("image_url", "").strip() or None
         db.session.commit()
         flash("Product settings updated.", "success")

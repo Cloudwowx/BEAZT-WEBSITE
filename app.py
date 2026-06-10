@@ -73,6 +73,13 @@ with app.app_context():
             _cursor.execute("ALTER TABLE products ADD COLUMN features_text TEXT")
             _conn.commit()
 
+        # Ensure products table has buyer_notes
+        _cursor.execute("PRAGMA table_info(products)")
+        _cols = [r[1] for r in _cursor.fetchall()]
+        if "buyer_notes" not in _cols:
+            _cursor.execute("ALTER TABLE products ADD COLUMN buyer_notes TEXT")
+            _conn.commit()
+
         # Ensure keys table has tier_id, assigned_at
         _cursor.execute("PRAGMA table_info(keys)")
         _key_cols = [r[1] for r in _cursor.fetchall()]

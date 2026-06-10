@@ -39,6 +39,7 @@ class Product(db.Model):
     chairfbi_cheat_id = db.Column(db.String(64), nullable=True)
     key_source = db.Column(db.String(16), default="chairfbi")
     features_text = db.Column(db.Text, nullable=True)
+    buyer_notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     tiers = db.relationship("PricingTier", backref="product", lazy="dynamic")
@@ -174,6 +175,21 @@ def seed_products():
                 "Premium external performance suite with privacy-mode overlay "
                 "and read-only architecture. Exclusive access with continuous "
                 "updates and community support."
+            ),
+            features_text=(
+                "Legit ESP suite with player and resource overlays\n"
+                "Debug camera with free-roam spectator mode\n"
+                "Distance and visibility tools with configurable ranges\n"
+                "Legit-focused aim presets with natural curves\n"
+                "Stream-safe privacy-mode overlay\n"
+                "Private build with anti-detection updates\n"
+                "Priority Discord setup support"
+            ),
+            buyer_notes=(
+                "Windows 10/11 with a stable Rust install required\n"
+                "Fast onboarding with Discord walkthrough guide\n"
+                "Ticketed help for setup, HWID reset, and maintenance\n"
+                "Loader download available in My Keys dashboard"
             ),
             image_url="/static/icons/rust_placeholder.jpg",
             is_private=True,
