@@ -12,7 +12,7 @@
 
     {% if private_products %}
     <div class="section-header reveal" style="margin-bottom:1.2rem;">
-      <span class="section-eyebrow" style="color:var(--accent-l)">BeaZt</span>
+      <span class="section-eyebrow" style="color:var(--accent-h)">BeaZt</span>
       <h2 class="t-h2">Private Cheats</h2>
     </div>
     <div class="cheats-grid cheats-grid--private reveal" style="margin-bottom:2.5rem;">
@@ -24,7 +24,7 @@
           </div>
           <div class="cheat-card-top">
             <span class="cheat-card-status {{ 'status-online' if status == 'online' else 'status-offline' if status == 'offline' else 'status-unknown' }}"></span>
-            <span class="cheat-source-badge cheat-source-badge--gold">BeaZt Private</span>
+            <span class="cheat-source-badge cheat-source-badge--private">BeaZt Private</span>
           </div>
           <h3 class="cheat-card-name">{{ p.name }}</h3>
           {% set tiers = product_tiers.get(p.id, []) %}

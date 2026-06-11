@@ -38,7 +38,7 @@
           Systems Online
         </span>
         <nav class="nav-links" aria-label="Main navigation">
-          <a href="{{ url_for('main.index') }}#pricing" class="nav-link {{ 'is-active' if request.endpoint == 'main.index' else '' }}">Plans</a>
+          <a href="{{ url_for('main.cheats') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.cheats' else '' }}">Cheats</a>
           <a href="{{ url_for('main.cheats') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.cheats' else '' }}">Cheats</a>
           <a href="{{ url_for('main.feedback') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.feedback' else '' }}">Proof</a>
           <a href="{{ url_for('main.faq') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.faq' else '' }}">FAQ</a>
@@ -61,7 +61,7 @@
         </button>
       </div>
       <div class="mobile-menu" :class="{ 'is-open': mobileOpen }" x-cloak>
-        <a href="{{ url_for('main.index') }}#pricing" class="nav-link {{ 'is-active' if request.endpoint == 'main.index' else '' }}" @click="mobileOpen = false">Plans</a>
+        <a href="{{ url_for('main.cheats') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.cheats' else '' }}" @click="mobileOpen = false">Cheats</a>
         <a href="{{ url_for('main.cheats') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.cheats' else '' }}" @click="mobileOpen = false">Cheats</a>
         <a href="{{ url_for('main.feedback') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.feedback' else '' }}" @click="mobileOpen = false">Proof</a>
         <a href="{{ url_for('main.faq') }}" class="nav-link {{ 'is-active' if request.endpoint == 'main.faq' else '' }}" @click="mobileOpen = false">FAQ</a>

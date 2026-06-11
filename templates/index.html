@@ -12,7 +12,7 @@
     <h1 class="hero-brand">BEAZT</h1>
     <p class="hero-line">Private access. Live delivery.</p>
     <div class="hero-main-actions">
-      <a href="#pricing" class="btn btn-primary btn-lg">
+      <a href="{{ url_for('main.cheats') }}" class="btn btn-primary btn-lg">
         <span class="icon" data-lucide="zap"></span>
         Get Access
       </a>
@@ -24,38 +24,11 @@
   </div>
 </section>
 
-<section class="stack-strip section">
-  <div class="container">
-    <div class="stack-grid reveal">
-      <article class="stack-item stack-item--blue">
-        <span class="icon" data-lucide="cpu"></span>
-        <h3>Private Loader</h3>
-        <p>External and read-only</p>
-      </article>
-      <article class="stack-item stack-item--cyan">
-        <span class="icon" data-lucide="radar"></span>
-        <h3>Visual Layer</h3>
-        <p>Clean, stream-safe overlay</p>
-      </article>
-      <article class="stack-item stack-item--violet">
-        <span class="icon" data-lucide="target"></span>
-        <h3>Legit Curves</h3>
-        <p>Natural tuning profiles</p>
-      </article>
-      <article class="stack-item stack-item--emerald">
-        <span class="icon" data-lucide="headset"></span>
-        <h3>Live Desk</h3>
-        <p>Operator help, day and night</p>
-      </article>
-    </div>
-  </div>
-</section>
-
 {% if private_products %}
 <section class="section" style="padding-bottom:0.5rem;">
   <div class="container">
     <div class="section-header reveal" style="text-align:center;margin-bottom:1.5rem;">
-      <span class="section-eyebrow" style="color:var(--accent-l)">BeaZt</span>
+      <span class="section-eyebrow" style="color:var(--accent-h)">BeaZt</span>
       <h2 class="t-h2">Private Cheats</h2>
       <p style="color:var(--text-dim);font-size:0.82rem;">Externally hosted, private builds. Key pool operated by BeaZt.</p>
     </div>
@@ -67,7 +40,7 @@
           </div>
           <div class="cheat-card-top">
             <span class="cheat-card-status {{ 'status-online' if cheat_statuses_home.get(p.id, '') == 'online' else 'status-offline' if cheat_statuses_home.get(p.id, '') == 'offline' else 'status-unknown' }}"></span>
-            <span class="cheat-source-badge cheat-source-badge--gold">BeaZt Private</span>
+            <span class="cheat-source-badge cheat-source-badge--private">BeaZt Private</span>
           </div>
           <h3 class="cheat-card-name">{{ p.name }}</h3>
           {% if p.tiers.count() > 0 %}
@@ -116,12 +89,6 @@
 </section>
 {% endif %}
 
-<section id="pricing" class="pricing-section-page section" style="scroll-margin-top:5rem;">
-  <div class="container">
-    {% include "partials/pricing_matrix.html" %}
-  </div>
-</section>
-
 <section class="trust-inline section-alt">
   <div class="container trust-inline-inner reveal">
     <span>2,400+ fulfilled orders</span>
@@ -133,9 +100,9 @@
 
 <section class="section final-strip">
   <div class="container final-strip-inner reveal">
-    <a href="#pricing" class="btn btn-primary btn-lg">
+    <a href="{{ url_for('main.cheats') }}" class="btn btn-primary btn-lg">
       <span class="icon" data-lucide="zap"></span>
-      Get Access
+      Browse Cheats
     </a>
     <a href="{{ config.DISCORD_INVITE }}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-lg">
       <span class="icon" data-lucide="message-circle"></span>

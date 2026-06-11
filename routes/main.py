@@ -65,9 +65,9 @@ def cheat_image(slug):
 
     from PIL import Image, ImageDraw, ImageFont
 
-    is_private = product.key_source == "pool"
-    accent = (196, 162, 106) if is_private else (96, 147, 255)
-    accent_dark = (140, 110, 60) if is_private else (50, 90, 180)
+    is_private = product.visibility == "private"
+    accent = (59, 130, 246) if is_private else (212, 212, 216)
+    accent_dark = (30, 80, 170) if is_private else (100, 100, 110)
 
     width, height = 600, 340
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
@@ -192,8 +192,8 @@ def _get_product_gallery(slug, fallback_image=None):
 def index():
     product = Product.query.filter_by(slug="rust-external-private").first()
     all_products = Product.query.order_by(Product.created_at.asc()).all()
-    private_products = [p for p in all_products if p.key_source == "pool"]
-    resold_products = [p for p in all_products if p.key_source != "pool"]
+    private_products = [p for p in all_products if p.visibility == "private"]
+    resold_products = [p for p in all_products if p.visibility != "private"]
     cheat_statuses_home = {}
     for p in all_products:
         cheat_statuses_home[p.id] = _get_chairfbi_cheat_status(p)

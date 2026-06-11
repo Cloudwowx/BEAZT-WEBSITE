@@ -192,6 +192,9 @@ def create_product():
         return redirect(url_for("admin.products"))
     if key_source == "pool":
         chairfbi_cheat_id = None
+    visibility_val = request.form.get("visibility", "public").strip()
+    if visibility_val not in ("private", "public"):
+        visibility_val = "public"
 
     product = Product(
         name=name,
@@ -201,6 +204,7 @@ def create_product():
         is_private=True,
         key_source=key_source,
         chairfbi_cheat_id=chairfbi_cheat_id or None,
+        visibility=visibility_val,
     )
     db.session.add(product)
     db.session.commit()
@@ -244,6 +248,7 @@ def export_products():
             "buyer_notes": p.buyer_notes,
             "image_url": p.image_url,
             "key_source": p.key_source,
+            "visibility": p.visibility,
             "chairfbi_cheat_id": p.chairfbi_cheat_id,
             "is_private": p.is_private,
             "tiers": tiers,
@@ -294,6 +299,7 @@ def import_products():
         product.buyer_notes = entry.get("buyer_notes") or None
         product.image_url = entry.get("image_url") or None
         product.key_source = entry.get("key_source", "chairfbi")
+        product.visibility = entry.get("visibility", "public")
         product.chairfbi_cheat_id = entry.get("chairfbi_cheat_id") or None
         product.is_private = entry.get("is_private", True)
         db.session.flush()
@@ -330,6 +336,9 @@ def product_tiers(product_id):
                 product.chairfbi_cheat_id = None
                 cheat_id = None
         product.chairfbi_cheat_id = cheat_id if cheat_id else None
+        visibility_val = request.form.get("visibility", "").strip()
+        if visibility_val in ("private", "public"):
+            product.visibility = visibility_val
         product.description = request.form.get("description", "").strip() or None
         product.features_text = request.form.get("features_text", "").strip() or None
         product.buyer_notes = request.form.get("buyer_notes", "").strip() or None

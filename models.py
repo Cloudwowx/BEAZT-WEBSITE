@@ -38,6 +38,7 @@ class Product(db.Model):
     is_private = db.Column(db.Boolean, default=True)
     chairfbi_cheat_id = db.Column(db.String(64), nullable=True)
     key_source = db.Column(db.String(16), default="chairfbi")
+    visibility = db.Column(db.String(16), default="public")
     features_text = db.Column(db.Text, nullable=True)
     buyer_notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -194,6 +195,7 @@ def seed_products():
             image_url="/static/icons/rust_placeholder.jpg",
             is_private=True,
             key_source="pool",
+            visibility="private",
         )
         db.session.add(product)
         db.session.flush()

@@ -80,6 +80,15 @@ with app.app_context():
             _cursor.execute("ALTER TABLE products ADD COLUMN buyer_notes TEXT")
             _conn.commit()
 
+        # Ensure products table has visibility
+        _cursor.execute("PRAGMA table_info(products)")
+        _cols = [r[1] for r in _cursor.fetchall()]
+        if "visibility" not in _cols:
+            _cursor.execute("ALTER TABLE products ADD COLUMN visibility VARCHAR(16) DEFAULT 'public'")
+            _conn.commit()
+            _cursor.execute("UPDATE products SET visibility='private' WHERE key_source='pool'")
+            _conn.commit()
+
         # Ensure keys table has tier_id, assigned_at
         _cursor.execute("PRAGMA table_info(keys)")
         _key_cols = [r[1] for r in _cursor.fetchall()]

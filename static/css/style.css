@@ -1991,37 +1991,38 @@ textarea::placeholder {
 }
 .cheat-card {
   display: flex; flex-direction: column;
-  border: 1px solid rgba(116, 168, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(9,14,35,0.88), rgba(7,11,27,0.94));
+  background: linear-gradient(180deg, rgba(15,15,18,0.94), rgba(8,8,10,0.97));
   padding: 1.2rem 1.3rem;
   text-decoration: none;
   color: var(--text);
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
   position: relative;
 }
 .cheat-card:hover {
-  border-color: rgba(116, 168, 255, 0.45);
-  box-shadow: 0 0 30px rgba(59, 130, 246, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.03), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  transform: translateY(-2px);
 }
 .cheat-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem; }
 .cheat-card-status { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
 .cheat-card-status.status-online { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.5); }
 .cheat-card-status.status-offline { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.4); }
-.cheat-card-status.status-unknown { background: #6b7280; }
+.cheat-card-status.status-unknown { background: #52525b; }
 .cheat-source-badge {
   font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;
   padding:0.1rem 0.5rem; border-radius:50px;
-  background:rgba(196,162,106,0.15); color:var(--accent-l); border:1px solid rgba(196,162,106,0.3);
+  background:rgba(255,255,255,0.04); color:var(--text-dim); border:1px solid rgba(255,255,255,0.08);
 }
-.cheat-card-name { font-size:1.05rem; font-weight:700; margin-bottom:0.6rem; }
+.cheat-card-name { font-size:1.05rem; font-weight:700; margin-bottom:0.6rem; color: #f4f4f5; }
 .cheat-card-pricing { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.5rem; }
 .cheat-card-tier {
   font-size:0.75rem; padding:0.15rem 0.55rem; border-radius:8px;
-  background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.18);
-  color:var(--accent-l); font-family:var(--mono);
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  color:var(--text-dim); font-family:var(--mono);
 }
-.cheat-card-days { font-size:0.62rem; color:var(--text-dim); }
+.cheat-card-days { font-size:0.62rem; color:var(--text-muted); }
 .cheat-card-noprice { color:var(--text-muted); font-size:0.78rem; font-style:italic; }
 .cheat-card-arrow { position:absolute; bottom:1rem; right:1.2rem; color:var(--text-dim); font-size:1.1rem; opacity:0; transition:opacity var(--transition); }
 .cheat-card:hover .cheat-card-arrow { opacity:1; }
@@ -2031,8 +2032,8 @@ textarea::placeholder {
   overflow: hidden;
   margin-bottom: 0.8rem;
   aspect-ratio: 16/9;
-  background: linear-gradient(135deg, #090e23, #050918);
-  border: 1px solid rgba(116,168,255,0.1);
+  background: #0a0a0d;
+  border: 1px solid rgba(255,255,255,0.04);
 }
 .cheat-card-banner img {
   width: 100%;
@@ -2042,21 +2043,23 @@ textarea::placeholder {
 }
 
 .cheat-card--private {
-  border-color: rgba(196, 162, 106, 0.28);
-  background: linear-gradient(180deg, rgba(20, 17, 10, 0.88), rgba(12, 10, 6, 0.94));
+  border-color: rgba(59, 130, 246, 0.2);
+  background: linear-gradient(180deg, rgba(10,12,22,0.96), rgba(6,8,14,0.98));
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.04), inset 0 0 0 1px rgba(59, 130, 246, 0.03);
 }
 .cheat-card--private:hover {
-  border-color: rgba(196, 162, 106, 0.55);
-  box-shadow: 0 0 30px rgba(196, 162, 106, 0.1);
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.12), 0 0 0 1px rgba(59, 130, 246, 0.06) inset;
+  transform: translateY(-2px);
 }
 .cheat-card--private .cheat-card-banner {
-  border-color: rgba(196, 162, 106, 0.15);
+  border-color: rgba(59, 130, 246, 0.12);
 }
 
-.cheat-source-badge--gold {
-  background: rgba(196, 162, 106, 0.18);
-  color: #e2c97e;
-  border-color: rgba(196, 162, 106, 0.35);
+.cheat-source-badge--private {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-l);
+  border-color: rgba(59, 130, 246, 0.25);
 }
 
 /* ── Product Detail ────────────────────────────── */
@@ -2087,10 +2090,10 @@ textarea::placeholder {
   margin-top: 1rem;
 }
 .spec {
-  border: 1px solid rgba(116,168,255,0.14);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 12px;
   padding: 0.7rem 0.9rem;
-  background: rgba(9,14,35,0.5);
+  background: rgba(15,15,18,0.6);
 }
 .spec-label {
   display: block;
@@ -2122,9 +2125,9 @@ textarea::placeholder {
 
 /* ── Purchase Panel (sticky) ───────────────── */
 .purchase-panel {
-  border: 1px solid rgba(116,168,255,0.2);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(9,14,35,0.94), rgba(7,11,27,0.96));
+  background: linear-gradient(180deg, rgba(15,15,18,0.96), rgba(8,8,10,0.98));
   padding: 1.5rem;
   position: sticky; top: 5rem;
 }
@@ -2133,7 +2136,7 @@ textarea::placeholder {
   color: var(--text-muted); margin-bottom: 0.3rem;
 }
 .purchase-title {
-  font: 700 1.3rem/1.2 var(--display);
+  font: 700 1.3rem/1.2 var(--display); color: #f4f4f5;
   margin-bottom: 0.8rem;
 }
 .price-row { margin-bottom: 0.6rem; }
@@ -2161,18 +2164,18 @@ textarea::placeholder {
 }
 .variant-card {
   display: flex; flex-direction: column; gap: 0.15rem;
-  border: 1px solid rgba(116,168,255,0.18);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 12px;
   padding: 0.6rem 0.75rem;
-  background: rgba(9,14,35,0.6);
+  background: rgba(15,15,18,0.5);
   cursor: pointer;
   transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
 }
-.variant-card:hover { border-color: rgba(116,168,255,0.35); }
+.variant-card:hover { border-color: rgba(255,255,255,0.16); }
 .variant-card.is-active {
   border-color: var(--accent-h);
-  background: rgba(59,130,246,0.12);
-  box-shadow: 0 0 16px rgba(59,130,246,0.12);
+  background: rgba(59,130,246,0.1);
+  box-shadow: 0 0 16px rgba(59,130,246,0.08);
 }
 .variant-card input[type="radio"] { display: none; }
 .v-name { font-size: 0.82rem; font-weight: 600; }
@@ -2181,7 +2184,7 @@ textarea::placeholder {
 /* ── Tabs ───────────────────────────────────── */
 .tabs {
   display: flex; gap: 0.3rem;
-  border-bottom: 1px solid rgba(116,168,255,0.14);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   margin-bottom: 1.5rem;
 }
 .tab {
@@ -2203,9 +2206,9 @@ textarea::placeholder {
 
 /* ── Detailed Feature ───────────────────────── */
 .detailed-feature {
-  border: 1px solid rgba(116,168,255,0.12);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 16px;
-  background: rgba(9,14,35,0.45);
+  background: rgba(15,15,18,0.45);
   padding: 1.3rem;
   margin-bottom: 1rem;
 }
@@ -2225,8 +2228,8 @@ textarea::placeholder {
   font-size: 0.76rem;
   padding: 0.15rem 0.55rem;
   border-radius: 6px;
-  background: rgba(59,130,246,0.06);
-  border: 1px solid rgba(59,130,246,0.1);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
   color: var(--text-soft);
 }
 
@@ -2234,7 +2237,7 @@ textarea::placeholder {
 .trust-row {
   display: flex; gap: 0.6rem;
   margin-top: 1rem; padding-top: 1rem;
-  border-top: 1px solid rgba(116,168,255,0.1);
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 .trust-item {
   flex: 1; display: flex; align-items: center; gap: 0.4rem;
@@ -2244,9 +2247,9 @@ textarea::placeholder {
 .trust-item .icon { width: 18px; height: 18px; color: var(--accent-l); flex-shrink: 0; }
 
 .card {
-  border: 1px solid rgba(116,168,255,0.14);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 16px;
-  background: rgba(9,14,35,0.5);
+  background: rgba(15,15,18,0.5);
   padding: 1.2rem;
 }
 .t-body { font-size: 0.9rem; line-height: 1.7; color: var(--text-soft); }

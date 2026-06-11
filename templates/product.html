@@ -24,7 +24,7 @@
        }
      }">
   <div class="page-header">
-    <span class="section-eyebrow">{{ 'BEAZT' if product.key_source == 'pool' else 'Catalogue' }}</span>
+    <span class="section-eyebrow">{{ 'BEAZT' if product.visibility == 'private' else 'Catalogue' }}</span>
     <h1 class="t-h1">{{ product.name }}</h1>
     {% if product.description %}<p class="text-muted">{{ product.description }}</p>{% endif %}
   </div>
@@ -56,7 +56,7 @@
         </div>
         <div class="spec">
           <span class="spec-label">Type</span>
-          <span class="spec-value"><span class="pill">{{ 'Private' if product.key_source == 'pool' else 'License' }}</span></span>
+           <span class="spec-value"><span class="pill">{{ 'Private' if product.visibility == 'private' else 'License' }}</span></span>
         </div>
         <div class="spec">
           <span class="spec-label">Support</span>
@@ -67,7 +67,7 @@
 
     <!-- Right column: sticky purchase panel -->
     <aside class="purchase-panel">
-      <div class="purchase-game">{{ 'BEAZT' if product.key_source == 'pool' else 'Catalogue' }}</div>
+      <div class="purchase-game">{{ 'BEAZT' if product.visibility == 'private' else 'Catalogue' }}</div>
       <h2 class="purchase-title">{{ product.name }}</h2>
 
       <div class="price-row">
@@ -133,9 +133,9 @@
       <div class="feature-text">
         <h3>{{ product.name }} Features</h3>
         <p>Everything included with your license.</p>
-        {% if product_features.items %}
+        {% if product_features and product_features['items'] %}
         <ul class="feature-list">
-          {% for item in product_features.items %}
+          {% for item in product_features['items'] %}
           <li>{{ item }}</li>
           {% endfor %}
         </ul>
