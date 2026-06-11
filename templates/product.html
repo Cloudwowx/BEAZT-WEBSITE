@@ -2,145 +2,171 @@
 {% block title %}{{ product.name }} | BEAZT{% endblock %}
 
 {% block content %}
-<section class="section product-detail-page">
-  <div class="container">
-    <div class="product-detail-grid reveal">
-      <article class="product-gallery-shell">
-        <div class="product-main-media">
-          <img
-            id="product-main-image"
-            src="{{ gallery_images[0] if gallery_images else url_for('main.cheat_image', slug=product.slug) }}"
-            alt="{{ product.name }} preview"
-          >
-        </div>
+<div class="container section product-detail-page"
+     x-data="{
+       selectedVariantId: {{ selected_tier.id if selected_tier else 0 }},
+       variants: {{ variants | tojson }},
+       activeTab: 'description',
+       get currentVariant() {
+         return this.variants.find(v => v.id === this.selectedVariantId) || this.variants[0] || null;
+       },
+       get currentPrice() {
+         return this.currentVariant ? this.currentVariant.price_pounds : 0;
+       },
+       get buyLabel() {
+         {% if not current_user.is_authenticated %}return 'Sign in to Buy';
+         {% elif cheat_status != 'online' and product.key_source != 'pool' %}return 'Unavailable';
+         {% else %}return 'Buy ' + (this.currentVariant ? this.currentVariant.label + ' Plan' : 'Now');
+         {% endif %}
+       },
+       get canBuy() {
+         return {{ 'true' if current_user.is_authenticated else 'false' }};
+       }
+     }">
+  <div class="page-header">
+    <span class="section-eyebrow">{{ 'BEAZT' if product.key_source == 'pool' else 'Catalogue' }}</span>
+    <h1 class="t-h1">{{ product.name }}</h1>
+    {% if product.description %}<p class="text-muted">{{ product.description }}</p>{% endif %}
+  </div>
 
-        <div class="product-thumb-grid">
-          {% if gallery_images %}
-            {% for image in gallery_images %}
-              <button
-                type="button"
-                class="product-thumb {{ 'is-active' if loop.first else '' }}"
-                data-full-image="{{ image }}"
-                aria-label="View screenshot {{ loop.index }}"
-              >
-                <img src="{{ image }}" alt="{{ product.name }} screenshot {{ loop.index }}">
-              </button>
-            {% endfor %}
-          {% else %}
-            <div class="product-gallery-empty">
-              <span class="icon" data-lucide="image"></span>
-              Preview gallery coming soon
-            </div>
-          {% endif %}
-        </div>
-      </article>
+  <div class="product-grid">
 
-      <article class="product-info-shell">
-        <p class="product-breadcrumb">
-          <a href="{{ url_for('main.index') }}">Home</a>
-          <span>/</span>
-          <a href="{{ url_for('main.index') }}#pricing">Plans</a>
-          <span>/</span>
-          <strong>{{ product.name }}</strong>
-        </p>
-
-        <h1 class="product-title">{{ product.name }}</h1>
-
-        <p class="product-lead">
-          {{ product.description if product.description else 'Private external toolkit with fast updates and operator-led Discord support.' }}
-        </p>
-
-        <div class="product-duration-pills" role="tablist" aria-label="Select package duration">
-          {% for tier in tiers %}
-            <a
-              href="{{ url_for('main.plan_detail', tier_id=tier.id) }}"
-              class="duration-pill {{ 'is-active' if selected_tier and selected_tier.id == tier.id else '' }}"
-              role="tab"
-              aria-selected="{{ 'true' if selected_tier and selected_tier.id == tier.id else 'false' }}"
-            >
-              {{ tier.label }}
-            </a>
-          {% endfor %}
-        </div>
-
-        {% if selected_tier %}
-          <div class="product-price-panel">
-            <span class="price-main">GBP {{ '%.0f'|format(selected_tier.price_pounds) }}</span>
-            <span class="price-sub">{{ '%.2f'|format(selected_tier.price_pounds / selected_tier.duration_days) }} per day</span>
-          </div>
-
-          {% if current_user.is_authenticated %}
-            <form method="POST" action="{{ url_for('checkout.create_session') }}" class="product-buy-form">
-              <input type="hidden" name="tier_id" value="{{ selected_tier.id }}">
-              <button type="submit" class="btn btn-primary btn-lg btn-full">
-                <span class="icon" data-lucide="shopping-cart"></span>
-                Buy {{ selected_tier.label }} Plan
-              </button>
-            </form>
-          {% else %}
-            <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg btn-full">
-              <span class="icon" data-lucide="user-plus"></span>
-              Create account to buy
-            </a>
-          {% endif %}
-        {% endif %}
-
-        <div class="product-trust-row">
-          <span class="stack-chip"><span class="icon icon-sm" data-lucide="lock"></span> Stripe secured</span>
-          <span class="stack-chip"><span class="icon icon-sm" data-lucide="timer"></span> Instant key delivery</span>
-          <span class="stack-chip"><span class="icon icon-sm" data-lucide="headset"></span> Live setup support</span>
-        </div>
-      </article>
-    </div>
-
-    <div class="terminal-panel reveal">
-      <header class="terminal-header">
-        <span class="terminal-title">INCLUDED_FEATURES</span>
-        <span class="terminal-badge">LIVE</span>
-      </header>
-      <ul class="terminal-list">
-        {% for feature in product_features['items'] %}
-          <li class="terminal-line">
-            <span class="terminal-prompt">&gt;</span>
-            <span>{{ feature }}</span>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <div class="terminal-panel terminal-panel--info reveal">
-      <header class="terminal-header">
-        <span class="terminal-title">BUYER_NOTES</span>
-        <span class="terminal-badge terminal-badge--cyan">INFO</span>
-      </header>
-      <ul class="terminal-list">
-        {% if product.buyer_notes %}
-          {% for line in product.buyer_notes.splitlines() %}
-            {% if line.strip() %}
-            <li class="terminal-line">
-              <span class="terminal-prompt">#</span>
-              <span>{{ line.strip() }}</span>
-            </li>
-            {% endif %}
-          {% endfor %}
+    <!-- Left column: gallery + specs -->
+    <div>
+      <div class="product-main-media">
+        {% if gallery_images %}
+        <img src="{{ gallery_images[0] }}" alt="{{ product.name }}" class="product-hero-img">
         {% else %}
-          <li class="terminal-line">
-            <span class="terminal-prompt">#</span>
-            <span>Fast onboarding with Discord walkthroughs</span>
-          </li>
-          <li class="terminal-line">
-            <span class="terminal-prompt">#</span>
-            <span>Ticketed help for setup, HWID, and maintenance</span>
-          </li>
+        <img src="{{ url_for('main.cheat_image', slug=product.slug) }}" alt="{{ product.name }}" class="product-hero-img">
         {% endif %}
-        <li class="terminal-line terminal-line--warn">
-          <span class="terminal-prompt">!</span>
-          <span>No product guarantees zero enforcement risk</span>
-        </li>
-      </ul>
+      </div>
+
+      <div class="specs-grid">
+        <div class="spec">
+          <span class="spec-label">Status</span>
+          <span class="spec-value">
+            <span class="pill {{ 'pill-success' if cheat_status == 'online' or product.key_source == 'pool' else 'pill-danger' }} pill-dot">
+              {{ 'Undetected' if cheat_status == 'online' or product.key_source == 'pool' else 'Offline' }}
+            </span>
+          </span>
+        </div>
+        <div class="spec">
+          <span class="spec-label">Delivery</span>
+          <span class="spec-value"><span class="pill pill-success">Instant</span></span>
+        </div>
+        <div class="spec">
+          <span class="spec-label">Type</span>
+          <span class="spec-value"><span class="pill">{{ 'Private' if product.key_source == 'pool' else 'License' }}</span></span>
+        </div>
+        <div class="spec">
+          <span class="spec-label">Support</span>
+          <span class="spec-value"><span class="pill pill-success">24/7</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column: sticky purchase panel -->
+    <aside class="purchase-panel">
+      <div class="purchase-game">{{ 'BEAZT' if product.key_source == 'pool' else 'Catalogue' }}</div>
+      <h2 class="purchase-title">{{ product.name }}</h2>
+
+      <div class="price-row">
+        <div class="price">&pound;<span x-text="currentPrice.toFixed(2)">{{ "%.2f"|format(selected_tier.price_pounds) if selected_tier else '0.00' }}</span></div>
+      </div>
+
+      <div class="status-row">
+        <span class="pill {{ 'pill-success' if cheat_status == 'online' or product.key_source == 'pool' else 'pill-danger' }} pill-dot">
+          {{ 'In Stock' if cheat_status == 'online' or product.key_source == 'pool' else 'Offline' }}
+        </span>
+        <span class="pill pill-success">Instant Delivery</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('checkout.create_session') }}" autocomplete="off">
+        <input type="hidden" name="tier_id" :value="selectedVariantId">
+
+        <div class="field">
+          <span class="field-label">Select Duration</span>
+          <div class="variant-grid">
+            {% for t in tiers %}
+            <label class="variant-card"
+                   :class="{ 'is-active': selectedVariantId === {{ t.id }} }">
+              <input type="radio" name="variant_picker" value="{{ t.id }}"
+                     x-model.number="selectedVariantId"
+                     x-ref="variant_{{ t.id }}">
+              <span class="v-name">{{ t.label }}</span>
+              <span class="v-price">&pound;{{ "%.2f"|format(t.price_pounds) }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg"
+                :disabled="!canBuy || buyLabel === 'Unavailable'">
+          <span class="icon" data-lucide="shopping-cart"></span>
+          <span x-text="buyLabel">Buy Now</span>
+        </button>
+      </form>
+
+      <div class="trust-row">
+        <div class="trust-item"><span class="icon" data-lucide="lock"></span><span>Secure<br>Checkout</span></div>
+        <div class="trust-item"><span class="icon" data-lucide="zap"></span><span>Instant<br>Delivery</span></div>
+        <div class="trust-item"><span class="icon" data-lucide="shield-check"></span><span>Protected<br>Purchase</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" :class="{ 'is-active': activeTab === 'description' }" @click="activeTab = 'description'">Description</button>
+    <button class="tab" role="tab" :class="{ 'is-active': activeTab === 'reviews' }" @click="activeTab = 'reviews'">Buyer Info</button>
+  </div>
+
+  <!-- Description tab -->
+  <div x-show="activeTab === 'description'" role="tabpanel">
+    {% if product.description %}
+    <div class="card" style="margin-bottom:1.5rem;">
+      <p class="t-body">{{ product.description }}</p>
+    </div>
+    {% endif %}
+
+    <div class="detailed-feature">
+      <div class="feature-text">
+        <h3>{{ product.name }} Features</h3>
+        <p>Everything included with your license.</p>
+        {% if product_features.items %}
+        <ul class="feature-list">
+          {% for item in product_features.items %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
     </div>
   </div>
-</section>
+
+  <!-- Buyer Info tab -->
+  <div x-show="activeTab === 'reviews'" role="tabpanel" x-cloak>
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.6rem;">Setup Instructions</h3>
+      {% if product.buyer_notes %}
+      <ul class="feature-list">
+        {% for line in product.buyer_notes.splitlines() %}
+        {% if line.strip() %}
+        <li>{{ line.strip() }}</li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted" style="font-size:0.84rem;">Join our Discord for setup walkthroughs and support. Details at <a href="{{ url_for('main.loader') }}" style="color:var(--accent-l);">Loader Guide</a>.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.6rem;">Important</h3>
+      <p class="text-muted" style="font-size:0.84rem;">No product guarantees zero enforcement risk. Use responsibly.</p>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -148,17 +174,12 @@
 <script>
   (function () {
     var mainImage = document.getElementById("product-main-image");
-    if (!mainImage) {
-      return;
-    }
-
+    if (!mainImage) return;
     var thumbs = document.querySelectorAll(".product-thumb");
     thumbs.forEach(function (thumb) {
       thumb.addEventListener("click", function () {
         var nextSrc = thumb.getAttribute("data-full-image");
-        if (!nextSrc) {
-          return;
-        }
+        if (!nextSrc) return;
         mainImage.src = nextSrc;
         thumbs.forEach(function (node) { node.classList.remove("is-active"); });
         thumb.classList.add("is-active");

@@ -48,7 +48,7 @@ def create_session():
                 "product_slug": tier.product.slug,
             },
             success_url=url_for("main.my_keys", _external=True),
-            cancel_url=url_for("main.plan_detail", tier_id=tier.id, _external=True),
+            cancel_url=url_for("main.product_detail", slug=tier.product.slug, _external=True),
         )
 
         order = Order(

@@ -1,7 +1,7 @@
 from pathlib import Path
 import io
 
-from flask import Blueprint, render_template, abort, current_app, Response
+from flask import Blueprint, render_template, abort, current_app, Response, redirect, request, url_for
 from flask_login import login_required, current_user
 from models import db, Product, Key, PricingTier
 from config import get_loader_config
@@ -236,16 +236,33 @@ def product_detail(slug):
     product = Product.query.filter_by(slug=slug).first()
     if not product:
         abort(404)
-    product_features = _get_product_features_from_db(product)
-    cheat_status = _get_chairfbi_cheat_status(product)
     tiers = (
         PricingTier.query
         .filter_by(product_id=product.id)
         .order_by(PricingTier.duration_days)
         .all()
     )
-    selected_tier = next((tier for tier in tiers if tier.duration_days == 30), tiers[0] if tiers else None)
+    preselected_id = request.args.get("tier_id", type=int)
+    selected_tier = None
+    if preselected_id:
+        selected_tier = next((t for t in tiers if t.id == preselected_id), None)
+    if not selected_tier:
+        selected_tier = next((t for t in tiers if t.duration_days == 30), tiers[0] if tiers else None)
+
+    product_features = _get_product_features_from_db(product)
+    cheat_status = _get_chairfbi_cheat_status(product)
     gallery_images = _get_product_gallery(product.slug, product.image_url)
+
+    variants = []
+    for t in tiers:
+        variants.append({
+            "id": t.id,
+            "label": t.label,
+            "duration_days": t.duration_days,
+            "price_pence": t.price_pence,
+            "price_pounds": t.price_pounds,
+        })
+
     return render_template(
         "product.html",
         product=product,
@@ -254,38 +271,19 @@ def product_detail(slug):
         gallery_images=gallery_images,
         product_features=product_features,
         cheat_status=cheat_status,
+        variants=variants,
     )
 
 
 @main_bp.route("/plan/<int:tier_id>")
 def plan_detail(tier_id):
-    selected_tier = db.session.get(PricingTier, tier_id)
-    if not selected_tier:
+    tier = db.session.get(PricingTier, tier_id)
+    if not tier:
         abort(404)
-
-    product = Product.query.filter_by(id=selected_tier.product_id).first()
+    product = Product.query.filter_by(id=tier.product_id).first()
     if not product:
         abort(404)
-
-    tiers = (
-        PricingTier.query
-        .filter_by(product_id=product.id)
-        .order_by(PricingTier.duration_days)
-        .all()
-    )
-    product_features = _get_product_features_from_db(product)
-    cheat_status = _get_chairfbi_cheat_status(product)
-    gallery_images = _get_product_gallery(product.slug, product.image_url)
-
-    return render_template(
-        "product.html",
-        product=product,
-        tiers=tiers,
-        selected_tier=selected_tier,
-        gallery_images=gallery_images,
-        product_features=product_features,
-        cheat_status=cheat_status,
-    )
+    return redirect(url_for("main.product_detail", slug=product.slug, tier_id=tier_id))
 
 
 @main_bp.route("/loader")
