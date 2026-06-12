@@ -23,6 +23,7 @@ class Config:
     STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
     STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
     STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    STRIPE_PAYMENT_METHOD_DOMAIN = os.getenv("STRIPE_PAYMENT_METHOD_DOMAIN", "pmd_1ThSEdFxcVN2Ip10Durt501G")
     SITE_URL = os.getenv("SITE_URL", "http://localhost:5000")
     DISCORD_PUBLIC_URL = os.getenv("DISCORD_PUBLIC_URL", "https://discord.gg/TvxrADZhNR")
     DISCORD_PRIVATE_URL = os.getenv("DISCORD_PRIVATE_URL", "")
@@ -52,6 +53,7 @@ def get_stripe_config():
         "publishable_key": _lookup("stripe_publishable_key", Config.STRIPE_PUBLISHABLE_KEY),
         "webhook_secret": _lookup("stripe_webhook_secret", Config.STRIPE_WEBHOOK_SECRET),
         "site_url": _lookup("site_url", Config.SITE_URL),
+        "payment_method_domain": _lookup("stripe_payment_method_domain", Config.STRIPE_PAYMENT_METHOD_DOMAIN),
     }
 
 

@@ -1,5 +1,6 @@
 import stripe
 import secrets
+import os
 import logging
 from datetime import datetime, timedelta
 from flask import Blueprint, request, redirect, jsonify, current_app, url_for
@@ -72,6 +73,10 @@ def create_session():
             session_kwargs["mode"] = "subscription"
         else:
             session_kwargs["mode"] = "payment"
+
+        pmd = os.environ.get("STRIPE_PAYMENT_METHOD_DOMAIN", "") or cfg.get("payment_method_domain", "")
+        if pmd:
+            session_kwargs["payment_method_configuration"] = pmd
 
         session = stripe.checkout.Session.create(**session_kwargs)
 

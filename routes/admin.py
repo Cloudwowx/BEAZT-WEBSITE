@@ -86,6 +86,11 @@ _FALLBACK_TIERS = [
     ("30 Days", 30, 4999),
 ]
 
+_PRIVATE_TIERS = [
+    ("1 Month", 30, 4999, True),
+    ("12 Months", 365, 39999, True),
+]
+
 
 def _get_vc_slug(product):
     if product.venomcheats_slug:
@@ -99,6 +104,18 @@ def _get_vc_slug(product):
 
 def _sync_product_tiers(product):
     if PricingTier.query.filter_by(product_id=product.id).first():
+        return
+
+    if product.visibility == "private":
+        for label, days, price, sub in _PRIVATE_TIERS:
+            db.session.add(PricingTier(
+                product_id=product.id,
+                label=label,
+                duration_days=days,
+                price_pence=int(price * 100),
+                is_subscription=True,
+            ))
+        db.session.commit()
         return
 
     tiers_data = None
