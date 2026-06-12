@@ -73,7 +73,7 @@ def create_session():
         else:
             session_kwargs["mode"] = "payment"
 
-        pmd = os.environ.get("STRIPE_PAYMENT_METHOD_DOMAIN", "") or cfg.get("payment_method_domain", "")
+        pmd = cfg.get("payment_method_domain", "")
         if pmd:
             session_kwargs["payment_method_configuration"] = pmd
         else:

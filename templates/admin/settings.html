@@ -50,6 +50,12 @@
             <span style="font-size:0.68rem;color:var(--text-mut);">Used for Stripe redirect URLs.</span>
           </div>
 
+          <div style="display:flex;flex-direction:column;gap:0.35rem;">
+            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Payment Method Domain <span style="font-weight:400;">(optional)</span></label>
+            <input type="text" name="stripe_payment_method_domain" value="{{ stripe_payment_method_domain }}" placeholder="pmd_..." style="padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
+            {% if stripe_payment_method_domain %}<span style="font-size:0.68rem;color:var(--success);">Set ({{ stripe_payment_method_domain[:16] }}...)</span>{% else %}<span style="font-size:0.68rem;color:var(--text-mut);">Leave empty for standard card payments.</span>{% endif %}
+          </div>
+
         </div>
       </div>
 
