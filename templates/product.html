@@ -14,6 +14,8 @@
       selectedVariantId: d.selectedVariantId,
       variants: d.variants,
       activeTab: 'description',
+      checkingOut: false,
+      checkoutError: '',
       get currentVariant() {
         return this.variants.find(function(v) { return v.id === this.selectedVariantId; }.bind(this)) || this.variants[0] || null;
       },
@@ -38,6 +40,27 @@
       },
       get canBuy() {
         return d.isAuthenticated;
+      },
+      async handleCheckout() {
+        this.checkoutError = '';
+        this.checkingOut = true;
+        try {
+          var formData = new FormData();
+          formData.append('tier_id', this.selectedVariantId);
+          var resp = await fetch('{{ url_for('checkout.create_session') }}', {
+            method: 'POST',
+            body: formData
+          });
+          var data = await resp.json();
+          if (data.payment_url) {
+            window.location.href = data.payment_url;
+          } else {
+            this.checkoutError = data.error || 'Payment initialization failed';
+          }
+        } catch (e) {
+          this.checkoutError = 'Network error. Please try again.';
+        }
+        this.checkingOut = false;
       },
       get checkoutAction() {
         var v = this.currentVariant;
@@ -139,7 +162,7 @@
         <span class="pill pill-success">Instant Delivery</span>
       </div>
 
-      <form method="POST" :action="checkoutAction" autocomplete="off"
+      <form @submit.prevent="handleCheckout()" autocomplete="off"
             x-data="{ subTiers: variants.filter(function(v) { return v.billing_type === 'subscription'; }), oneTiers: variants.filter(function(v) { return v.billing_type !== 'subscription'; }) }">
         <input type="hidden" name="tier_id" :value="selectedVariantId">
 
@@ -186,11 +209,15 @@
         </template>
         <template x-if="!isSubscription">
           <button type="submit" class="btn btn-primary btn-block btn-lg"
-                  :disabled="!canBuy">
-            <span class="icon" data-lucide="shopping-cart"></span>
-            <span x-text="buyLabel">Buy Now</span>
+                  :disabled="!canBuy || checkingOut">
+            <span x-show="!checkingOut">
+              <span class="icon" data-lucide="shopping-cart"></span>
+              <span x-text="buyLabel">Buy Now</span>
+            </span>
+            <span x-show="checkingOut">Processing...</span>
           </button>
         </template>
+        <p x-show="checkoutError" x-text="checkoutError" style="color:var(--danger);font-size:0.78rem;margin-top:0.4rem;text-align:center;"></p>
       </form>
 
       <div class="trust-row">

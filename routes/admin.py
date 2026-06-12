@@ -83,8 +83,6 @@ def _backup_products_safe():
 
 
 _FALLBACK_TIERS = [
-    ("1 Day", 1, 4.99),
-    ("3 Days", 3, 9.99),
     ("7 Days", 7, 16.99),
     ("30 Days", 30, 49.99),
 ]
@@ -133,7 +131,10 @@ def _sync_product_tiers(product):
     if not tiers_data:
         tiers_data = _FALLBACK_TIERS
 
+    IVNO_MIN_USD = 20.0
     for label, days, price in tiers_data:
+        if price < IVNO_MIN_USD:
+            continue
         db.session.add(PricingTier(
             product_id=product.id,
             label=label,
