@@ -56,6 +56,7 @@ def create_session():
         if tier.is_subscription:
             payload["recurring"] = True
             payload["recurring_interval"] = tier.duration_days
+            payload["recurring_times"] = 1
 
         resp = requests.post(
             f"{SELLIX_API}/payments",
@@ -108,6 +109,16 @@ def webhook():
 
     if event in ("order:paid", "order:completed"):
         _handle_payment(order_data)
+    elif event in ("subscription:cancelled", "order:cancelled"):
+        uniqid = order_data.get("uniqid") or order_data.get("product_uniqid")
+        order = Order.query.filter_by(stripe_session_id=uniqid).first()
+        if order:
+            key = Key.query.filter_by(order_id=order.id).first()
+            if key:
+                key.is_active = False
+            order.status = "cancelled"
+            db.session.commit()
+            logger.info("Subscription cancelled — key expired for order %s", order.id)
 
     return jsonify({"status": "ok"})
 
@@ -122,17 +133,22 @@ def _handle_payment(order_data):
         logger.warning("No order found for Sellix uniqid: %s", uniqid)
         return
 
-    if order.status == "completed":
+    custom = order_data.get("custom_fields", {}) or {}
+    duration_days = int(custom.get("duration_days", order.tier.duration_days if order.tier else 30))
+    is_subscription = custom.get("is_subscription", "false") == "true"
+
+    # Renewal — extend the existing key instead of creating a new one
+    if order.status == "completed" and is_subscription:
+        key = Key.query.filter_by(order_id=order.id).first()
+        if key:
+            key.expires_at = max(key.expires_at or datetime.utcnow(), datetime.utcnow()) + timedelta(days=duration_days)
+            key.is_active = True
+            db.session.commit()
+            logger.info("Subscription renewed — key extended for order %s", order.id)
         return
 
-    custom = order_data.get("custom_fields", {})
-    if not custom:
-        custom = {}
-
-    duration_days = int(custom.get("duration_days", order.tier.duration_days if order.tier else 30))
     product_id = int(custom.get("product_id", order.tier.product_id if order.tier else 1))
     tier_id = int(custom.get("tier_id", order.tier_id if order.tier_id else 0))
-    is_subscription = custom.get("is_subscription", "false") == "true"
     expires_at = datetime.utcnow() + timedelta(days=duration_days)
 
     from models import Product
