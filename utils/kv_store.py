@@ -2,17 +2,53 @@ import os
 import json
 import logging
 import threading
-import time
-
-import requests
-from flask import current_app
 
 logger = logging.getLogger(__name__)
 
-KV_REST_API_URL = os.getenv("KV_REST_API_URL", "")
-KV_REST_API_TOKEN = os.getenv("KV_REST_API_TOKEN", "")
 KV_URL = os.getenv("KV_URL", "")
-KV_AVAILABLE = bool(KV_REST_API_URL) or bool(KV_URL)
+KV_AVAILABLE = bool(KV_URL)
+
+_redis_client = None
+
+
+def _get_redis():
+    global _redis_client
+    if not KV_AVAILABLE:
+        return None
+    if _redis_client is None:
+        try:
+            import redis as _redis
+            _redis_client = _redis.from_url(KV_URL, socket_connect_timeout=5)
+            _redis_client.ping()
+            logger.info("Connected to Vercel KV (Redis)")
+        except Exception as e:
+            logger.warning("Redis connection failed: %s", e)
+            _redis_client = None
+    return _redis_client
+
+
+def kv_get(key):
+    r = _get_redis()
+    if r is None:
+        return None
+    try:
+        val = r.get(key)
+        if val:
+            return json.loads(val)
+    except Exception as e:
+        logger.warning("KV get failed for %s: %s", key, e)
+    return None
+
+
+def kv_set(key, value):
+    r = _get_redis()
+    if r is None:
+        return
+    try:
+        r.set(key, json.dumps(value, ensure_ascii=False))
+    except Exception as e:
+        logger.warning("KV set failed for %s: %s", key, e)
+
 
 PRODUCT_FIELDS = [
     "name", "slug", "description", "image_url", "is_private",
@@ -21,51 +57,10 @@ PRODUCT_FIELDS = [
     "gallery_images", "last_synced_at",
 ]
 
-_backup_thread = None
-_backup_stop = threading.Event()
-
-
-def _headers():
-    if KV_REST_API_TOKEN:
-        return {"Authorization": f"Bearer {KV_REST_API_TOKEN}"}
-    return {}
-
-
-def kv_get(key):
-    if not KV_AVAILABLE:
-        return None
-    try:
-        r = requests.get(
-            f"{KV_REST_API_URL}/get/{key}",
-            headers=_headers(),
-            timeout=5,
-        )
-        if r.status_code == 200:
-            return json.loads(r.json()["result"])
-    except Exception as e:
-        logger.warning("KV get failed for %s: %s", key, e)
-    return None
-
-
-def kv_set(key, value):
-    if not KV_AVAILABLE:
-        return
-    try:
-        requests.post(
-            f"{KV_REST_API_URL}/set/{key}",
-            json={"value": json.dumps(value, ensure_ascii=False)},
-            headers=_headers(),
-            timeout=5,
-        )
-    except Exception as e:
-        logger.warning("KV set failed for %s: %s", key, e)
-
 
 def backup_products():
-    """Serialize all products to KV store."""
     if not KV_AVAILABLE:
         return
-
     try:
         from flask import current_app
         if not current_app:
@@ -90,17 +85,14 @@ def backup_products():
 
 
 def restore_products():
-    """Restore products from KV store. Called during app startup."""
     if not KV_AVAILABLE:
         return None
     return kv_get("beazt_products")
 
 
 def restore_products_to_db():
-    """Restore backed-up products into the database if empty."""
     if not KV_AVAILABLE:
         return
-
     try:
         from models import Product, db
 
@@ -130,8 +122,11 @@ def restore_products_to_db():
         logger.warning("Product restore failed: %s", e)
 
 
+_backup_thread = None
+_backup_stop = threading.Event()
+
+
 def _periodic_backup(app, interval=120):
-    """Background thread that backs up products every N seconds."""
     logger.info("KV backup thread started (interval=%ds)", interval)
     while not _backup_stop.is_set():
         _backup_stop.wait(timeout=interval)
@@ -149,10 +144,8 @@ def start_backup_thread(app, interval=120):
     if not KV_AVAILABLE:
         logger.info("KV not configured — backup thread skipped")
         return
-
     if _backup_thread and _backup_thread.is_alive():
         return
-
     _backup_stop.clear()
     _backup_thread = threading.Thread(
         target=_periodic_backup, args=(app, interval), daemon=True
