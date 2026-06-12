@@ -242,7 +242,7 @@
         {% endfor %}
       </ul>
       {% else %}
-      <p class="text-muted" style="font-size:0.84rem;">Join our Discord for setup walkthroughs and support. Details at <a href="{{ url_for('main.loader') }}" style="color:var(--accent-l);">Loader Guide</a>.</p>
+      <p class="text-muted" style="font-size:0.84rem;">Join our <a href="{{ discord_public_url }}" target="_blank" rel="noopener" style="color:var(--accent-l);">Discord</a> for setup walkthroughs and support. See the <a href="{{ url_for('main.loader') }}" style="color:var(--accent-l);">Loader Guide</a> for setup steps.</p>
       {% endif %}
     </div>
 

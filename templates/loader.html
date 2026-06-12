@@ -12,8 +12,21 @@
 
     <div class="loader-steps" style="max-width:640px;margin:0 auto;">
 
+      {% if loader_public_url %}
       <div class="loader-step reveal">
         <div class="loader-step-num">1</div>
+        <div>
+          <h3 style="font-size:1rem;margin-bottom:0.3rem;">Download the Loader</h3>
+          <p style="color:var(--text-dim);font-size:0.84rem;margin-bottom:0.8rem;">Grab the latest version of the public loader from the link below.</p>
+          <a href="{{ loader_public_url }}" target="_blank" rel="noopener" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;">
+            <span class="icon icon-sm" data-lucide="download"></span> Download Loader
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="loader-step reveal">
+        <div class="loader-step-num">{{ '2' if loader_public_url else '1' }}</div>
         <div>
           <h3 style="font-size:1rem;margin-bottom:0.3rem;">Download RivaTuner Statistics Server</h3>
           <p style="color:var(--text-dim);font-size:0.84rem;margin-bottom:0.8rem;">
@@ -26,7 +39,7 @@
       </div>
 
       <div class="loader-step reveal">
-        <div class="loader-step-num">2</div>
+        <div class="loader-step-num">{{ '3' if loader_public_url else '2' }}</div>
         <div>
           <h3 style="font-size:1rem;margin-bottom:0.3rem;">Disable Antivirus Real-Time Protection</h3>
           <p style="color:var(--text-dim);font-size:0.84rem;margin-bottom:0.8rem;">
@@ -38,39 +51,8 @@
         </div>
       </div>
 
-      {% if loader_public_url %}
-      <div class="loader-step reveal">
-        <div class="loader-step-num">3</div>
-        <div>
-          <h3 style="font-size:1rem;margin-bottom:0.3rem;">Download the Loader</h3>
-          <p style="color:var(--text-dim);font-size:0.84rem;margin-bottom:0.8rem;">Grab the latest version of the public loader from the link below.</p>
-          <a href="{{ loader_public_url }}" target="_blank" rel="noopener" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;">
-            <span class="icon icon-sm" data-lucide="download"></span> Download Loader
-          </a>
-        </div>
-      </div>
-      {% endif %}
-
-      {% if loader_token %}
       <div class="loader-step reveal">
         <div class="loader-step-num">{{ '4' if loader_public_url else '3' }}</div>
-        <div>
-          <h3 style="font-size:1rem;margin-bottom:0.3rem;">Enter Loader Token</h3>
-          <p style="color:var(--text-dim);font-size:0.84rem;margin-bottom:0.5rem;">Copy the token below and paste it into the loader when prompted to authenticate.</p>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;background:rgba(9,14,35,0.94);border:1px solid rgba(88,122,165,0.35);border-radius:10px;padding:0.55rem 0.8rem;max-width:460px;">
-            <code style="font-size:0.82rem;word-break:break-all;">{{ loader_token }}</code>
-            <button type="button" onclick="navigator.clipboard.writeText('{{ loader_token }}').then(()=>{this.textContent='Copied';setTimeout(()=>{this.textContent='Copy';},1400)})" style="flex-shrink:0;background:rgba(58,106,158,0.12);border:1px solid rgba(88,122,165,0.35);color:var(--accent-l);padding:0.25rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.7rem;font-family:var(--mono);">
-              Copy
-            </button>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
-      <div class="loader-step reveal">
-        <div class="loader-step-num">
-          {% if loader_public_url and loader_token %}5{% elif loader_public_url or loader_token %}4{% else %}3{% endif %}
-        </div>
         <div>
           <h3 style="font-size:1rem;margin-bottom:0.3rem;">Enter Your License Key</h3>
           <p style="color:var(--text-dim);font-size:0.84rem;margin-bottom:0.8rem;">

@@ -163,7 +163,11 @@ with app.app_context():
     except Exception:
         pass
 
-    from utils.kv_store import restore_products_to_db, start_backup_thread
+    from utils.kv_store import restore_users_to_db, restore_products_to_db, start_backup_thread
+    try:
+        restore_users_to_db()
+    except Exception:
+        pass
     try:
         restore_products_to_db()
     except Exception:

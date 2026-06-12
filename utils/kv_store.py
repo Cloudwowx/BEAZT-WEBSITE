@@ -184,6 +184,104 @@ def restore_products_to_db():
         logger.warning("Product restore failed: %s", e)
 
 
+USER_FIELDS = [
+    "username", "email", "password_hash", "is_admin", "is_active", "created_at",
+]
+
+USER_FILE_PATH = os.path.join(os.environ.get("TMPDIR", "/tmp"), "beazt_users.json")
+
+
+def _file_backup_user(data):
+    try:
+        with open(USER_FILE_PATH, "w") as f:
+            json.dump(data, f)
+    except Exception as e:
+        logger.warning("User file backup failed: %s", e)
+
+
+def _file_restore_user():
+    try:
+        if os.path.exists(USER_FILE_PATH):
+            with open(USER_FILE_PATH, "r") as f:
+                return json.load(f)
+    except Exception as e:
+        logger.warning("User file restore failed: %s", e)
+    return None
+
+
+def backup_users():
+    if not KV_AVAILABLE:
+        return False
+    try:
+        from flask import current_app
+        if not current_app:
+            return False
+        from models import User
+
+        rows = User.query.all()
+        data = []
+        for u in rows:
+            row = {}
+            for field in USER_FIELDS:
+                val = getattr(u, field, None)
+                if isinstance(val, datetime):
+                    val = val.isoformat()
+                if isinstance(val, bytes):
+                    val = val.decode("utf-8", errors="replace")
+                row[field] = val
+            data.append(row)
+
+        ok = kv_set("beazt_users", data)
+        _file_backup_user(data)
+        if not ok:
+            logger.warning("User KV write returned false")
+        else:
+            logger.info("Backed up %d users to KV", len(data))
+        return True
+    except Exception as e:
+        logger.warning("User backup failed: %s", e)
+        return False
+
+
+def restore_users_to_db():
+    backup = None
+    if KV_AVAILABLE:
+        backup = kv_get("beazt_users")
+    if not backup:
+        backup = _file_restore_user()
+        if backup:
+            logger.info("Using /tmp user file backup — %d users", len(backup))
+    if not backup:
+        return
+
+    try:
+        from models import User, db
+
+        for u_data in backup:
+            username = u_data.get("username", "")
+            if not username:
+                continue
+            existing = User.query.filter_by(username=username).first()
+            if existing:
+                if existing.is_admin:
+                    existing.password_hash = u_data.get("password_hash", existing.password_hash)
+                continue
+
+            kwargs = {k: v for k, v in u_data.items() if k in USER_FIELDS}
+            ca = kwargs.get("created_at")
+            if isinstance(ca, str):
+                try:
+                    kwargs["created_at"] = datetime.fromisoformat(ca)
+                except (ValueError, TypeError):
+                    kwargs["created_at"] = datetime.utcnow()
+            db.session.add(User(**kwargs))
+
+        db.session.commit()
+        logger.info("Restored %d users from backup", len(backup))
+    except Exception as e:
+        logger.warning("User restore failed: %s", e)
+
+
 _backup_thread = None
 _backup_stop = threading.Event()
 
@@ -197,6 +295,7 @@ def _periodic_backup(app, interval=120):
         try:
             with app.app_context():
                 backup_products()
+                backup_users()
         except Exception as e:
             logger.error("Periodic backup failed: %s", e)
 

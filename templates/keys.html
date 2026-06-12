@@ -57,6 +57,11 @@
         <span class="icon icon-sm" data-lucide="download"></span> Download Loader
       </a>
       {% endif %}
+      {% if discord_public_url %}
+      <a href="{{ discord_public_url }}" target="_blank" rel="noopener" class="btn btn-ghost" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;{% if loader_public_url %}margin-left:0.5rem;{% endif %}">
+        <span class="icon icon-sm" data-lucide="message-circle"></span> Join Discord
+      </a>
+      {% endif %}
       <p style="color:var(--text-dim);font-size:0.72rem;margin-top:0.6rem;">
         <span class="icon icon-sm" data-lucide="info" style="width:14px;height:14px;"></span>
         Before running: download <a href="https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/" target="_blank" rel="noopener" style="color:var(--accent-l);">RivaTuner Statistics Server</a> and disable your antivirus real-time protection.

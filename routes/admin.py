@@ -73,8 +73,10 @@ def _enrich_product_from_venomcheats(product, vc_products=None):
 
 def _backup_products_safe():
     try:
-        from utils.kv_store import backup_products
-        return backup_products()
+        from utils.kv_store import backup_products, backup_users
+        ok_p = backup_products()
+        ok_u = backup_users()
+        return ok_p and ok_u
     except Exception as e:
         logger.error("Product backup to KV failed: %s", e)
         return False
