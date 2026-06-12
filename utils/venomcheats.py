@@ -95,13 +95,18 @@ STATUS_MAP = {
 
 def _extract_products_from_html(html):
     """Extract the allCheatsForStatus array directly from raw HTML."""
-    marker = '"allCheatsForStatus":['
+    marker = 'allCheatsForStatus'
     idx = html.find(marker)
     if idx == -1:
         logger.warning("allCheatsForStatus marker not found in HTML")
         return []
 
-    bracket_start = idx + len(marker) - 1
+    bracket_start = html.find(':[', idx)
+    if bracket_start == -1:
+        logger.warning("allCheatsForStatus array bracket not found")
+        return []
+    bracket_start += 1
+
     depth = 0
     i = bracket_start
     while i < len(html):
