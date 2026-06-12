@@ -35,10 +35,11 @@ def gbp_to_zar(gbp_amount):
     return round(gbp_amount * rate, 2)
 
 
-def _build_signature(data, passphrase):
+def _build_signature(data, passphrase, sort_keys=False):
     from urllib.parse import quote_plus
+    keys = sorted(data.keys()) if sort_keys else data.keys()
     fields = []
-    for k in sorted(data.keys()):
+    for k in keys:
         if k == "signature":
             continue
         v = str(data.get(k, "")).strip()
@@ -69,7 +70,7 @@ def build_payment_form(amount_zar, item_name, order_id, return_url, cancel_url, 
     if last_name:
         data["name_last"] = last_name[:100]
 
-    data["signature"] = _build_signature(data, passphrase)
+    data["signature"] = _build_signature(data, passphrase, sort_keys=False)
     return {
         "action_url": f"{PAYFAST_LIVE}/process",
         "fields": data,
@@ -87,7 +88,7 @@ def validate_itn(request_form):
         pass
 
     received_sig = data.pop("signature", "")
-    computed = _build_signature(data, passphrase)
+    computed = _build_signature(data, passphrase, sort_keys=True)
     if received_sig != computed:
         return False, "Signature mismatch"
 
