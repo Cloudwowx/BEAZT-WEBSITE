@@ -381,13 +381,6 @@ def health_sellix():
                 results[f"{label}"] = {"status": "error", "body": str(e)}
 
     return {"key_prefix": key[:10] + "...", "results": results}
-            except Exception as e:
-                results[f"{base_url} | {label}"] = {"status": "error", "body": str(e)}
-
-    return {
-        "key_prefix": key[:10] + "...",
-        "results": results,
-    }
 
 
 @main_bp.route("/health/products")
