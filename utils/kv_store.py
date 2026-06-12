@@ -49,11 +49,13 @@ def kv_get(key):
 def kv_set(key, value):
     r = _get_redis()
     if r is None:
-        return
+        return False
     try:
         r.set(key, json.dumps(value, ensure_ascii=False))
+        return True
     except Exception as e:
         logger.warning("KV set failed for %s: %s", key, e)
+        return False
 
 
 PRODUCT_FIELDS = [
@@ -64,13 +66,34 @@ PRODUCT_FIELDS = [
 ]
 
 
+FILE_BACKUP_PATH = os.path.join(os.environ.get("TMPDIR", "/tmp"), "beazt_products.json")
+
+
+def _file_backup(data):
+    try:
+        with open(FILE_BACKUP_PATH, "w") as f:
+            json.dump(data, f)
+    except Exception as e:
+        logger.warning("File backup failed: %s", e)
+
+
+def _file_restore():
+    try:
+        if os.path.exists(FILE_BACKUP_PATH):
+            with open(FILE_BACKUP_PATH, "r") as f:
+                return json.load(f)
+    except Exception as e:
+        logger.warning("File restore failed: %s", e)
+    return None
+
+
 def backup_products():
     if not KV_AVAILABLE:
-        return
+        return False
     try:
         from flask import current_app
         if not current_app:
-            return
+            return False
         from models import Product, db
 
         rows = Product.query.all()
@@ -86,10 +109,16 @@ def backup_products():
                 row[field] = val
             data.append(row)
 
-        kv_set("beazt_products", data)
-        logger.info("Backed up %d products to KV", len(data))
+        ok = kv_set("beazt_products", data)
+        _file_backup(data)
+        if not ok:
+            logger.warning("KV write returned false — Redis may be unavailable")
+        else:
+            logger.info("Backed up %d products to KV", len(data))
+        return True
     except Exception as e:
         logger.warning("Product backup failed: %s", e)
+        return False
 
 
 def restore_products():
@@ -99,15 +128,19 @@ def restore_products():
 
 
 def restore_products_to_db():
-    if not KV_AVAILABLE:
-        logger.info("KV not configured — skipping product restore")
+    backup = None
+    if KV_AVAILABLE:
+        backup = restore_products()
+    if not backup:
+        backup = _file_restore()
+        if backup:
+            logger.info("Using /tmp file backup — %d products", len(backup))
+    if not backup:
+        logger.info("No KV or file backup found — fresh start")
         return
+
     try:
         from models import Product, db
-
-        backup = restore_products()
-        if not backup:
-            return
 
         for p_data in backup:
             slug = p_data.get("slug", "")
@@ -128,7 +161,7 @@ def restore_products_to_db():
             db.session.add(product)
 
         db.session.commit()
-        logger.info("Restored %d products from KV", len(backup))
+        logger.info("Restored %d products from backup", len(backup))
     except Exception as e:
         logger.warning("Product restore failed: %s", e)
 
