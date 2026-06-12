@@ -70,6 +70,9 @@ def create_session():
 
         if tier.is_subscription:
             session_kwargs["mode"] = "subscription"
+            session_kwargs["subscription_data"] = {
+                "cancel_at": int((datetime.utcnow() + timedelta(days=tier.duration_days - 1)).timestamp()),
+            }
         else:
             session_kwargs["mode"] = "payment"
 
