@@ -875,6 +875,12 @@ def settings():
             if val:
                 Setting.set(key, val)
                 flash(f"{label} saved.", "success")
+            else:
+                row = db.session.execute(db.select(Setting).filter_by(key=key)).scalar_one_or_none()
+                if row:
+                    db.session.delete(row)
+                    db.session.commit()
+                    flash(f"{label} cleared.", "info")
         return redirect(url_for("admin.settings"))
 
     cfg = get_stripe_config()
