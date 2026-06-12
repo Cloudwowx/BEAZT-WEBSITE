@@ -15,8 +15,14 @@ admin_bp = Blueprint("admin", __name__)
 logger = logging.getLogger(__name__)
 
 
-def _enrich_product_from_venomcheats(product):
-    """Auto-enrich a Product with VenomCheats data if name matches."""
+def _enrich_product_from_venomcheats(product, vc_products=None):
+    """Auto-enrich a Product with VenomCheats data if name matches.
+
+    Args:
+        product: Product model instance to enrich.
+        vc_products: Optional pre-fetched dict {slug: product_data} or list of product dicts.
+                     If None, fetches from VenomCheats homepage.
+    """
     try:
         from utils.venomcheats import (
             match_chairfbi_to_venom,
@@ -32,26 +38,24 @@ def _enrich_product_from_venomcheats(product):
         if not slug:
             return False
 
-        vc_products = get_all_products()
+        if vc_products is None:
+            vc_products = get_all_products()
         if not vc_products:
             return False
 
-        vc_data = find_product_by_slug(vc_products, slug)
+        if isinstance(vc_products, dict):
+            vc_data = vc_products.get(slug)
+        else:
+            vc_data = find_product_by_slug(vc_products, slug)
         if not vc_data:
             return False
 
         product.venomcheats_slug = slug
         product.venomcheats_data = json.dumps(vc_data, ensure_ascii=False)
         product.last_synced_at = datetime.utcnow()
-
-        if not product.features_text:
-            product.features_text = build_features_text(vc_data)
-
-        if not product.description:
-            product.description = build_description(vc_data)
-
-        if not product.image_url:
-            product.image_url = get_primary_image_url(vc_data)
+        product.features_text = build_features_text(vc_data)
+        product.description = build_description(vc_data)
+        product.image_url = get_primary_image_url(vc_data)
 
         static_dir = os.path.join(current_app.root_path, "static")
         gallery_paths = download_product_media(vc_data, static_dir)
@@ -892,6 +896,10 @@ def chairfbi_import_all():
         cheats_data = cf.get_cheats()
         cheats = cheats_data if isinstance(cheats_data, list) else []
 
+        online_only = request.form.get("online_only") == "1"
+        if online_only:
+            cheats = [c for c in cheats if c.get("active")]
+
         created = 0
         skipped = 0
         enriched = 0
@@ -1036,7 +1044,7 @@ def chairfbi_sync_venomcheats():
         products = Product.query.all()
         updated = 0
         for product in products:
-            if _enrich_product_from_venomcheats(product):
+            if _enrich_product_from_venomcheats(product, vc_products=vc_data):
                 _create_default_tiers(product)
                 updated += 1
 

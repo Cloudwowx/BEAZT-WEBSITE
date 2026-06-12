@@ -78,7 +78,11 @@
       <form method="POST" action="{{ url_for('admin.chairfbi_sync_venomcheats') }}" onsubmit="return confirm('Sync all products with VenomCheats data? This will update features, images, and descriptions for matched products.')">
         <button type="submit" class="btn btn-primary" style="font-size:0.78rem;padding:0.4rem 0.85rem;">Sync VC Data</button>
       </form>
-      <form method="POST" action="{{ url_for('admin.chairfbi_import_all') }}" onsubmit="return confirm('Import all ChairFBI cheats as BEAZT products? Existing products will be skipped.')">
+      <form method="POST" action="{{ url_for('admin.chairfbi_import_all') }}" onsubmit="return confirm('Import all ChairFBI cheats as BEAZT products? Existing products will be skipped.')" style="display:flex;align-items:center;gap:0.35rem;">
+        <label style="font-size:0.68rem;color:var(--text-muted);display:flex;align-items:center;gap:0.2rem;cursor:pointer;">
+          <input type="checkbox" name="online_only" value="1" checked>
+          Online only
+        </label>
         <button type="submit" class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 0.9rem;">Import All as Products</button>
       </form>
     </div>

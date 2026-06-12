@@ -50,10 +50,8 @@
     <input type="file" name="products_file" accept=".json" style="font-size:0.72rem;color:var(--text-dim);">
     <button type="submit" class="btn-xs" style="background:rgba(30,58,95,0.12);color:var(--accent-l);border:1px solid rgba(30,58,95,0.25);">Import JSON</button>
   </form>
-  <form method="POST" action="{{ url_for('admin.bulk_delete_products') }}" onsubmit="var cbs=this.querySelectorAll('input[name=product_ids]:checked');if(!cbs.length){alert('Select products to delete.');return false;}return confirm('Delete '+cbs.length+' product(s)?')">
-    <button type="submit" class="btn-xs btn-danger">Delete Selected</button>
-    <button type="button" class="btn-xs btn-danger" onclick="document.querySelectorAll('input[name=product_ids]').forEach(c=>c.checked=true);if(confirm('DELETE ALL PRODUCTS?')){this.form.submit()}" style="margin-left:0.35rem;background:rgba(239,68,68,0.3);">Delete All</button>
-  </form>
+  <button type="submit" form="bulk-form" class="btn-xs btn-danger" onclick="var cbs=document.querySelectorAll('input[name=product_ids]:checked');if(!cbs.length){alert('Select products to delete.');return false;}return confirm('Delete '+cbs.length+' product(s)?')">Delete Selected</button>
+  <button type="button" class="btn-xs btn-danger" onclick="document.querySelectorAll('input[name=product_ids]').forEach(c=>c.checked=true);if(confirm('DELETE ALL PRODUCTS?')){document.getElementById('bulk-form').submit()}" style="margin-left:0.35rem;background:rgba(239,68,68,0.3);">Delete All</button>
 </div>
 
 <form method="POST" action="{{ url_for('admin.bulk_delete_products') }}" id="bulk-form">
@@ -62,7 +60,7 @@
   <tbody>
     {% for p in products %}
     <tr>
-      <td><input type="checkbox" name="product_ids" value="{{ p.id }}" form="bulk-form"></td>
+      <td><input type="checkbox" name="product_ids" value="{{ p.id }}"></td>
       <td>{{ p.id }}</td>
       <td>{{ p.name }}</td>
       <td><code>{{ p.slug }}</code></td>
