@@ -368,17 +368,23 @@ def health_sellix():
         return {"ok": False, "error": "No Shoppy API key configured"}
 
     results = {}
-    for base_url in ["https://shoppy.gg/api/v1"]:
-        for label, hdrs in [
-            ("Authorization", {"Authorization": key}),
-            ("Bearer", {"Authorization": f"Bearer {key}"}),
-            ("X-API-Key", {"X-API-Key": key}),
-        ]:
-            try:
-                resp = _r.get(f"{base_url}/products", headers=hdrs, timeout=10)
-                results[f"{label}"] = {"status": resp.status_code, "body": resp.text[:300]}
-            except Exception as e:
-                results[f"{label}"] = {"status": "error", "body": str(e)}
+    hdrs = {"Authorization": key}
+
+    try:
+        resp = _r.get("https://shoppy.gg/api/v1/products", headers=hdrs, timeout=10)
+        results["GET /products"] = {"status": resp.status_code, "body": resp.text[:300]}
+    except Exception as e:
+        results["GET /products"] = {"status": "error", "body": str(e)}
+
+    try:
+        resp = _r.post("https://shoppy.gg/api/v2/pay", json={
+            "title": "BEAZT Health Test",
+            "value": 1.00,
+            "email": "test@beaztcheats.com",
+        }, headers=hdrs, timeout=10)
+        results["POST /pay"] = {"status": resp.status_code, "body": resp.text[:300]}
+    except Exception as e:
+        results["POST /pay"] = {"status": "error", "body": str(e)}
 
     return {"key_prefix": key[:10] + "...", "results": results}
 
