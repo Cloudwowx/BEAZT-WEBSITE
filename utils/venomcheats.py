@@ -93,29 +93,50 @@ STATUS_MAP = {
 }
 
 
-def _find_next_json(html):
-    """Extract product data from Next.js streaming chunks in the HTML."""
-    results = []
-    pattern = re.compile(r'self\.__next_f\.push\(\[1,"[^"]*:([^"]*?)"\]\)')
-    for match in pattern.finditer(html):
-        try:
-            decoded = match.group(1).encode().decode("unicode_escape")
-            data = json.loads(decoded)
-            results.append(data)
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            continue
-    return results
+def _extract_products_from_html(html):
+    """Extract the allCheatsForStatus array from Next.js RSC chunks."""
+    chunks = re.findall(r'self\.__next_f\.push\(\[1,"(.*?)"\]\)', html)
 
-
-def _extract_products_from_chunks(chunks):
-    """Walk through extracted Next.js chunks to find product arrays."""
     for chunk in chunks:
-        if isinstance(chunk, dict):
-            for value in chunk.values():
-                if isinstance(value, list) and len(value) > 0:
-                    first = value[0]
-                    if isinstance(first, dict) and "slug" in first and "capabilities" in first:
-                        return value
+        if '"allCheatsForStatus"' not in chunk:
+            continue
+
+        try:
+            decoded = chunk.encode().decode('unicode_escape')
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            decoded = chunk
+
+        start_marker = '"allCheatsForStatus":['
+        idx = decoded.find(start_marker)
+        if idx == -1:
+            continue
+
+        start_pos = idx + len(start_marker)
+        depth = 0
+        end_pos = start_pos
+        for i in range(start_pos, len(decoded)):
+            c = decoded[i]
+            if c == '[':
+                depth += 1
+            elif c == ']':
+                depth -= 1
+                if depth == 0:
+                    end_pos = i + 1
+                    break
+            elif c == '"':
+                if i > 0 and decoded[i - 1] == '\\':
+                    continue
+                pass
+
+        json_str = decoded[start_pos:end_pos]
+        try:
+            data = json.loads(json_str)
+            if isinstance(data, list) and len(data) > 0:
+                logger.info("Extracted %d products from allCheatsForStatus", len(data))
+                return data
+        except json.JSONDecodeError:
+            logger.debug("JSON decode failed for allCheatsForStatus chunk, trying next")
+
     return []
 
 
@@ -126,13 +147,11 @@ def _fetch_homepage():
     resp.raise_for_status()
     html = resp.text
 
-    products = []
-    seen_slugs = set()
-
-    chunks = _find_next_json(html)
-    all_products = _extract_products_from_chunks(chunks)
+    all_products = _extract_products_from_html(html)
 
     if all_products:
+        products = []
+        seen_slugs = set()
         for p in all_products:
             slug = p.get("slug", "")
             name = p.get("name", p.get("game", ""))
@@ -140,27 +159,11 @@ def _fetch_homepage():
             if key not in seen_slugs:
                 seen_slugs.add(key)
                 products.append(p)
-        logger.info("Found %d products in Next.js chunks", len(products))
+        logger.info("Found %d products from VenomCheats", len(products))
         return products
 
-    # Fallback: try to find embedded JSON in script tags
-    fallback = re.findall(r'"allCheatsForStatus"\s*:\s*(\[.*?\])', html)
-    if fallback:
-        for match in fallback:
-            try:
-                data = json.loads(match)
-                for p in data:
-                    slug = p.get("slug", "")
-                    name = p.get("name", p.get("game", ""))
-                    key = (slug, name)
-                    if key not in seen_slugs:
-                        seen_slugs.add(key)
-                        products.append(p)
-            except json.JSONDecodeError:
-                continue
-
-    logger.info("Found %d products via fallback parsing", len(products))
-    return products
+    logger.warning("No products found from VenomCheats — HTML may have changed")
+    return []
 
 
 def get_all_products():
