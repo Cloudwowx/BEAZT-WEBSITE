@@ -21,7 +21,7 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SITE_URL = os.getenv("SITE_URL", "http://localhost:5000")
-    DISCORD_PUBLIC_URL = os.getenv("DISCORD_PUBLIC_URL", "https://discord.gg/TvxrADZhNR")
+    DISCORD_PUBLIC_URL = os.getenv("DISCORD_PUBLIC_URL", "https://discord.gg/bU4tFA43KK")
     DISCORD_PRIVATE_URL = os.getenv("DISCORD_PRIVATE_URL", "")
     CHAIRFBI_API_TOKEN = os.getenv("CHAIRFBI_API_TOKEN", "")
     CHAIRFBI_API_BASE = os.getenv("CHAIRFBI_API_BASE", "https://access.chairfbi.com")

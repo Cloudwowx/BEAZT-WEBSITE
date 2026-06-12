@@ -53,16 +53,24 @@ def create_session():
         )
 
         if not result.get("success") or not result.get("payment_url"):
+            msg = result.get("message", "Payment initialization failed")
             logger.error("Ivno payment creation failed: %s", result)
-            return jsonify({"error": "Payment initialization failed"}), 500
+            return jsonify({"error": msg}), 500
 
         order.stripe_session_id = result.get("payment_url")
         db.session.commit()
         return jsonify({"payment_url": result["payment_url"]})
 
     except Exception as e:
-        logger.exception("Ivno session creation failed")
-        return jsonify({"error": str(e)}), 500
+        err_msg = str(e)
+        try:
+            import json as _json
+            if hasattr(e, "response") and e.response is not None:
+                err_msg = _json.loads(e.response.text).get("message", err_msg)
+        except Exception:
+            pass
+        logger.exception("Ivno session creation failed: %s", err_msg)
+        return jsonify({"error": err_msg}), 500
 
 
 @checkout_bp.route("/ivno-webhook", methods=["POST"])

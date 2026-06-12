@@ -54,7 +54,7 @@ def inject_discord():
         cfg = get_discord_config()
         return {"discord_public_url": cfg["public_url"]}
     except Exception:
-        return {"discord_public_url": "https://discord.gg/TvxrADZhNR"}
+        return {"discord_public_url": "https://discord.gg/bU4tFA43KK"}
 
 
 with app.app_context():

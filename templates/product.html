@@ -42,7 +42,7 @@
       get checkoutAction() {
         var v = this.currentVariant;
         if (v && v.billing_type === 'subscription' && v.subscription_link) return v.subscription_link;
-        return '{{ url_for('checkout.create_session') }}';
+        return "{{ url_for('checkout.create_session') }}";
       }
     };
   };
