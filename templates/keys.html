@@ -39,19 +39,8 @@
         <strong style="font-size:0.95rem;">Loader Setup</strong>
       </div>
       <p style="color:var(--text-dim);font-size:0.82rem;margin-bottom:1rem;">
-        Download the loader and use the token below to authenticate. Then enter your license key to activate.
+        Download the loader and enter your license key to activate.
       </p>
-      {% if loader_token %}
-      <div style="margin-bottom:0.6rem;">
-        <span class="key-label">Loader Token</span>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;background:rgba(9,14,35,0.94);border:1px solid rgba(88,122,165,0.35);border-radius:10px;padding:0.55rem 0.8rem;margin-top:0.2rem;">
-          <code style="font-size:0.82rem;word-break:break-all;">{{ loader_token }}</code>
-          <button type="button" onclick="navigator.clipboard.writeText('{{ loader_token }}').then(()=>{this.textContent='Copied';setTimeout(()=>{this.textContent='Copy';},1400)})" style="flex-shrink:0;background:rgba(58,106,158,0.12);border:1px solid rgba(88,122,165,0.35);color:var(--accent-l);padding:0.25rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.7rem;font-family:var(--mono);">
-            Copy
-          </button>
-        </div>
-      </div>
-      {% endif %}
       {% if loader_public_url %}
       <a href="{{ loader_public_url }}" target="_blank" rel="noopener" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;">
         <span class="icon icon-sm" data-lucide="download"></span> Download Loader

@@ -286,6 +286,191 @@ _backup_thread = None
 _backup_stop = threading.Event()
 
 
+ORDER_FIELDS = [
+    "id", "user_id", "tier_id", "stripe_session_id", "status", "created_at",
+]
+
+ORDER_FILE_PATH = os.path.join(os.environ.get("TMPDIR", "/tmp"), "beazt_orders.json")
+
+
+def backup_orders():
+    if not KV_AVAILABLE:
+        return False
+    try:
+        from flask import current_app
+        if not current_app:
+            return False
+        from models import Order, db
+
+        rows = Order.query.order_by(Order.created_at.desc()).limit(200).all()
+        data = []
+        for o in rows:
+            row = {}
+            for field in ORDER_FIELDS:
+                val = getattr(o, field, None)
+                if isinstance(val, datetime):
+                    val = val.isoformat()
+                row[field] = val
+            data.append(row)
+
+        ok = kv_set("beazt_orders", data)
+        if not ok:
+            logger.warning("Order KV write failed")
+        return True
+    except Exception as e:
+        logger.warning("Order backup failed: %s", e)
+        return False
+
+
+def restore_orders_to_db():
+    backup = kv_get("beazt_orders") if KV_AVAILABLE else None
+    if not backup:
+        return
+    try:
+        from models import Order, db
+
+        for o_data in backup:
+            oid = o_data.get("id")
+            if not oid:
+                continue
+            if Order.query.filter_by(id=oid).first():
+                continue
+
+            kwargs = {}
+            for field in ORDER_FIELDS:
+                if field == "id":
+                    continue
+                kwargs[field] = o_data.get(field)
+            if "created_at" in kwargs and isinstance(kwargs["created_at"], str):
+                try:
+                    kwargs["created_at"] = datetime.fromisoformat(kwargs["created_at"])
+                except (ValueError, TypeError):
+                    kwargs["created_at"] = datetime.utcnow()
+            kwargs["id"] = oid
+            db.session.execute(Order.__table__.insert().values(**kwargs))
+
+        db.session.commit()
+        logger.info("Restored %d orders from backup", len(backup))
+    except Exception as e:
+        logger.warning("Order restore failed: %s", e)
+
+
+KEY_FIELDS = [
+    "id", "user_id", "order_id", "product_id", "tier_id",
+    "key_value", "created_at", "assigned_at", "expires_at",
+    "is_active", "chairfbi_key_id", "chairfbi_cheat_id", "is_subscription",
+]
+
+
+def backup_keys():
+    if not KV_AVAILABLE:
+        return False
+    try:
+        from flask import current_app
+        if not current_app:
+            return False
+        from models import Key, db
+
+        rows = Key.query.order_by(Key.created_at.desc()).limit(500).all()
+        data = []
+        for k in rows:
+            row = {}
+            for field in KEY_FIELDS:
+                val = getattr(k, field, None)
+                if isinstance(val, datetime):
+                    val = val.isoformat()
+                row[field] = val
+            data.append(row)
+
+        ok = kv_set("beazt_keys", data)
+        if not ok:
+            logger.warning("Key KV write failed")
+        return True
+    except Exception as e:
+        logger.warning("Key backup failed: %s", e)
+        return False
+
+
+def restore_keys_to_db():
+    backup = kv_get("beazt_keys") if KV_AVAILABLE else None
+    if not backup:
+        return
+    try:
+        from models import Key, db
+
+        for k_data in backup:
+            kid = k_data.get("id")
+            if not kid:
+                continue
+            if Key.query.filter_by(id=kid).first():
+                continue
+
+            kwargs = {}
+            for field in KEY_FIELDS:
+                if field == "id":
+                    continue
+                kwargs[field] = k_data.get(field)
+            for dt_field in ("created_at", "assigned_at", "expires_at"):
+                if dt_field in kwargs and isinstance(kwargs[dt_field], str):
+                    try:
+                        kwargs[dt_field] = datetime.fromisoformat(kwargs[dt_field])
+                    except (ValueError, TypeError):
+                        kwargs[dt_field] = None
+            kwargs["id"] = kid
+            db.session.execute(Key.__table__.insert().values(**kwargs))
+
+        db.session.commit()
+        logger.info("Restored %d keys from backup", len(backup))
+    except Exception as e:
+        db.session.rollback()
+        logger.warning("Key restore failed: %s", e)
+
+
+def backup_settings():
+    if not KV_AVAILABLE:
+        return False
+    try:
+        from flask import current_app
+        if not current_app:
+            return False
+        from models import Setting
+
+        rows = Setting.query.all()
+        data = []
+        for s in rows:
+            data.append({"key": s.key, "value": s.value})
+
+        ok = kv_set("beazt_settings", data)
+        if not ok:
+            logger.warning("Settings KV write failed")
+        return True
+    except Exception as e:
+        logger.warning("Settings backup failed: %s", e)
+        return False
+
+
+def restore_settings_to_db():
+    backup = kv_get("beazt_settings") if KV_AVAILABLE else None
+    if not backup:
+        return
+    try:
+        from models import Setting, db
+
+        for s_data in backup:
+            key = s_data.get("key")
+            if not key:
+                continue
+            existing = Setting.query.filter_by(key=key).first()
+            if existing:
+                continue
+            db.session.add(Setting(key=key, value=s_data.get("value")))
+
+        db.session.commit()
+        logger.info("Restored %d settings from backup", len(backup))
+    except Exception as e:
+        logger.warning("Settings restore failed: %s", e)
+
+
 def _periodic_backup(app, interval=120):
     logger.info("KV backup thread started (interval=%ds)", interval)
     while not _backup_stop.is_set():
@@ -296,6 +481,9 @@ def _periodic_backup(app, interval=120):
             with app.app_context():
                 backup_products()
                 backup_users()
+                backup_orders()
+                backup_keys()
+                backup_settings()
         except Exception as e:
             logger.error("Periodic backup failed: %s", e)
 
