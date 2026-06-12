@@ -31,7 +31,7 @@ def create_session():
 
     if tier.is_subscription:
         product_name = f"BEAZT Private - {tier.product.name} ({tier.label})"
-        product_desc = f"Recurring every {tier.duration_days} day(s) — auto-renewal"
+        product_desc = f"Billed once — {tier.duration_days} day(s) access"
 
     try:
         line_item = {
@@ -183,13 +183,10 @@ def handle_checkout_completed(session_data):
         logger.info("Pool key assigned for order %s (subscription=%s)", order.id, is_subscription)
         return
 
-    # 2) Pool-only product with empty pool
+    # 2) Pool-only product with empty pool — auto-generate key
     if key_source == "pool":
-        order.status = "awaiting_keys"
-        db.session.commit()
-        logger.warning("Pool depleted for product %s (id=%s). Order %s awaiting keys.",
-                       product.name if product else "unknown", product_id, order.id)
-        return
+        logger.info("Pool depleted for product %s — auto-generating key for order %s",
+                   product.name if product else "unknown", order.id)
 
     # 3) ChairFBI product — generate key via API
     cfg = get_chairfbi_config()
