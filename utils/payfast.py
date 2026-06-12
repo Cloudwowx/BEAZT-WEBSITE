@@ -39,11 +39,12 @@ def _build_signature(data, passphrase):
     from urllib.parse import quote_plus
     fields = []
     for k in sorted(data.keys()):
-        v = data.get(k, "")
-        if v:
-            fields.append(f"{k}={quote_plus(str(v))}")
+        if k == "signature":
+            continue
+        v = str(data.get(k, "")).strip()
+        fields.append(f"{k}={quote_plus(v)}")
     if passphrase:
-        fields.append(f"passphrase={quote_plus(str(passphrase))}")
+        fields.append(f"passphrase={quote_plus(str(passphrase).strip())}")
     raw = "&".join(fields)
     return hashlib.md5(raw.encode()).hexdigest()
 
