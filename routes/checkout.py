@@ -3,21 +3,20 @@ import logging
 from datetime import datetime, timedelta
 
 import requests
-from flask import Blueprint, request, redirect, jsonify, current_app, url_for
+from flask import Blueprint, request, redirect, jsonify, url_for
 from flask_login import current_user, login_required
 from models import db, User, PricingTier, Order, Key
-from config import get_sellix_config
+from config import get_shoppy_config
 
 checkout_bp = Blueprint("checkout", __name__)
 logger = logging.getLogger(__name__)
 
-SELLIX_API = "https://api.sellix.gg/v1"
+SHOPPY_API = "https://shoppy.gg/api/v1"
 
 
-def _sellix_headers():
-    cfg = get_sellix_config()
-    key = cfg["api_key"]
-    return {"X-API-Key": key}
+def _shoppy_headers():
+    cfg = get_shoppy_config()
+    return {"Authorization": cfg["api_key"]}
 
 
 @checkout_bp.route("/create-session", methods=["POST"])
@@ -31,54 +30,62 @@ def create_session():
     if not tier:
         return jsonify({"error": "Invalid tier"}), 400
 
-    cfg = get_sellix_config()
+    cfg = get_shoppy_config()
     if not cfg["api_key"]:
-        return jsonify({"error": "Sellix API key not configured"}), 500
+        return jsonify({"error": "Shoppy API key not configured"}), 500
 
     try:
-        if not tier.sellix_product_id:
-            product_type = "license_key"
-            payload = {
-                "name": f"BEAZT - {tier.product.name} ({tier.label})",
-                "type": product_type,
-                "price_cents": tier.price_pence,
-                "currency": "GBP",
-            }
-            resp = requests.post(
-                f"{SELLIX_API}/products",
-                json=payload,
-                headers=_sellix_headers(),
-                timeout=15,
-            )
+        payload = {
+            "title": f"BEAZT License - {tier.product.name}",
+            "price": tier.price_pounds,
+            "currency": "GBP",
+            "email": current_user.email,
+            "webhook": url_for("checkout.webhook", _external=True),
+            "return_url": url_for("main.my_keys", _external=True),
+            "custom": {
+                "user_id": str(current_user.id),
+                "tier_id": str(tier.id),
+                "product_id": str(tier.product_id),
+                "duration_days": str(tier.duration_days),
+                "is_subscription": str(tier.is_subscription).lower(),
+            },
+        }
 
-            if resp.status_code not in (200, 201):
-                try:
-                    data = resp.json()
-                except Exception:
-                    data = {}
-                error_msg = data.get("error") or data.get("type") or f"HTTP {resp.status_code}: {resp.text[:200]}"
-                logger.error("Sellix product creation failed: %s", error_msg)
-                return jsonify({"error": str(error_msg)}), 500
+        resp = requests.post(
+            f"{SHOPPY_API}/payments",
+            json=payload,
+            headers=_shoppy_headers(),
+            timeout=15,
+        )
 
-            data = resp.json()
-            tier.sellix_product_id = data["id"]
-            db.session.commit()
-            logger.info("Created Sellix product %s for tier %s", tier.sellix_product_id, tier.label)
+        if resp.status_code != 200:
+            try:
+                err = resp.json()
+            except Exception:
+                err = {"message": resp.text[:300]}
+            msg = err.get("message") or err.get("error") or f"HTTP {resp.status_code}"
+            logger.error("Shoppy payment creation failed: %s", msg)
+            return jsonify({"error": str(msg)}), 500
+
+        data = resp.json()
+        payment_url = data.get("url") or data.get("checkout_url")
+
+        if not payment_url:
+            return jsonify({"error": "No checkout URL returned"}), 500
 
         order = Order(
             user_id=current_user.id,
             tier_id=tier.id,
-            stripe_session_id=current_user.email,
+            stripe_session_id=str(data.get("id", "")),
             status="pending",
         )
         db.session.add(order)
         db.session.commit()
 
-        buy_url = f"https://sellix.gg/buy/{tier.sellix_product_id}"
-        return redirect(buy_url, code=303)
+        return redirect(payment_url, code=303)
 
     except Exception as e:
-        logger.exception("Sellix checkout failed")
+        logger.exception("Shoppy checkout failed")
         return jsonify({"error": str(e)}), 500
 
 
@@ -88,38 +95,42 @@ def webhook():
     if not payload:
         return jsonify({"status": "error"}), 400
 
-    event_type = payload.get("type", "")
+    event = payload.get("event", "")
     data = payload.get("data", {})
-    logger.info("Sellix webhook: %s", event_type)
+    logger.info("Shoppy webhook: %s", event)
 
-    if event_type == "order.paid":
-        _handle_sellix_order(data)
+    if event in ("order.completed", "order.paid", "charge.completed"):
+        _handle_order(data)
 
     return jsonify({"status": "ok"})
 
 
-def _handle_sellix_order(data):
-    email = data.get("customer_email", "")
-    items = data.get("items", [])
-    if not items:
-        logger.warning("Sellix order has no items")
-        return
+def _handle_order(data):
+    custom = data.get("custom", {})
+    email = data.get("email") or custom.get("email", "")
 
-    sellix_prod_id = items[0].get("product_id")
+    user_id = int(custom.get("user_id", 0))
+    tier_id = int(custom.get("tier_id", 0))
+    product_id = int(custom.get("product_id", 1))
+    duration_days = int(custom.get("duration_days", 30))
+    is_subscription = custom.get("is_subscription", "false") == "true"
 
-    tier = PricingTier.query.filter_by(sellix_product_id=sellix_prod_id).first()
-    if not tier:
-        logger.warning("No matching tier for Sellix product %s", sellix_prod_id)
-        return
-
-    user = User.query.filter_by(email=email).first()
+    user = db.session.get(User, user_id) if user_id else User.query.filter_by(email=email).first()
     if not user:
-        logger.warning("No BEAZT user found for email %s", email)
+        logger.warning("No user found for Shoppy order: %s", email)
+        return
+
+    tier = db.session.get(PricingTier, tier_id) if tier_id else None
+    if not tier:
+        logger.warning("No tier found for Shoppy order")
         return
 
     order = Order.query.filter_by(
         user_id=user.id, tier_id=tier.id, status="pending"
     ).order_by(Order.created_at.desc()).first()
+
+    if order and order.status == "completed":
+        return
 
     if not order:
         order = Order(
@@ -130,16 +141,12 @@ def _handle_sellix_order(data):
         )
         db.session.add(order)
         db.session.flush()
-    elif order.status == "completed":
-        return
 
-    duration_days = tier.duration_days
     expires_at = datetime.utcnow() + timedelta(days=duration_days)
 
-    # Try pool key first
     pool_key = (
         Key.query
-        .filter_by(product_id=tier.product_id, tier_id=tier.id, user_id=None, is_active=False)
+        .filter_by(product_id=product_id, tier_id=tier_id, user_id=None, is_active=False)
         .order_by(Key.created_at.asc())
         .first()
     )
@@ -150,24 +157,23 @@ def _handle_sellix_order(data):
         pool_key.expires_at = expires_at
         pool_key.assigned_at = datetime.utcnow()
         pool_key.is_active = True
-        pool_key.is_subscription = tier.is_subscription
+        pool_key.is_subscription = is_subscription
         order.status = "completed"
         db.session.commit()
-        logger.info("Pool key assigned for order %s", order.id)
+        logger.info("Pool key assigned for Shoppy order %s", order.id)
         return
 
-    # Auto-generate key
     key_value = "BEAZT-" + secrets.token_hex(16).upper()
     order.status = "completed"
     key = Key(
         user_id=user.id,
         order_id=order.id,
-        product_id=tier.product_id,
-        tier_id=tier.id,
+        product_id=product_id,
+        tier_id=tier_id,
         key_value=key_value,
         expires_at=expires_at,
-        is_subscription=tier.is_subscription,
+        is_subscription=is_subscription,
     )
     db.session.add(key)
     db.session.commit()
-    logger.info("Key auto-generated for order %s", order.id)
+    logger.info("Key auto-generated for Shoppy order %s", order.id)

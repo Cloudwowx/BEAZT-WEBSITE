@@ -360,35 +360,27 @@ def privacy():
 
 @main_bp.route("/health/sellix")
 def health_sellix():
-    from config import get_sellix_config
+    from config import get_shoppy_config
     import requests as _r
-    cfg = get_sellix_config()
+    cfg = get_shoppy_config()
     key = cfg.get("api_key", "")
     if not key:
-        return {"ok": False, "error": "No API key configured"}
+        return {"ok": False, "error": "No Shoppy API key configured"}
 
     results = {}
-    for base_url in [
-        "https://api.sellix.gg/v1",
-        "https://api.sellix.gg/v2",
-        "https://sellix.gg/api/v1",
-        "https://app.sellix.gg/api/v1",
-    ]:
+    for base_url in ["https://shoppy.gg/api/v1"]:
         for label, hdrs in [
+            ("Authorization", {"Authorization": key}),
             ("Bearer", {"Authorization": f"Bearer {key}"}),
             ("X-API-Key", {"X-API-Key": key}),
-            ("Basic", {"Authorization": f"Basic {key}"}),
         ]:
             try:
-                resp = _r.get(
-                    f"{base_url}/products",
-                    headers=hdrs,
-                    timeout=10,
-                )
-                results[f"{base_url} | {label}"] = {
-                    "status": resp.status_code,
-                    "body": resp.text[:300],
-                }
+                resp = _r.get(f"{base_url}/products", headers=hdrs, timeout=10)
+                results[f"{label}"] = {"status": resp.status_code, "body": resp.text[:300]}
+            except Exception as e:
+                results[f"{label}"] = {"status": "error", "body": str(e)}
+
+    return {"key_prefix": key[:10] + "...", "results": results}
             except Exception as e:
                 results[f"{base_url} | {label}"] = {"status": "error", "body": str(e)}
 

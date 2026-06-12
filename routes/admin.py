@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app, Response
 from flask_login import login_required, current_user
 from models import db, User, Product, PricingTier, Order, Key, Setting
-from config import Config, get_sellix_config, get_chairfbi_config, get_loader_config, get_discord_config
+from config import Config, get_shoppy_config, get_chairfbi_config, get_loader_config, get_discord_config
 
 admin_bp = Blueprint("admin", __name__)
 logger = logging.getLogger(__name__)
@@ -858,7 +858,7 @@ def test_chairfbi():
 def settings():
     if request.method == "POST":
         fields = {
-            "sellix_api_key": "Sellix API Key",
+            "shoppy_api_key": "Shoppy API Key",
             "site_url": "Site URL",
             "chairfbi_api_token": "ChairFBI API Token",
             "chairfbi_api_base": "ChairFBI API Base URL",
@@ -882,12 +882,12 @@ def settings():
                     flash(f"{label} cleared.", "info")
         return redirect(url_for("admin.settings"))
 
-    sellix_cfg = get_sellix_config()
+    shoppy_cfg = get_shoppy_config()
     cf_cfg = get_chairfbi_config()
     loader_cfg = get_loader_config()
     discord_cfg = get_discord_config()
     return render_template("admin/settings.html",
-        sellix_api_key=sellix_cfg["api_key"],
+        shoppy_api_key=shoppy_cfg["api_key"],
         site_url=Config.SITE_URL,
         chairfbi_api_token=cf_cfg["api_token"],
         chairfbi_api_base=cf_cfg["api_base"],
