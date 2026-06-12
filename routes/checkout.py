@@ -12,7 +12,7 @@ from config import get_sellix_config
 checkout_bp = Blueprint("checkout", __name__)
 logger = logging.getLogger(__name__)
 
-SELLIX_API = "https://dev.sellix.io/v1"
+SELLIX_API = "https://sellix.io/v1"
 
 
 def _sellix_headers():
