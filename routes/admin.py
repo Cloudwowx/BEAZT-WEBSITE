@@ -795,12 +795,7 @@ def chairfbi_dashboard():
     products = Product.query.order_by(Product.name).all()
     local_cf_keys = Key.query.filter(Key.chairfbi_key_id.isnot(None)).order_by(Key.created_at.desc()).limit(30).all()
 
-    kv_configured = False
-    try:
-        from utils.kv_store import KV_AVAILABLE
-        kv_configured = KV_AVAILABLE
-    except Exception:
-        pass
+    kv_configured = bool(os.environ.get("KV_URL") or os.environ.get("KV_REST_API_URL") or os.environ.get("REDIS_URL"))
 
     vc_synced_count = Product.query.filter(Product.venomcheats_slug.isnot(None)).count()
     vc_rating = Setting.query.filter_by(key="venomcheats_rating").first()

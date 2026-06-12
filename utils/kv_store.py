@@ -5,7 +5,7 @@ import threading
 
 logger = logging.getLogger(__name__)
 
-KV_URL = os.getenv("KV_URL", "")
+KV_URL = os.getenv("KV_URL", "") or os.getenv("REDIS_URL", "")
 KV_AVAILABLE = bool(KV_URL)
 
 _redis_client = None
