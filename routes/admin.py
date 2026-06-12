@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app, Response
 from flask_login import login_required, current_user
 from models import db, User, Product, PricingTier, Order, Key, Setting
-from config import get_stripe_config, get_chairfbi_config, get_loader_config, get_discord_config
+from config import Config, get_sellix_config, get_chairfbi_config, get_loader_config, get_discord_config
 
 admin_bp = Blueprint("admin", __name__)
 logger = logging.getLogger(__name__)
@@ -858,10 +858,8 @@ def test_chairfbi():
 def settings():
     if request.method == "POST":
         fields = {
-            "stripe_secret_key": "Stripe Secret Key",
-            "stripe_publishable_key": "Stripe Publishable Key",
-            "stripe_webhook_secret": "Stripe Webhook Secret",
-            "stripe_payment_method_domain": "Stripe Payment Method Domain",
+            "sellix_api_key": "Sellix API Key",
+            "sellix_webhook_secret": "Sellix Webhook Secret",
             "site_url": "Site URL",
             "chairfbi_api_token": "ChairFBI API Token",
             "chairfbi_api_base": "ChairFBI API Base URL",
@@ -885,16 +883,14 @@ def settings():
                     flash(f"{label} cleared.", "info")
         return redirect(url_for("admin.settings"))
 
-    cfg = get_stripe_config()
+    sellix_cfg = get_sellix_config()
     cf_cfg = get_chairfbi_config()
     loader_cfg = get_loader_config()
     discord_cfg = get_discord_config()
     return render_template("admin/settings.html",
-        stripe_secret=cfg["secret_key"],
-        stripe_publishable=cfg["publishable_key"],
-        stripe_webhook=cfg["webhook_secret"],
-        site_url=cfg["site_url"],
-        stripe_payment_method_domain=cfg.get("payment_method_domain", ""),
+        sellix_api_key=sellix_cfg["api_key"],
+        sellix_webhook_secret=sellix_cfg["webhook_secret"],
+        site_url=Config.SITE_URL,
         chairfbi_api_token=cf_cfg["api_token"],
         chairfbi_api_base=cf_cfg["api_base"],
         loader_token=loader_cfg["loader_token"],

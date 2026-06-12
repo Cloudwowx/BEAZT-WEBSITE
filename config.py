@@ -20,10 +20,8 @@ class Config:
         "sqlite:///" + _db_path,
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
-    STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
-    STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-    STRIPE_PAYMENT_METHOD_DOMAIN = ""
+    SELLIX_API_KEY = os.getenv("SELLIX_API_KEY", "")
+    SELLIX_WEBHOOK_SECRET = os.getenv("SELLIX_WEBHOOK_SECRET", "")
     SITE_URL = os.getenv("SITE_URL", "http://localhost:5000")
     DISCORD_PUBLIC_URL = os.getenv("DISCORD_PUBLIC_URL", "https://discord.gg/TvxrADZhNR")
     DISCORD_PRIVATE_URL = os.getenv("DISCORD_PRIVATE_URL", "")
@@ -36,8 +34,7 @@ class Config:
     IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
 
 
-def get_stripe_config():
-    from flask import current_app
+def get_sellix_config():
     from models import Setting
 
     def _lookup(key, default):
@@ -50,22 +47,9 @@ def get_stripe_config():
         return default
 
     return {
-        "secret_key": _lookup("stripe_secret_key", Config.STRIPE_SECRET_KEY),
-        "publishable_key": _lookup("stripe_publishable_key", Config.STRIPE_PUBLISHABLE_KEY),
-        "webhook_secret": _lookup("stripe_webhook_secret", Config.STRIPE_WEBHOOK_SECRET),
-        "site_url": _lookup("site_url", Config.SITE_URL),
-        "payment_method_domain": _lookup("stripe_payment_method_domain", Config.STRIPE_PAYMENT_METHOD_DOMAIN),
+        "api_key": _lookup("sellix_api_key", Config.SELLIX_API_KEY),
+        "webhook_secret": _lookup("sellix_webhook_secret", Config.SELLIX_WEBHOOK_SECRET),
     }
-
-
-def _db_or_env(key, env_default):
-    try:
-        val = Setting.get(key)
-        if val:
-            return val
-    except Exception:
-        pass
-    return env_default
 
 
 def get_chairfbi_config():
