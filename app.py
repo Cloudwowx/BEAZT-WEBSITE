@@ -41,6 +41,12 @@ def page_not_found(e):
     return render_template("404.html"), 404
 
 
+@app.route("/webhooks/sellix", methods=["POST"])
+def sellix_webhook():
+    from routes.checkout import webhook
+    return webhook()
+
+
 @app.context_processor
 def inject_discord():
     try:

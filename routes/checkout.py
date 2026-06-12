@@ -49,13 +49,17 @@ def create_session():
                 headers=_sellix_headers(),
                 timeout=15,
             )
-            data = resp.json()
 
             if resp.status_code not in (200, 201):
-                error_msg = data.get("error") or data.get("type", str(data))
+                try:
+                    data = resp.json()
+                except Exception:
+                    data = {}
+                error_msg = data.get("error") or data.get("type") or f"HTTP {resp.status_code}: {resp.text[:200]}"
                 logger.error("Sellix product creation failed: %s", error_msg)
                 return jsonify({"error": str(error_msg)}), 500
 
+            data = resp.json()
             tier.sellix_product_id = data["id"]
             db.session.commit()
             logger.info("Created Sellix product %s for tier %s", tier.sellix_product_id, tier.label)
