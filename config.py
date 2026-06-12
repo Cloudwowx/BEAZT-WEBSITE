@@ -21,7 +21,6 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SELLIX_API_KEY = os.getenv("SELLIX_API_KEY", "")
-    SELLIX_WEBHOOK_SECRET = os.getenv("SELLIX_WEBHOOK_SECRET", "")
     SITE_URL = os.getenv("SITE_URL", "http://localhost:5000")
     DISCORD_PUBLIC_URL = os.getenv("DISCORD_PUBLIC_URL", "https://discord.gg/TvxrADZhNR")
     DISCORD_PRIVATE_URL = os.getenv("DISCORD_PRIVATE_URL", "")

@@ -859,7 +859,6 @@ def settings():
     if request.method == "POST":
         fields = {
             "sellix_api_key": "Sellix API Key",
-            "sellix_webhook_secret": "Sellix Webhook Secret",
             "site_url": "Site URL",
             "chairfbi_api_token": "ChairFBI API Token",
             "chairfbi_api_base": "ChairFBI API Base URL",
@@ -889,7 +888,6 @@ def settings():
     discord_cfg = get_discord_config()
     return render_template("admin/settings.html",
         sellix_api_key=sellix_cfg["api_key"],
-        sellix_webhook_secret=sellix_cfg["webhook_secret"],
         site_url=Config.SITE_URL,
         chairfbi_api_token=cf_cfg["api_token"],
         chairfbi_api_base=cf_cfg["api_base"],

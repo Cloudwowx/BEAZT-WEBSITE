@@ -26,15 +26,6 @@
             {% if sellix_api_key %}<span style="font-size:0.68rem;color:var(--success);">Set ({{ sellix_api_key[:12] }}...)</span>{% else %}<span style="font-size:0.68rem;color:var(--error);">Required for checkout.</span>{% endif %}
           </div>
 
-          <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Webhook Secret</label>
-            <div style="display:flex;gap:0.5rem;">
-              <input :type="reveal.sellix_wh ? 'text' : 'password'" name="sellix_webhook_secret" value="{{ sellix_webhook_secret }}" placeholder="Webhook secret from Sellix dashboard" style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-              <button type="button" @click="reveal.sellix_wh = !reveal.sellix_wh" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.sellix_wh ? 'HIDE' : 'SHOW'"></button>
-            </div>
-            {% if sellix_webhook_secret %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--warn);">Recommended for webhook verification.</span>{% endif %}
-          </div>
-
         </div>
       </div>
 

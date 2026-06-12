@@ -60,6 +60,7 @@ class PricingTier(db.Model):
     price_pence = db.Column(db.Integer, nullable=False)
     stripe_price_id = db.Column(db.String(128), nullable=True)
     is_subscription = db.Column(db.Boolean, default=False)
+    sellix_product_id = db.Column(db.String(64), nullable=True)
 
     orders = db.relationship("Order", backref="tier", lazy="dynamic")
     keys = db.relationship("Key", backref="pricing_tier", lazy="dynamic")

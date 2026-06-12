@@ -134,6 +134,13 @@ with app.app_context():
             _cursor.execute("ALTER TABLE pricing_tiers ADD COLUMN is_subscription BOOLEAN DEFAULT 0")
             _conn.commit()
 
+        # Ensure pricing_tiers table has sellix_product_id
+        _cursor.execute("PRAGMA table_info(pricing_tiers)")
+        _cols = [r[1] for r in _cursor.fetchall()]
+        if "sellix_product_id" not in _cols:
+            _cursor.execute("ALTER TABLE pricing_tiers ADD COLUMN sellix_product_id VARCHAR(64)")
+            _conn.commit()
+
         # Ensure orders table has stripe_subscription_id
         _cursor.execute("PRAGMA table_info(orders)")
         _cols = [r[1] for r in _cursor.fetchall()]

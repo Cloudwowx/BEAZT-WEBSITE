@@ -1,18 +1,17 @@
 import secrets
-import json
 import logging
 from datetime import datetime, timedelta
 
 import requests
 from flask import Blueprint, request, redirect, jsonify, current_app, url_for
 from flask_login import current_user, login_required
-from models import db, PricingTier, Order, Key
+from models import db, User, PricingTier, Order, Key
 from config import get_sellix_config
 
 checkout_bp = Blueprint("checkout", __name__)
 logger = logging.getLogger(__name__)
 
-SELLIX_API = "https://sellix.io/v1"
+SELLIX_API = "https://api.sellix.gg/v1"
 
 
 def _sellix_headers():
@@ -36,54 +35,43 @@ def create_session():
         return jsonify({"error": "Sellix API key not configured"}), 500
 
     try:
-        payload = {
-            "title": f"BEAZT - {tier.product.name} ({tier.label})",
-            "currency": "GBP",
-            "value": tier.price_pounds,
-            "email": current_user.email,
-            "webhook": url_for("checkout.webhook", _external=True),
-            "return_url": url_for("main.my_keys", _external=True),
-            "custom_fields": {
-                "user_id": str(current_user.id),
-                "tier_id": str(tier.id),
-                "product_id": str(tier.product_id),
-                "product_slug": tier.product.slug,
-                "duration_days": str(tier.duration_days),
-                "is_subscription": str(tier.is_subscription).lower(),
-            },
-        }
+        if not tier.sellix_product_id:
+            product_type = "license_key"
+            payload = {
+                "name": f"BEAZT - {tier.product.name} ({tier.label})",
+                "type": product_type,
+                "price_cents": tier.price_pence,
+                "currency": "GBP",
+            }
+            resp = requests.post(
+                f"{SELLIX_API}/products",
+                json=payload,
+                headers=_sellix_headers(),
+                timeout=15,
+            )
+            data = resp.json()
 
-        if tier.is_subscription:
-            payload["recurring"] = True
-            payload["recurring_interval"] = tier.duration_days
-            payload["recurring_times"] = 1
+            if resp.status_code not in (200, 201):
+                error_msg = data.get("error") or data.get("type", str(data))
+                logger.error("Sellix product creation failed: %s", error_msg)
+                return jsonify({"error": str(error_msg)}), 500
 
-        resp = requests.post(
-            f"{SELLIX_API}/payments",
-            json=payload,
-            headers=_sellix_headers(),
-            timeout=15,
-        )
-        data = resp.json()
-
-        if resp.status_code != 200 or data.get("status") != 200:
-            error_msg = data.get("message", data.get("error", "Unknown error"))
-            logger.error("Sellix payment creation failed: %s", error_msg)
-            return jsonify({"error": str(error_msg)}), 500
-
-        sellix_uniqid = data["data"]["uniqid"]
-        payment_url = data["data"]["url"]
+            tier.sellix_product_id = data["id"]
+            db.session.commit()
+            logger.info("Created Sellix product %s for tier %s", tier.sellix_product_id, tier.label)
 
         order = Order(
             user_id=current_user.id,
             tier_id=tier.id,
-            stripe_session_id=sellix_uniqid,
+            stripe_session_id=current_user.email,
             status="pending",
         )
         db.session.add(order)
         db.session.commit()
 
-        return redirect(payment_url, code=303)
+        buy_url = f"https://sellix.gg/buy/{tier.sellix_product_id}"
+        return redirect(buy_url, code=303)
+
     except Exception as e:
         logger.exception("Sellix checkout failed")
         return jsonify({"error": str(e)}), 500
@@ -93,99 +81,87 @@ def create_session():
 def webhook():
     payload = request.get_json(silent=True)
     if not payload:
-        return jsonify({"status": "error", "error": "Invalid payload"}), 400
+        return jsonify({"status": "error"}), 400
 
-    cfg = get_sellix_config()
-    webhook_secret = cfg.get("webhook_secret", "")
-    if webhook_secret:
-        header_secret = request.headers.get("X-Sellix-Webhook", "")
-        if header_secret != webhook_secret:
-            logger.warning("Sellix webhook secret mismatch")
-            return jsonify({"status": "error"}), 403
+    event_type = payload.get("type", "")
+    data = payload.get("data", {})
+    logger.info("Sellix webhook: %s", event_type)
 
-    event = payload.get("event", "")
-    order_data = payload.get("data", {})
-    logger.info("Sellix webhook: %s", event)
-
-    if event in ("order:paid", "order:completed"):
-        _handle_payment(order_data)
-    elif event in ("subscription:cancelled", "order:cancelled"):
-        uniqid = order_data.get("uniqid") or order_data.get("product_uniqid")
-        order = Order.query.filter_by(stripe_session_id=uniqid).first()
-        if order:
-            key = Key.query.filter_by(order_id=order.id).first()
-            if key:
-                key.is_active = False
-            order.status = "cancelled"
-            db.session.commit()
-            logger.info("Subscription cancelled — key expired for order %s", order.id)
+    if event_type == "order.paid":
+        _handle_sellix_order(data)
 
     return jsonify({"status": "ok"})
 
 
-def _handle_payment(order_data):
-    uniqid = order_data.get("uniqid")
-    if not uniqid:
+def _handle_sellix_order(data):
+    email = data.get("customer_email", "")
+    items = data.get("items", [])
+    if not items:
+        logger.warning("Sellix order has no items")
         return
 
-    order = Order.query.filter_by(stripe_session_id=uniqid).first()
+    sellix_prod_id = items[0].get("product_id")
+
+    tier = PricingTier.query.filter_by(sellix_product_id=sellix_prod_id).first()
+    if not tier:
+        logger.warning("No matching tier for Sellix product %s", sellix_prod_id)
+        return
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        logger.warning("No BEAZT user found for email %s", email)
+        return
+
+    order = Order.query.filter_by(
+        user_id=user.id, tier_id=tier.id, status="pending"
+    ).order_by(Order.created_at.desc()).first()
+
     if not order:
-        logger.warning("No order found for Sellix uniqid: %s", uniqid)
+        order = Order(
+            user_id=user.id,
+            tier_id=tier.id,
+            stripe_session_id=data.get("id", ""),
+            status="completed",
+        )
+        db.session.add(order)
+        db.session.flush()
+    elif order.status == "completed":
         return
 
-    custom = order_data.get("custom_fields", {}) or {}
-    duration_days = int(custom.get("duration_days", order.tier.duration_days if order.tier else 30))
-    is_subscription = custom.get("is_subscription", "false") == "true"
-
-    # Renewal — extend the existing key instead of creating a new one
-    if order.status == "completed" and is_subscription:
-        key = Key.query.filter_by(order_id=order.id).first()
-        if key:
-            key.expires_at = max(key.expires_at or datetime.utcnow(), datetime.utcnow()) + timedelta(days=duration_days)
-            key.is_active = True
-            db.session.commit()
-            logger.info("Subscription renewed — key extended for order %s", order.id)
-        return
-
-    product_id = int(custom.get("product_id", order.tier.product_id if order.tier else 1))
-    tier_id = int(custom.get("tier_id", order.tier_id if order.tier_id else 0))
+    duration_days = tier.duration_days
     expires_at = datetime.utcnow() + timedelta(days=duration_days)
 
-    from models import Product
-    product = db.session.get(Product, product_id)
-
-    # 1) Try pool key first
+    # Try pool key first
     pool_key = (
         Key.query
-        .filter_by(product_id=product_id, tier_id=tier_id, user_id=None, is_active=False)
+        .filter_by(product_id=tier.product_id, tier_id=tier.id, user_id=None, is_active=False)
         .order_by(Key.created_at.asc())
         .first()
     )
     if pool_key:
-        pool_key.user_id = order.user_id
+        pool_key.user_id = user.id
         pool_key.order_id = order.id
-        pool_key.tier_id = tier_id
+        pool_key.tier_id = tier.id
         pool_key.expires_at = expires_at
         pool_key.assigned_at = datetime.utcnow()
         pool_key.is_active = True
-        pool_key.is_subscription = is_subscription
+        pool_key.is_subscription = tier.is_subscription
         order.status = "completed"
         db.session.commit()
         logger.info("Pool key assigned for order %s", order.id)
         return
 
-    # 2) Auto-generate key
+    # Auto-generate key
     key_value = "BEAZT-" + secrets.token_hex(16).upper()
     order.status = "completed"
-
     key = Key(
-        user_id=order.user_id,
+        user_id=user.id,
         order_id=order.id,
-        product_id=product_id,
-        tier_id=tier_id,
+        product_id=tier.product_id,
+        tier_id=tier.id,
         key_value=key_value,
         expires_at=expires_at,
-        is_subscription=is_subscription,
+        is_subscription=tier.is_subscription,
     )
     db.session.add(key)
     db.session.commit()
