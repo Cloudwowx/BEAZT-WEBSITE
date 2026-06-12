@@ -94,49 +94,42 @@ STATUS_MAP = {
 
 
 def _extract_products_from_html(html):
-    """Extract the allCheatsForStatus array from Next.js RSC chunks."""
-    chunks = re.findall(r'self\.__next_f\.push\(\[1,"(.*?)"\]\)', html)
+    """Extract the allCheatsForStatus array directly from raw HTML."""
+    marker = '"allCheatsForStatus":['
+    idx = html.find(marker)
+    if idx == -1:
+        logger.warning("allCheatsForStatus marker not found in HTML")
+        return []
 
-    for chunk in chunks:
-        if '"allCheatsForStatus"' not in chunk:
+    bracket_start = idx + len(marker) - 1
+    depth = 0
+    i = bracket_start
+    while i < len(html):
+        c = html[i]
+        if c == '\\':
+            i += 2
             continue
+        if c == '[':
+            depth += 1
+        elif c == ']':
+            depth -= 1
+            if depth == 0:
+                raw = html[bracket_start:i + 1]
+                try:
+                    data = json.loads(raw.encode().decode('unicode_escape'))
+                except (UnicodeDecodeError, UnicodeEncodeError, json.JSONDecodeError):
+                    try:
+                        data = json.loads(raw)
+                    except json.JSONDecodeError:
+                        logger.warning("Failed to parse allCheatsForStatus JSON")
+                        return []
+                if isinstance(data, list) and len(data) > 0:
+                    logger.info("Extracted %d products from allCheatsForStatus", len(data))
+                    return data
+                return []
+        i += 1
 
-        try:
-            decoded = chunk.encode().decode('unicode_escape')
-        except (UnicodeDecodeError, UnicodeEncodeError):
-            decoded = chunk
-
-        start_marker = '"allCheatsForStatus":['
-        idx = decoded.find(start_marker)
-        if idx == -1:
-            continue
-
-        start_pos = idx + len(start_marker)
-        depth = 0
-        end_pos = start_pos
-        for i in range(start_pos, len(decoded)):
-            c = decoded[i]
-            if c == '[':
-                depth += 1
-            elif c == ']':
-                depth -= 1
-                if depth == 0:
-                    end_pos = i + 1
-                    break
-            elif c == '"':
-                if i > 0 and decoded[i - 1] == '\\':
-                    continue
-                pass
-
-        json_str = decoded[start_pos:end_pos]
-        try:
-            data = json.loads(json_str)
-            if isinstance(data, list) and len(data) > 0:
-                logger.info("Extracted %d products from allCheatsForStatus", len(data))
-                return data
-        except json.JSONDecodeError:
-            logger.debug("JSON decode failed for allCheatsForStatus chunk, trying next")
-
+    logger.warning("Failed to close allCheatsForStatus bracket")
     return []
 
 
