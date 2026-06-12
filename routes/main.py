@@ -358,6 +358,30 @@ def privacy():
     return render_template("privacy.html")
 
 
+@main_bp.route("/health/products")
+def health_products():
+    from models import Product
+    products = Product.query.all()
+    rows = []
+    for p in products:
+        rows.append({
+            "id": p.id,
+            "name": p.name,
+            "slug": p.slug,
+            "visibility": p.visibility,
+            "key_source": p.key_source,
+            "is_private": p.is_private,
+            "has_vc": bool(p.venomcheats_slug),
+        })
+    import os as _os
+    return {
+        "count": len(rows),
+        "products": rows,
+        "vercel": _os.environ.get("VERCEL") == "1",
+        "db_path": current_app.config.get("SQLALCHEMY_DATABASE_URI", "")[:80],
+    }
+
+
 @main_bp.route("/my-keys")
 @login_required
 def my_keys():

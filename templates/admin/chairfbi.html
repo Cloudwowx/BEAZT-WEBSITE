@@ -5,6 +5,14 @@
   <p>Monitor balance, cheat statuses, and manage ChairFBI keys.</p>
 </div>
 
+{% if is_vercel and not kv_configured %}
+<div class="cf-alert cf-alert-error" style="margin-bottom:1rem;">
+  <span class="icon icon-sm" data-lucide="database"></span>
+  <strong>Persistence not configured.</strong> Products will disappear on refresh.
+  <a href="https://vercel.com/dashboard/stores/kv" target="_blank" rel="noopener" style="color:#fecaca;text-decoration:underline;">Create a Vercel KV database</a>, link it to this project, and redeploy.
+</div>
+{% endif %}
+
 {% if chairfbi_error %}
 <div class="cf-alert cf-alert-error">
   <span class="icon icon-sm" data-lucide="triangle-alert"></span>

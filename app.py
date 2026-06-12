@@ -163,7 +163,18 @@ with app.app_context():
     except Exception:
         pass
 
+    from utils.kv_store import restore_products_to_db, start_backup_thread
+    try:
+        restore_products_to_db()
+    except Exception:
+        pass
+
     seed_products()
+
+    try:
+        start_backup_thread(app, interval=120)
+    except Exception:
+        pass
 
     try:
         from utils.sync import start_sync_service

@@ -59,11 +59,20 @@ def _enrich_product_from_venomcheats(product):
             product.gallery_images = json.dumps(gallery_paths)
 
         db.session.commit()
+        _backup_products_safe()
         logger.info("Enriched product '%s' from VenomCheats (slug=%s)", product.name, slug)
         return True
     except Exception as e:
         logger.warning("VenomCheats enrichment failed for '%s': %s", product.name, e)
         return False
+
+
+def _backup_products_safe():
+    try:
+        from utils.kv_store import backup_products
+        backup_products()
+    except Exception:
+        pass
 
 
 def admin_required(f):
@@ -262,6 +271,7 @@ def create_product():
     )
     db.session.add(product)
     db.session.commit()
+    _backup_products_safe()
     flash(f"Product '{name}' created.", "success")
     return redirect(url_for("admin.product_tiers", product_id=product.id))
 
@@ -418,6 +428,7 @@ def product_tiers(product_id):
             product.image_url = image_url_val if image_url_val else None
 
         db.session.commit()
+        _backup_products_safe()
         flash("Product settings updated.", "success")
         return redirect(url_for("admin.product_tiers", product_id=product.id))
 
@@ -726,6 +737,13 @@ def chairfbi_dashboard():
     products = Product.query.order_by(Product.name).all()
     local_cf_keys = Key.query.filter(Key.chairfbi_key_id.isnot(None)).order_by(Key.created_at.desc()).limit(30).all()
 
+    kv_configured = False
+    try:
+        from utils.kv_store import KV_AVAILABLE
+        kv_configured = KV_AVAILABLE
+    except Exception:
+        pass
+
     vc_synced_count = Product.query.filter(Product.venomcheats_slug.isnot(None)).count()
     vc_rating = Setting.query.filter_by(key="venomcheats_rating").first()
     vc_rating_data = None
@@ -753,6 +771,8 @@ def chairfbi_dashboard():
         vc_synced_count=vc_synced_count,
         vc_rating=vc_rating_data,
         vc_last_sync=vc_last_sync,
+        kv_configured=kv_configured,
+        is_vercel=os.environ.get("VERCEL") == "1",
     )
 
 
@@ -791,6 +811,7 @@ def chairfbi_import_one():
     )
     db.session.add(product)
     db.session.commit()
+    _backup_products_safe()
 
     enriched = _enrich_product_from_venomcheats(product)
     if enriched:
@@ -852,6 +873,7 @@ def chairfbi_import_all():
             created += 1
 
         db.session.commit()
+        _backup_products_safe()
 
         msg = f"Imported {created} new cheat(s) from ChairFBI. {skipped} already exist."
         if enriched:
@@ -968,6 +990,7 @@ def chairfbi_sync_venomcheats():
                 db.session.add(Setting(key="venomcheats_rating", value=json.dumps(rating)))
 
         db.session.commit()
+        _backup_products_safe()
         flash(f"Synced {len(vc_data)} products from VenomCheats. Updated {updated} local product(s).", "success")
     except Exception as e:
         flash(f"VenomCheats sync failed: {e}", "error")
