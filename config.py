@@ -33,6 +33,7 @@ class Config:
     LOADER_URL = os.getenv("LOADER_URL", "")
     LOADER_PUBLIC_URL = os.getenv("LOADER_PUBLIC_URL", "")
     LOADER_PRIVATE_URL = os.getenv("LOADER_PRIVATE_URL", "")
+    IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
 
 
 def get_stripe_config():

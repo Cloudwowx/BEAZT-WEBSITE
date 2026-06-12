@@ -515,14 +515,38 @@ def product_tiers(product_id):
         if image_file and image_file.filename:
             ext = os.path.splitext(image_file.filename)[1].lower()
             if ext in (".png", ".jpg", ".jpeg"):
+                file_bytes = image_file.read()
+                saved = False
                 try:
                     upload_dir = os.path.join(current_app.root_path, "static", "images", "products", product.slug)
                     os.makedirs(upload_dir, exist_ok=True)
                     path = os.path.join(upload_dir, f"banner{ext}")
-                    image_file.save(path)
+                    with open(path, "wb") as f:
+                        f.write(file_bytes)
                     product.image_url = f"/static/images/products/{product.slug}/banner{ext}"
+                    saved = True
                 except OSError:
-                    flash("Image upload unavailable on serverless. Use the Image URL field below.", "warn")
+                    pass
+                if not saved:
+                    import base64
+                    imgbb_key = os.environ.get("IMGBB_API_KEY", "")
+                    if imgbb_key:
+                        try:
+                            import requests as _req
+                            resp = _req.post(
+                                "https://api.imgbb.com/1/upload",
+                                data={"key": imgbb_key, "image": base64.b64encode(file_bytes).decode()},
+                                timeout=15,
+                            )
+                            data = resp.json()
+                            if data.get("success"):
+                                product.image_url = data["data"]["url"]
+                            else:
+                                flash("imgbb upload failed. Use the URL field instead.", "error")
+                        except Exception:
+                            flash("Banner upload failed. Use the URL field instead.", "error")
+                    else:
+                        flash("Banner upload unavailable. Set IMGBB_API_KEY or use the URL field.", "warn")
             else:
                 flash("Only PNG and JPEG files are accepted.", "error")
                 return redirect(url_for("admin.product_tiers", product_id=product.id))
@@ -550,15 +574,46 @@ def product_tiers(product_id):
         if gallery_file and gallery_file.filename:
             ext = os.path.splitext(gallery_file.filename)[1].lower()
             if ext in (".png", ".jpg", ".jpeg", ".webp"):
+                file_bytes = gallery_file.read()
+                # Try local save first
+                saved = False
                 try:
                     upload_dir = os.path.join(current_app.root_path, "static", "images", "products", product.slug)
                     os.makedirs(upload_dir, exist_ok=True)
                     count = len([f for f in os.listdir(upload_dir) if f.startswith("gallery_")])
                     fname = f"gallery_{count}{ext}"
-                    gallery_file.save(os.path.join(upload_dir, fname))
+                    with open(os.path.join(upload_dir, fname), "wb") as f:
+                        f.write(file_bytes)
                     gallery.append(f"/static/images/products/{product.slug}/{fname}")
+                    saved = True
                 except OSError:
-                    flash("Upload unavailable on serverless. Use the URL field to add images.", "warn")
+                    pass
+
+                # Fallback: upload to imgbb
+                if not saved:
+                    import base64
+                    imgbb_key = os.environ.get("IMGBB_API_KEY", "")
+                    if imgbb_key:
+                        try:
+                            import requests as _req
+                            resp = _req.post(
+                                "https://api.imgbb.com/1/upload",
+                                data={
+                                    "key": imgbb_key,
+                                    "image": base64.b64encode(file_bytes).decode(),
+                                },
+                                timeout=15,
+                            )
+                            data = resp.json()
+                            if data.get("success"):
+                                gallery.append(data["data"]["url"])
+                                flash("Image uploaded via imgbb.", "success")
+                            else:
+                                flash("imgbb upload failed. Use the URL field instead.", "error")
+                        except Exception:
+                            flash("Image upload failed. Use the URL field instead.", "error")
+                    else:
+                        flash("Upload unavailable. Set IMGBB_API_KEY or use the URL field.", "warn")
 
         product.gallery_images = json.dumps(gallery) if gallery else None
 

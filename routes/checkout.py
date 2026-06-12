@@ -70,9 +70,6 @@ def create_session():
 
         if tier.is_subscription:
             session_kwargs["mode"] = "subscription"
-            session_kwargs["subscription_data"] = {
-                "cancel_at": int((datetime.utcnow() + timedelta(days=tier.duration_days - 1)).timestamp()),
-            }
         else:
             session_kwargs["mode"] = "payment"
 
@@ -154,6 +151,13 @@ def handle_checkout_completed(session_data):
 
     if subscription_id:
         order.stripe_subscription_id = subscription_id
+        try:
+            stripe.Subscription.modify(
+                subscription_id,
+                cancel_at=int((datetime.utcnow() + timedelta(days=duration_days)).timestamp()),
+            )
+        except stripe.error.StripeError:
+            pass
 
     key_value = ""
     chairfbi_key_id = None
