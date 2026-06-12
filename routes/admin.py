@@ -937,9 +937,18 @@ def chairfbi_import_all():
         db.session.commit()
         _backup_products_safe()
 
-        # Pre-fill default pricing tiers for newly created public products
-        for product in Product.query.filter_by(visibility="public").all():
+        vc_prefetched = None
+        try:
+            from utils.venomcheats import get_all_products
+            vc_prefetched = get_all_products()
+        except Exception:
+            pass
+
+        for product in Product.query.order_by(Product.id).all():
             _create_default_tiers(product)
+            if vc_prefetched:
+                if _enrich_product_from_venomcheats(product, vc_products=vc_prefetched):
+                    enriched += 1
 
         msg = f"Imported {created} new cheat(s) from ChairFBI. {skipped} already exist."
         if enriched:
