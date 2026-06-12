@@ -35,12 +35,16 @@ class Product(db.Model):
     slug = db.Column(db.String(128), unique=True, nullable=False, index=True)
     description = db.Column(db.Text, nullable=True)
     image_url = db.Column(db.String(256), nullable=True)
-    is_private = db.Column(db.Boolean, default=True)
+    is_private = db.Column(db.Boolean, default=False)
     chairfbi_cheat_id = db.Column(db.String(64), nullable=True)
     key_source = db.Column(db.String(16), default="chairfbi")
     visibility = db.Column(db.String(16), default="public")
     features_text = db.Column(db.Text, nullable=True)
     buyer_notes = db.Column(db.Text, nullable=True)
+    gallery_images = db.Column(db.Text, nullable=True)
+    venomcheats_slug = db.Column(db.String(64), nullable=True)
+    venomcheats_data = db.Column(db.Text, nullable=True)
+    last_synced_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     tiers = db.relationship("PricingTier", backref="product", lazy="dynamic")
@@ -193,9 +197,9 @@ def seed_products():
                 "Loader download available in My Keys dashboard"
             ),
             image_url="/static/icons/rust_placeholder.jpg",
-            is_private=True,
+            is_private=False,
             key_source="pool",
-            visibility="private",
+            visibility="public",
         )
         db.session.add(product)
         db.session.flush()

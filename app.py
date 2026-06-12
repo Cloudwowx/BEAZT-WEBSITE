@@ -89,6 +89,34 @@ with app.app_context():
             _cursor.execute("UPDATE products SET visibility='private' WHERE key_source='pool'")
             _conn.commit()
 
+        # Ensure products table has venomcheats_slug
+        _cursor.execute("PRAGMA table_info(products)")
+        _cols = [r[1] for r in _cursor.fetchall()]
+        if "venomcheats_slug" not in _cols:
+            _cursor.execute("ALTER TABLE products ADD COLUMN venomcheats_slug VARCHAR(64)")
+            _conn.commit()
+
+        # Ensure products table has venomcheats_data
+        _cursor.execute("PRAGMA table_info(products)")
+        _cols = [r[1] for r in _cursor.fetchall()]
+        if "venomcheats_data" not in _cols:
+            _cursor.execute("ALTER TABLE products ADD COLUMN venomcheats_data TEXT")
+            _conn.commit()
+
+        # Ensure products table has last_synced_at
+        _cursor.execute("PRAGMA table_info(products)")
+        _cols = [r[1] for r in _cursor.fetchall()]
+        if "last_synced_at" not in _cols:
+            _cursor.execute("ALTER TABLE products ADD COLUMN last_synced_at DATETIME")
+            _conn.commit()
+
+        # Ensure products table has gallery_images
+        _cursor.execute("PRAGMA table_info(products)")
+        _cols = [r[1] for r in _cursor.fetchall()]
+        if "gallery_images" not in _cols:
+            _cursor.execute("ALTER TABLE products ADD COLUMN gallery_images TEXT")
+            _conn.commit()
+
         # Ensure keys table has tier_id, assigned_at
         _cursor.execute("PRAGMA table_info(keys)")
         _key_cols = [r[1] for r in _cursor.fetchall()]
@@ -105,6 +133,12 @@ with app.app_context():
         pass
 
     seed_products()
+
+    try:
+        from utils.sync import start_sync_service
+        start_sync_service(app)
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

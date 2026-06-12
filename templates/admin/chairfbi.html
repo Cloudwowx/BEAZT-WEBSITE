@@ -35,6 +35,18 @@
     <div class="stat-num">{{ recent_cf_keys|length }}</div>
     <div class="stat-lbl">Recent CF Keys (API)</div>
   </div>
+  <div class="stat-card">
+    <div class="stat-num" style="font-size:1.3rem;">{{ vc_synced_count }} / {{ products|length }}</div>
+    <div class="stat-lbl">VC Enriched</div>
+    {% if vc_rating %}
+    <div style="font-size:0.6rem;color:var(--text-muted);margin-top:0.25rem;">
+      Trustpilot: {{ vc_rating.value }}/5 ({{ vc_rating.count }} reviews)
+    </div>
+    {% endif %}
+    {% if vc_last_sync %}
+    <div style="font-size:0.6rem;color:var(--text-dim);">Last: {{ vc_last_sync.strftime('%d %b %H:%M') }} UTC</div>
+    {% endif %}
+  </div>
 </div>
 
 {% if balance is not none and balance|float < 20 %}
@@ -54,9 +66,14 @@
 <div style="margin-top:1.5rem;">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.75rem;">
     <h2 class="section-title" style="margin:0;">ChairFBI Cheat Status</h2>
-    <form method="POST" action="{{ url_for('admin.chairfbi_import_all') }}" onsubmit="return confirm('Import all ChairFBI cheats as BEAZT products? Existing products will be skipped.')">
-      <button type="submit" class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 0.9rem;">Import All as Products</button>
-    </form>
+    <div style="display:flex;gap:0.5rem;">
+      <form method="POST" action="{{ url_for('admin.chairfbi_sync_venomcheats') }}" onsubmit="return confirm('Sync all products with VenomCheats data? This will update features, images, and descriptions for matched products.')">
+        <button type="submit" class="btn btn-primary" style="font-size:0.78rem;padding:0.4rem 0.85rem;">Sync VC Data</button>
+      </form>
+      <form method="POST" action="{{ url_for('admin.chairfbi_import_all') }}" onsubmit="return confirm('Import all ChairFBI cheats as BEAZT products? Existing products will be skipped.')">
+        <button type="submit" class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 0.9rem;">Import All as Products</button>
+      </form>
+    </div>
   </div>
   <table class="admin-table">
     <thead><tr><th>Cheat</th><th>Status</th><th>Local Product Match</th><th></th></tr></thead>

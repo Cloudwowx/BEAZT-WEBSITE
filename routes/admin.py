@@ -3,6 +3,8 @@ import secrets
 import re
 import json
 import os
+import logging
+from pathlib import Path
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app, Response
 from flask_login import login_required, current_user
@@ -10,6 +12,58 @@ from models import db, User, Product, PricingTier, Order, Key, Setting
 from config import get_stripe_config, get_chairfbi_config, get_loader_config
 
 admin_bp = Blueprint("admin", __name__)
+logger = logging.getLogger(__name__)
+
+
+def _enrich_product_from_venomcheats(product):
+    """Auto-enrich a Product with VenomCheats data if name matches."""
+    try:
+        from utils.venomcheats import (
+            match_chairfbi_to_venom,
+            get_all_products,
+            find_product_by_slug,
+            build_features_text,
+            build_description,
+            get_primary_image_url,
+            download_product_media,
+        )
+
+        slug = match_chairfbi_to_venom(product.name)
+        if not slug:
+            return False
+
+        vc_products = get_all_products()
+        if not vc_products:
+            return False
+
+        vc_data = find_product_by_slug(vc_products, slug)
+        if not vc_data:
+            return False
+
+        product.venomcheats_slug = slug
+        product.venomcheats_data = json.dumps(vc_data, ensure_ascii=False)
+        product.last_synced_at = datetime.utcnow()
+
+        if not product.features_text:
+            product.features_text = build_features_text(vc_data)
+
+        if not product.description:
+            product.description = build_description(vc_data)
+
+        if not product.image_url:
+            product.image_url = get_primary_image_url(vc_data)
+
+        static_dir = os.path.join(current_app.root_path, "static")
+        gallery_paths = download_product_media(vc_data, static_dir)
+        if gallery_paths:
+            product.gallery_images = json.dumps(gallery_paths)
+
+        db.session.commit()
+        logger.info("Enriched product '%s' from VenomCheats (slug=%s)", product.name, slug)
+        return True
+    except Exception as e:
+        logger.warning("VenomCheats enrichment failed for '%s': %s", product.name, e)
+        return False
 
 
 def admin_required(f):
@@ -626,6 +680,7 @@ def chairfbi_dashboard():
     api_base = cfg.get("api_base", "https://access.chairfbi.com")
 
     balance = None
+    cf_balance = None
     cheats = []
     recent_cf_keys = []
     chairfbi_error = None
@@ -660,6 +715,21 @@ def chairfbi_dashboard():
     products = Product.query.order_by(Product.name).all()
     local_cf_keys = Key.query.filter(Key.chairfbi_key_id.isnot(None)).order_by(Key.created_at.desc()).limit(30).all()
 
+    vc_synced_count = Product.query.filter(Product.venomcheats_slug.isnot(None)).count()
+    vc_rating = Setting.query.filter_by(key="venomcheats_rating").first()
+    vc_rating_data = None
+    if vc_rating and vc_rating.value:
+        try:
+            vc_rating_data = json.loads(vc_rating.value)
+        except json.JSONDecodeError:
+            pass
+
+    try:
+        from utils.sync import get_last_sync_time
+        vc_last_sync = get_last_sync_time()
+    except Exception:
+        vc_last_sync = None
+
     return render_template(
         "admin/chairfbi.html",
         balance=cf_balance,
@@ -669,6 +739,9 @@ def chairfbi_dashboard():
         chairfbi_error=chairfbi_error,
         products=products,
         local_cf_keys=local_cf_keys,
+        vc_synced_count=vc_synced_count,
+        vc_rating=vc_rating_data,
+        vc_last_sync=vc_last_sync,
     )
 
 
@@ -694,6 +767,8 @@ def chairfbi_import_one():
             flash(f"'{cheat_name}' was already imported — ChairFBI cheat ID updated.", "info")
         else:
             flash(f"'{cheat_name}' already exists as a product.", "info")
+
+        _enrich_product_from_venomcheats(existing)
         return redirect(url_for("admin.product_tiers", product_id=existing.id))
 
     product = Product(
@@ -701,15 +776,17 @@ def chairfbi_import_one():
         slug=slug,
         key_source="chairfbi",
         chairfbi_cheat_id=cheat_id,
-        is_private=True,
+        is_private=False,
     )
     db.session.add(product)
     db.session.commit()
-    flash(f"'{cheat_name}' imported. Add pricing tiers to activate.", "success")
+
+    enriched = _enrich_product_from_venomcheats(product)
+    if enriched:
+        flash(f"'{cheat_name}' imported + enriched from VenomCheats. Add pricing tiers to activate.", "success")
+    else:
+        flash(f"'{cheat_name}' imported. Add pricing tiers to activate.", "success")
     return redirect(url_for("admin.product_tiers", product_id=product.id))
-
-
-@admin_bp.route("/chairfbi/import-all", methods=["POST"])
 
 
 @admin_bp.route("/chairfbi/import-all", methods=["POST"])
@@ -731,6 +808,7 @@ def chairfbi_import_all():
 
         created = 0
         skipped = 0
+        enriched = 0
         for cheat in cheats:
             cheat_id = str(cheat.get("id", ""))
             cheat_name = cheat.get("name", "Unknown Cheat").strip()
@@ -746,6 +824,8 @@ def chairfbi_import_all():
                 if not existing.chairfbi_cheat_id or existing.chairfbi_cheat_id != cheat_id:
                     existing.chairfbi_cheat_id = cheat_id
                     existing.key_source = "chairfbi"
+                if _enrich_product_from_venomcheats(existing):
+                    enriched += 1
                 skipped += 1
                 continue
 
@@ -755,13 +835,27 @@ def chairfbi_import_all():
                 description=None,
                 key_source="chairfbi",
                 chairfbi_cheat_id=cheat_id,
-                is_private=True,
+                is_private=False,
             )
             db.session.add(product)
             created += 1
 
         db.session.commit()
-        flash(f"Imported {created} new cheat(s) from ChairFBI. {skipped} already exist.", "success")
+
+        for cheat in cheats:
+            cheat_name = cheat.get("name", "").strip()
+            if not cheat_name:
+                continue
+            slug = re.sub(r"[^a-z0-9]+", "-", cheat_name.lower()).strip("-")
+            product = Product.query.filter_by(slug=slug).first()
+            if product:
+                if _enrich_product_from_venomcheats(product):
+                    enriched += 1
+
+        msg = f"Imported {created} new cheat(s) from ChairFBI. {skipped} already exist."
+        if enriched:
+            msg += f" {enriched} enriched from VenomCheats."
+        flash(msg, "success")
     except Exception as e:
         flash(f"ChairFBI import failed: {e}", "error")
 
@@ -841,5 +935,40 @@ def chairfbi_vouche(key_id):
             flash("Vouche failed.", "error")
     except Exception as e:
         flash(f"Vouche failed: {e}", "error")
+
+    return redirect(url_for("admin.chairfbi_dashboard"))
+
+
+@admin_bp.route("/chairfbi/sync-venomcheats", methods=["POST"])
+@admin_required
+def chairfbi_sync_venomcheats():
+    try:
+        from utils.venomcheats import sync_all, get_rating
+
+        static_dir = os.path.join(current_app.root_path, "static")
+        vc_data = sync_all(static_dir=static_dir)
+
+        if not vc_data:
+            flash("No data received from VenomCheats.", "error")
+            return redirect(url_for("admin.chairfbi_dashboard"))
+
+        products = Product.query.all()
+        updated = 0
+        for product in products:
+            if _enrich_product_from_venomcheats(product):
+                updated += 1
+
+        rating = get_rating()
+        if rating:
+            existing = Setting.query.filter_by(key="venomcheats_rating").first()
+            if existing:
+                existing.value = json.dumps(rating)
+            else:
+                db.session.add(Setting(key="venomcheats_rating", value=json.dumps(rating)))
+
+        db.session.commit()
+        flash(f"Synced {len(vc_data)} products from VenomCheats. Updated {updated} local product(s).", "success")
+    except Exception as e:
+        flash(f"VenomCheats sync failed: {e}", "error")
 
     return redirect(url_for("admin.chairfbi_dashboard"))
