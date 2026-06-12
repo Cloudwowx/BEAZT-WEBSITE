@@ -75,8 +75,10 @@ def _backup_products_safe():
     try:
         from utils.kv_store import backup_products
         backup_products()
+        return True
     except Exception as e:
         logger.error("Product backup to KV failed: %s", e)
+        return False
 
 
 _FALLBACK_TIERS = [
@@ -528,8 +530,12 @@ def product_tiers(product_id):
             product.image_url = image_url_val if image_url_val else None
 
         db.session.commit()
-        _backup_products_safe()
-        flash("Product settings updated.", "success")
+        ok = _backup_products_safe()
+        product = db.session.get(Product, product_id)
+        if ok:
+            flash(f"Product updated — visibility: {product.visibility}, tiers: {product.tiers.count()}", "success")
+        else:
+            flash(f"Saved locally (KV unavailable). Visibility: {product.visibility}. Link KV and redeploy.", "warn")
         return redirect(url_for("admin.product_tiers", product_id=product.id))
 
     tiers = PricingTier.query.filter_by(product_id=product.id).order_by(PricingTier.duration_days).all()

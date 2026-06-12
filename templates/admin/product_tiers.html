@@ -80,6 +80,13 @@
   </form>
 </div>
 
+{% if product.visibility == 'private' %}
+<p style="font-size:0.72rem;color:var(--success);margin-bottom:0.75rem;padding:0.5rem 0.8rem;background:rgba(52,211,153,0.06);border-radius:6px;border:1px solid rgba(52,211,153,0.15);">
+  <span class="icon icon-sm" data-lucide="info"></span>
+  This is a <strong>private</strong> product. Tiers marked <strong>Recurring</strong> will auto-renew via Stripe subscription. Set 1 Month / 12 Months durations for monthly or yearly plans.
+</p>
+{% endif %}
+
 <table class="admin-table" style="margin-bottom:2rem;">
   <thead><tr><th>ID</th><th>Label</th><th>Duration</th><th>Price</th><th>Subscription</th><th>Actions</th></tr></thead>
   <tbody>
@@ -101,7 +108,7 @@
           <input type="number" name="price_pounds" value="{{ t.price_pounds }}" step="0.01" style="width:60px;" placeholder="Price">
           <label style="font-size:0.62rem;color:var(--text-muted);display:flex;align-items:center;gap:0.2rem;">
             <input type="hidden" name="is_subscription" value="0">
-            <input type="checkbox" name="is_subscription" value="1" {% if t.is_subscription %}checked{% endif %}>
+            <input type="checkbox" name="is_subscription" value="1" {% if t.is_subscription or (product.visibility == 'private' and not t.is_subscription is defined) %}checked{% endif %}>
             Sub
           </label>
           <button type="submit" class="btn-xs btn-success-sm">Save</button>
@@ -122,7 +129,7 @@
   <input type="number" name="price_pounds" placeholder="Price" step="0.01" required style="width:80px;">
   <label style="font-size:0.68rem;color:var(--text-muted);display:flex;align-items:center;gap:0.2rem;">
     <input type="hidden" name="is_subscription" value="0">
-    <input type="checkbox" name="is_subscription" value="1">
+    <input type="checkbox" name="is_subscription" value="1" {% if product.visibility == 'private' %}checked{% endif %}>
     Subscription
   </label>
   <button type="submit" class="btn-xs" style="background:var(--accent);color:#fff;border:none;">Add Tier</button>
