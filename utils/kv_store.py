@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import threading
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ PRODUCT_FIELDS = [
     "name", "slug", "description", "image_url", "is_private",
     "chairfbi_cheat_id", "key_source", "visibility", "features_text",
     "buyer_notes", "venomcheats_slug", "venomcheats_data",
-    "gallery_images", "last_synced_at",
+    "gallery_images", "last_synced_at", "created_at",
 ]
 
 
@@ -78,6 +79,8 @@ def backup_products():
             row = {}
             for field in PRODUCT_FIELDS:
                 val = getattr(p, field, None)
+                if isinstance(val, datetime):
+                    val = val.isoformat()
                 if isinstance(val, bytes):
                     val = val.decode("utf-8", errors="replace")
                 row[field] = val
@@ -115,10 +118,12 @@ def restore_products_to_db():
                 continue
 
             kwargs = {k: v for k, v in p_data.items() if k in PRODUCT_FIELDS}
-            if "created_at" not in kwargs:
-                from datetime import datetime
-                kwargs["created_at"] = datetime.utcnow()
-
+            for dt_field in ("created_at", "last_synced_at"):
+                if dt_field in kwargs and isinstance(kwargs[dt_field], str):
+                    try:
+                        kwargs[dt_field] = datetime.fromisoformat(kwargs[dt_field])
+                    except (ValueError, TypeError):
+                        kwargs[dt_field] = None
             product = Product(**kwargs)
             db.session.add(product)
 

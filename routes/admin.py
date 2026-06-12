@@ -75,8 +75,8 @@ def _backup_products_safe():
     try:
         from utils.kv_store import backup_products
         backup_products()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error("Product backup to KV failed: %s", e)
 
 
 DEFAULT_TIERS = [
