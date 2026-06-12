@@ -2,17 +2,17 @@
 {% block admin_content %}
 <div class="page-header-admin">
   <h1>Settings</h1>
-  <p>Configure SellApp + ChairFBI integration. Values save to the database and override <code>.env</code> settings.</p>
+  <p>Configure Ivno + ChairFBI integration. Values save to the database and override <code>.env</code> settings.</p>
 </div>
 
 <div x-data="{ reveal: {} }">
   <form method="POST">
     <div style="display:flex;flex-direction:column;gap:2.5rem;max-width:640px;">
 
-      <!-- ===== SELLAPP SECTION ===== -->
+      <!-- ===== IVNO SECTION ===== -->
       <div>
         <h3 style="font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:1rem;letter-spacing:0.04em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;">
-            <span class="icon icon-sm" data-lucide="credit-card"></span> SellApp
+            <span class="icon icon-sm" data-lucide="credit-card"></span> Ivno Payments
         </h3>
 
         <div style="display:flex;flex-direction:column;gap:1.25rem;">
@@ -20,19 +20,19 @@
           <div style="display:flex;flex-direction:column;gap:0.35rem;">
             <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">API Key</label>
             <div style="display:flex;gap:0.5rem;">
-              <input :type="reveal.sellapp ? 'text' : 'password'" name="sellapp_api_key" value="{{ sellapp_api_key }}" placeholder="SellApp API key" style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-              <button type="button" @click="reveal.sellapp = !reveal.sellapp" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.sellapp ? 'HIDE' : 'SHOW'"></button>
+              <input :type="reveal.ivno_key ? 'text' : 'password'" name="ivno_api_key" value="{{ ivno_api_key }}" placeholder="iv_live_..." style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
+              <button type="button" @click="reveal.ivno_key = !reveal.ivno_key" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.ivno_key ? 'HIDE' : 'SHOW'"></button>
             </div>
-            {% if sellapp_api_key %}<span style="font-size:0.68rem;color:var(--success);">Set ({{ sellapp_api_key[:12] }}...)</span>{% else %}<span style="font-size:0.68rem;color:var(--error);">Required for checkout.</span>{% endif %}
+            {% if ivno_api_key %}<span style="font-size:0.68rem;color:var(--success);">Set ({{ ivno_api_key[:12] }}...)</span>{% else %}<span style="font-size:0.68rem;color:var(--error);">Required for checkout.</span>{% endif %}
           </div>
 
           <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Webhook Secret</label>
+            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">API Secret</label>
             <div style="display:flex;gap:0.5rem;">
-              <input :type="reveal.sellapp_wh ? 'text' : 'password'" name="sellapp_webhook_secret" value="{{ sellapp_webhook_secret }}" placeholder="Secret from SellApp webhook settings" style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-              <button type="button" @click="reveal.sellapp_wh = !reveal.sellapp_wh" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.sellapp_wh ? 'HIDE' : 'SHOW'"></button>
+              <input :type="reveal.ivno_secret ? 'text' : 'password'" name="ivno_api_secret" value="{{ ivno_api_secret }}" placeholder="iv_secret_..." style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
+              <button type="button" @click="reveal.ivno_secret = !reveal.ivno_secret" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.ivno_secret ? 'HIDE' : 'SHOW'"></button>
             </div>
-            {% if sellapp_webhook_secret %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--warn);">Recommended for webhook security.</span>{% endif %}
+            {% if ivno_api_secret %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--warn);">Required for checkout.</span>{% endif %}
           </div>
 
         </div>

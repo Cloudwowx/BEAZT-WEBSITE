@@ -6,8 +6,7 @@
   window.BEAZT_PRODUCT = {
     variants: {{ variants | tojson }},
     selectedVariantId: {{ selected_tier.id if selected_tier else 0 }},
-    isAuthenticated: {{ 'true' if current_user.is_authenticated else 'false' }},
-    isUnavailable: {{ 'true' if cheat_status != 'online' and product.key_source != 'pool' else 'false' }}
+    isAuthenticated: {{ 'true' if current_user.is_authenticated else 'false' }}
   };
   window.productState = function() {
     var d = window.BEAZT_PRODUCT;
@@ -32,7 +31,6 @@
       },
       get buyLabel() {
         if (!d.isAuthenticated) return 'Sign in to Buy';
-        if (d.isUnavailable) return 'Unavailable';
         var v = this.currentVariant;
         if (!v) return 'Buy Now';
         if (v.billing_type === 'subscription') return 'Subscribe - ' + v.label;
@@ -188,7 +186,7 @@
         </template>
         <template x-if="!isSubscription">
           <button type="submit" class="btn btn-primary btn-block btn-lg"
-                  :disabled="!canBuy || buyLabel === 'Unavailable'">
+                  :disabled="!canBuy">
             <span class="icon" data-lucide="shopping-cart"></span>
             <span x-text="buyLabel">Buy Now</span>
           </button>
