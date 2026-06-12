@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 KV_REST_API_URL = os.getenv("KV_REST_API_URL", "")
 KV_REST_API_TOKEN = os.getenv("KV_REST_API_TOKEN", "")
-KV_AVAILABLE = bool(KV_REST_API_URL)
+KV_URL = os.getenv("KV_URL", "")
+KV_AVAILABLE = bool(KV_REST_API_URL) or bool(KV_URL)
 
 PRODUCT_FIELDS = [
     "name", "slug", "description", "image_url", "is_private",
