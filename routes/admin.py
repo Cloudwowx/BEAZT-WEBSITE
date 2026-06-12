@@ -75,6 +75,29 @@ def _backup_products_safe():
         pass
 
 
+DEFAULT_TIERS = [
+    ("1 Day", 1, 499),
+    ("3 Days", 3, 999),
+    ("7 Days", 7, 1699),
+    ("30 Days", 30, 4999),
+]
+
+
+def _create_default_tiers(product):
+    if product.visibility != "public":
+        return
+    if PricingTier.query.filter_by(product_id=product.id).first():
+        return
+    for label, days, pence in DEFAULT_TIERS:
+        db.session.add(PricingTier(
+            product_id=product.id,
+            label=label,
+            duration_days=days,
+            price_pence=pence,
+        ))
+    db.session.commit()
+
+
 def admin_required(f):
     @wraps(f)
     @login_required
@@ -291,6 +314,29 @@ def delete_product(product_id):
     return redirect(url_for("admin.products"))
 
 
+@admin_bp.route("/products/bulk-delete", methods=["POST"])
+@admin_required
+def bulk_delete_products():
+    ids = request.form.getlist("product_ids")
+    if not ids:
+        flash("No products selected.", "error")
+        return redirect(url_for("admin.products"))
+    count = 0
+    for pid in ids:
+        product = db.session.get(Product, int(pid))
+        if not product:
+            continue
+        Order.query.filter(Order.tier.has(product_id=product.id)).delete(synchronize_session="fetch")
+        Key.query.filter_by(product_id=product.id).delete(synchronize_session="fetch")
+        PricingTier.query.filter_by(product_id=product.id).delete(synchronize_session="fetch")
+        db.session.delete(product)
+        count += 1
+    db.session.commit()
+    _backup_products_safe()
+    flash(f"{count} product(s) deleted.", "success")
+    return redirect(url_for("admin.products"))
+
+
 @admin_bp.route("/products/export")
 @admin_required
 def export_products():
@@ -404,6 +450,18 @@ def product_tiers(product_id):
             visibility_val = request.form.get("visibility", "").strip()
             if visibility_val in ("private", "public"):
                 product.visibility = visibility_val
+        if "name" in request.form:
+            new_name = request.form.get("name", "").strip()
+            if new_name and new_name != product.name:
+                product.name = new_name
+        if "slug" in request.form:
+            new_slug = request.form.get("slug", "").strip()
+            if new_slug and new_slug != product.slug:
+                if not Product.query.filter(Product.slug == new_slug, Product.id != product.id).first():
+                    product.slug = new_slug
+                else:
+                    flash("Slug already taken. Keep the current one.", "error")
+                    return redirect(url_for("admin.product_tiers", product_id=product.id))
         if "description" in request.form:
             product.description = request.form.get("description", "").strip() or None
         if "features_text" in request.form:
@@ -812,6 +870,7 @@ def chairfbi_import_one():
     db.session.add(product)
     db.session.commit()
     _backup_products_safe()
+    _create_default_tiers(product)
 
     enriched = _enrich_product_from_venomcheats(product)
     if enriched:
@@ -874,6 +933,10 @@ def chairfbi_import_all():
 
         db.session.commit()
         _backup_products_safe()
+
+        # Pre-fill default pricing tiers for newly created public products
+        for product in Product.query.filter_by(visibility="public").all():
+            _create_default_tiers(product)
 
         msg = f"Imported {created} new cheat(s) from ChairFBI. {skipped} already exist."
         if enriched:

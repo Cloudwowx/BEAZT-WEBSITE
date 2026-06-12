@@ -50,13 +50,19 @@
     <input type="file" name="products_file" accept=".json" style="font-size:0.72rem;color:var(--text-dim);">
     <button type="submit" class="btn-xs" style="background:rgba(30,58,95,0.12);color:var(--accent-l);border:1px solid rgba(30,58,95,0.25);">Import JSON</button>
   </form>
+  <form method="POST" action="{{ url_for('admin.bulk_delete_products') }}" onsubmit="var cbs=this.querySelectorAll('input[name=product_ids]:checked');if(!cbs.length){alert('Select products to delete.');return false;}return confirm('Delete '+cbs.length+' product(s)?')">
+    <button type="submit" class="btn-xs btn-danger">Delete Selected</button>
+    <button type="button" class="btn-xs btn-danger" onclick="document.querySelectorAll('input[name=product_ids]').forEach(c=>c.checked=true);if(confirm('DELETE ALL PRODUCTS?')){this.form.submit()}" style="margin-left:0.35rem;background:rgba(239,68,68,0.3);">Delete All</button>
+  </form>
 </div>
 
+<form method="POST" action="{{ url_for('admin.bulk_delete_products') }}" id="bulk-form">
 <table class="admin-table">
-  <thead><tr><th>ID</th><th>Name</th><th>Slug</th><th>Private</th><th>Source</th><th>Visibility</th><th>CF Cheat ID</th><th>Tiers</th><th>Actions</th></tr></thead>
+  <thead><tr><th style="width:30px;"><input type="checkbox" onclick="document.querySelectorAll('input[name=product_ids]').forEach(c=>c.checked=this.checked)"></th><th>ID</th><th>Name</th><th>Slug</th><th>Private</th><th>Source</th><th>Visibility</th><th>CF Cheat ID</th><th>Tiers</th><th>Actions</th></tr></thead>
   <tbody>
     {% for p in products %}
     <tr>
+      <td><input type="checkbox" name="product_ids" value="{{ p.id }}" form="bulk-form"></td>
       <td>{{ p.id }}</td>
       <td>{{ p.name }}</td>
       <td><code>{{ p.slug }}</code></td>
@@ -69,6 +75,9 @@
         <a href="{{ url_for('admin.product_tiers', product_id=p.id) }}" class="btn-xs" style="background:var(--accent-g3);color:var(--accent-h);border:1px solid rgba(30,58,95,0.25);text-decoration:none;">
           Tiers
         </a>
+        <a href="{{ url_for('admin.product_tiers', product_id=p.id) }}" class="btn-xs" style="background:rgba(58,106,158,0.15);color:var(--accent-l);border:1px solid rgba(30,58,95,0.25);text-decoration:none;">
+          Edit
+        </a>
         <a href="{{ url_for('admin.product_keys', product_id=p.id) }}" class="btn-xs" style="background:rgba(90,206,168,0.18);color:var(--accent-2);border:1px solid rgba(90,206,168,0.35);text-decoration:none;">
           Keys
         </a>
@@ -80,4 +89,5 @@
     {% endfor %}
   </tbody>
 </table>
+</form>
 {% endblock %}
