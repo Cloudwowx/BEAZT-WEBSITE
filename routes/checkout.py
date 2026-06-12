@@ -11,7 +11,7 @@ from config import get_shoppy_config
 checkout_bp = Blueprint("checkout", __name__)
 logger = logging.getLogger(__name__)
 
-SHOPPY_API = "https://shoppy.gg/api/v1"
+SHOPPY_API = "https://shoppy.gg/api/v2"
 
 
 def _shoppy_headers():
@@ -36,40 +36,33 @@ def create_session():
 
     try:
         payload = {
-            "title": f"BEAZT License - {tier.product.name}",
-            "price": tier.price_pounds,
-            "currency": "GBP",
+            "title": f"BEAZT License - {tier.product.name} ({tier.label})",
+            "value": tier.price_pounds,
             "email": current_user.email,
-            "webhook": url_for("checkout.webhook", _external=True),
-            "return_url": url_for("main.my_keys", _external=True),
-            "custom": {
-                "user_id": str(current_user.id),
-                "tier_id": str(tier.id),
-                "product_id": str(tier.product_id),
-                "duration_days": str(tier.duration_days),
-                "is_subscription": str(tier.is_subscription).lower(),
-            },
+            "webhook_urls": [url_for("checkout.webhook", _external=True)],
+            "custom_fields": [
+                {"name": "user_id", "type": "number", "value": str(current_user.id)},
+                {"name": "tier_id", "type": "number", "value": str(tier.id)},
+                {"name": "product_id", "type": "number", "value": str(tier.product_id)},
+                {"name": "duration_days", "type": "number", "value": str(tier.duration_days)},
+                {"name": "is_subscription", "type": "text", "value": str(tier.is_subscription).lower()},
+            ],
         }
 
         resp = requests.post(
-            f"{SHOPPY_API}/payments",
+            f"{SHOPPY_API}/pay",
             json=payload,
             headers=_shoppy_headers(),
             timeout=15,
         )
+        data = resp.json()
 
-        if resp.status_code != 200:
-            try:
-                err = resp.json()
-            except Exception:
-                err = {"message": resp.text[:300]}
-            msg = err.get("message") or err.get("error") or f"HTTP {resp.status_code}"
-            logger.error("Shoppy payment creation failed: %s", msg)
+        if not data.get("status"):
+            msg = data.get("error") or data.get("message") or f"HTTP {resp.status_code}"
+            logger.error("Shoppy pay creation failed: %s", msg)
             return jsonify({"error": str(msg)}), 500
 
-        data = resp.json()
-        payment_url = data.get("url") or data.get("checkout_url")
-
+        payment_url = data.get("url")
         if not payment_url:
             return jsonify({"error": "No checkout URL returned"}), 500
 
@@ -106,14 +99,17 @@ def webhook():
 
 
 def _handle_order(data):
-    custom = data.get("custom", {})
-    email = data.get("email") or custom.get("email", "")
+    fields = {}
+    for f in data.get("custom_fields", []):
+        fields[f["name"]] = f.get("value", "")
 
-    user_id = int(custom.get("user_id", 0))
-    tier_id = int(custom.get("tier_id", 0))
-    product_id = int(custom.get("product_id", 1))
-    duration_days = int(custom.get("duration_days", 30))
-    is_subscription = custom.get("is_subscription", "false") == "true"
+    email = data.get("email", "")
+
+    user_id = int(fields.get("user_id", 0))
+    tier_id = int(fields.get("tier_id", 0))
+    product_id = int(fields.get("product_id", 1))
+    duration_days = int(fields.get("duration_days", 30))
+    is_subscription = fields.get("is_subscription", "false") == "true"
 
     user = db.session.get(User, user_id) if user_id else User.query.filter_by(email=email).first()
     if not user:
