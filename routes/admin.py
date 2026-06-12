@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app, Response
 from flask_login import login_required, current_user
 from models import db, User, Product, PricingTier, Order, Key, Setting
-from config import Config, get_shoppy_config, get_chairfbi_config, get_loader_config, get_discord_config
+from config import Config, get_sellapp_config, get_chairfbi_config, get_loader_config, get_discord_config
 
 admin_bp = Blueprint("admin", __name__)
 logger = logging.getLogger(__name__)
@@ -858,7 +858,8 @@ def test_chairfbi():
 def settings():
     if request.method == "POST":
         fields = {
-            "shoppy_api_key": "Shoppy API Key",
+            "sellapp_api_key": "SellApp API Key",
+            "sellapp_webhook_secret": "SellApp Webhook Secret",
             "site_url": "Site URL",
             "chairfbi_api_token": "ChairFBI API Token",
             "chairfbi_api_base": "ChairFBI API Base URL",
@@ -882,12 +883,13 @@ def settings():
                     flash(f"{label} cleared.", "info")
         return redirect(url_for("admin.settings"))
 
-    shoppy_cfg = get_shoppy_config()
+    sellapp_cfg = get_sellapp_config()
     cf_cfg = get_chairfbi_config()
     loader_cfg = get_loader_config()
     discord_cfg = get_discord_config()
     return render_template("admin/settings.html",
-        shoppy_api_key=shoppy_cfg["api_key"],
+        sellapp_api_key=sellapp_cfg["api_key"],
+        sellapp_webhook_secret=sellapp_cfg["webhook_secret"],
         site_url=Config.SITE_URL,
         chairfbi_api_token=cf_cfg["api_token"],
         chairfbi_api_base=cf_cfg["api_base"],

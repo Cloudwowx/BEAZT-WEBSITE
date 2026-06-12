@@ -20,7 +20,8 @@ class Config:
         "sqlite:///" + _db_path,
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SHOPPY_API_KEY = os.getenv("SHOPPY_API_KEY", "")
+    SELLAPP_API_KEY = os.getenv("SELLAPP_API_KEY", "")
+    SELLAPP_WEBHOOK_SECRET = os.getenv("SELLAPP_WEBHOOK_SECRET", "")
     SITE_URL = os.getenv("SITE_URL", "http://localhost:5000")
     DISCORD_PUBLIC_URL = os.getenv("DISCORD_PUBLIC_URL", "https://discord.gg/TvxrADZhNR")
     DISCORD_PRIVATE_URL = os.getenv("DISCORD_PRIVATE_URL", "")
@@ -33,7 +34,7 @@ class Config:
     IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
 
 
-def get_shoppy_config():
+def get_sellapp_config():
     from models import Setting
 
     def _lookup(key, default):
@@ -46,7 +47,8 @@ def get_shoppy_config():
         return default
 
     return {
-        "api_key": _lookup("shoppy_api_key", Config.SHOPPY_API_KEY),
+        "api_key": _lookup("sellapp_api_key", Config.SELLAPP_API_KEY),
+        "webhook_secret": _lookup("sellapp_webhook_secret", Config.SELLAPP_WEBHOOK_SECRET),
     }
 
 

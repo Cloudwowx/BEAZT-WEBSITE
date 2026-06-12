@@ -42,7 +42,7 @@ def page_not_found(e):
 
 
 @app.route("/webhooks/sellix", methods=["POST"])
-def sellix_webhook():
+def legacy_webhook():
     from routes.checkout import webhook
     return webhook()
 

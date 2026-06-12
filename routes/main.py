@@ -360,31 +360,33 @@ def privacy():
 
 @main_bp.route("/health/sellix")
 def health_sellix():
-    from config import get_shoppy_config
+    from config import get_sellapp_config
     import requests as _r
-    cfg = get_shoppy_config()
+    cfg = get_sellapp_config()
     key = cfg.get("api_key", "")
     if not key:
-        return {"ok": False, "error": "No Shoppy API key configured"}
+        return {"ok": False, "error": "No SellApp API key configured"}
 
+    headers = {"Authorization": f"Bearer {key}"}
     results = {}
-    hdrs = {"Authorization": key}
 
     try:
-        resp = _r.get("https://shoppy.gg/api/v1/products", headers=hdrs, timeout=10)
-        results["GET /products"] = {"status": resp.status_code, "body": resp.text[:300]}
+        resp = _r.get("https://sell.app/api/v2/charges", headers=headers, timeout=10)
+        results["GET /charges"] = {"status": resp.status_code, "body": resp.text[:300]}
     except Exception as e:
-        results["GET /products"] = {"status": "error", "body": str(e)}
+        results["GET /charges"] = {"status": "error", "body": str(e)}
 
     try:
-        resp = _r.post("https://shoppy.gg/api/v2/pay", json={
-            "title": "BEAZT Health Test",
-            "value": 1.00,
+        resp = _r.post("https://sell.app/api/v2/charges", json={
             "email": "test@beaztcheats.com",
-        }, headers=hdrs, timeout=10)
-        results["POST /pay"] = {"status": resp.status_code, "body": resp.text[:300]}
+            "return_url": "https://beaztcheats.com/",
+            "total": 100,
+            "currency": "GBP",
+            "description": "Health Check",
+        }, headers=headers, timeout=10)
+        results["POST /charges"] = {"status": resp.status_code, "body": resp.text[:400]}
     except Exception as e:
-        results["POST /pay"] = {"status": "error", "body": str(e)}
+        results["POST /charges"] = {"status": "error", "body": str(e)}
 
     return {"key_prefix": key[:10] + "...", "results": results}
 
