@@ -36,7 +36,7 @@
       {% for p in private_products %}
         <a href="{{ url_for('main.product_detail', slug=p.slug) }}" class="cheat-card cheat-card--private">
           <div class="cheat-card-banner">
-            <img src="{{ url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
+            <img src="{{ p.image_url if p.image_url else url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
           </div>
           <div class="cheat-card-top">
             <span class="cheat-card-status {{ 'status-online' if cheat_statuses_home.get(p.id, '') == 'online' else 'status-offline' if cheat_statuses_home.get(p.id, '') == 'offline' else 'status-unknown' }}"></span>
@@ -69,7 +69,7 @@
       {% for p in resold_products %}
         <a href="{{ url_for('main.product_detail', slug=p.slug) }}" class="cheat-card">
           <div class="cheat-card-banner">
-            <img src="{{ url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
+            <img src="{{ p.image_url if p.image_url else url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
           </div>
           <div class="cheat-card-top">
             <span class="cheat-card-status {{ 'status-online' if cheat_statuses_home.get(p.id, '') == 'online' else 'status-offline' if cheat_statuses_home.get(p.id, '') == 'offline' else 'status-unknown' }}"></span>

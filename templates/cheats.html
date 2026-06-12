@@ -20,7 +20,7 @@
         {% set status = cheat_statuses.get(p.id) %}
         <a href="{{ url_for('main.product_detail', slug=p.slug) }}" class="cheat-card cheat-card--private">
           <div class="cheat-card-banner">
-            <img src="{{ url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
+            <img src="{{ p.image_url if p.image_url else url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
           </div>
           <div class="cheat-card-top">
             <span class="cheat-card-status {{ 'status-online' if status == 'online' else 'status-offline' if status == 'offline' else 'status-unknown' }}"></span>
@@ -53,7 +53,7 @@
         {% set status = cheat_statuses.get(p.id) %}
         <a href="{{ url_for('main.product_detail', slug=p.slug) }}" class="cheat-card">
           <div class="cheat-card-banner">
-            <img src="{{ url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
+            <img src="{{ p.image_url if p.image_url else url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
           </div>
           <div class="cheat-card-top">
             <span class="cheat-card-status {{ 'status-online' if status == 'online' else 'status-offline' if status == 'offline' else 'status-unknown' }}"></span>
