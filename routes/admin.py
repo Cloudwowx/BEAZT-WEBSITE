@@ -620,6 +620,11 @@ def product_tiers(product_id):
         product.gallery_images = json.dumps(gallery) if gallery else None
 
         db.session.commit()
+        try:
+            from utils.kv_store import backup_everything
+            backup_everything()
+        except Exception:
+            pass
         ok = _backup_products_safe()
         product = db.session.get(Product, product_id)
         if ok:
