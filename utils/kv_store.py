@@ -478,6 +478,7 @@ def backup_everything():
         if not current_app:
             return
         with current_app.app_context() if hasattr(current_app, 'app_context') else __import__('contextlib').nullcontext():
+            backup_products()
             backup_users()
             backup_orders()
             backup_keys()

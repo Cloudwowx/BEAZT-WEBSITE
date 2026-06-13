@@ -340,6 +340,11 @@ def create_product():
     db.session.add(product)
     db.session.commit()
     _backup_products_safe()
+    try:
+        from utils.kv_store import backup_everything
+        backup_everything()
+    except Exception:
+        pass
     flash(f"Product '{name}' created.", "success")
     return redirect(url_for("admin.product_tiers", product_id=product.id))
 
@@ -355,6 +360,11 @@ def delete_product(product_id):
     PricingTier.query.filter_by(product_id=product.id).delete(synchronize_session="fetch")
     db.session.delete(product)
     db.session.commit()
+    try:
+        from utils.kv_store import backup_everything
+        backup_everything()
+    except Exception:
+        pass
     flash(f"Product '{product.name}' and all associated keys/orders deleted.", "success")
     return redirect(url_for("admin.products"))
 
@@ -1041,6 +1051,11 @@ def chairfbi_import_one():
     )
     db.session.add(product)
     db.session.commit()
+    try:
+        from utils.kv_store import backup_everything
+        backup_everything()
+    except Exception:
+        pass
     _backup_products_safe()
     _sync_product_tiers(product)
 
@@ -1109,6 +1124,11 @@ def chairfbi_import_all():
 
         db.session.commit()
         _backup_products_safe()
+        try:
+            from utils.kv_store import backup_everything
+            backup_everything()
+        except Exception:
+            pass
 
         vc_prefetched = None
         try:
