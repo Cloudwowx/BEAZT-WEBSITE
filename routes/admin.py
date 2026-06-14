@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, current_app, Response
 from flask_login import login_required, current_user
 from models import db, User, Product, PricingTier, Order, Key, Setting
-from config import Config, get_chairfbi_config, get_loader_config, get_discord_config, get_ivno_config, get_payfast_config
+from config import Config, get_chairfbi_config, get_loader_config, get_discord_config, get_nexapay_config
 
 admin_bp = Blueprint("admin", __name__)
 logger = logging.getLogger(__name__)
@@ -882,11 +882,8 @@ def settings():
             "site_url": "Site URL",
             "chairfbi_api_token": "ChairFBI API Token",
             "chairfbi_api_base": "ChairFBI API Base URL",
-            "ivno_api_key": "Ivno API Key",
-            "ivno_api_secret": "Ivno API Secret",
-            "payfast_merchant_id": "PayFast Merchant ID",
-            "payfast_merchant_key": "PayFast Merchant Key",
-            "payfast_passphrase": "PayFast Passphrase",
+            "nexapay_api_key": "NexaPay API Key",
+            "nexapay_webhook_secret": "NexaPay Webhook Secret",
             "loader_token": "Loader Token",
             "loader_url": "Loader Download URL",
             "loader_public_url": "Public Loader Download URL",
@@ -915,24 +912,19 @@ def settings():
     cf_cfg = get_chairfbi_config()
     loader_cfg = get_loader_config()
     discord_cfg = get_discord_config()
-    ivno_cfg = get_ivno_config()
-    pf_cfg = get_payfast_config()
+    nxp_cfg = get_nexapay_config()
     return render_template("admin/settings.html",
         site_url=Config.SITE_URL,
         chairfbi_api_token=cf_cfg["api_token"],
         chairfbi_api_base=cf_cfg["api_base"],
-        ivno_api_key=ivno_cfg["api_key"],
-        ivno_api_secret=ivno_cfg["api_secret"],
-        ivno_base_url=ivno_cfg["base_url"],
+        nexapay_api_key=nxp_cfg["api_key"],
+        nexapay_webhook_secret=nxp_cfg["webhook_secret"],
         loader_token=loader_cfg["loader_token"],
         loader_url=loader_cfg.get("loader_url", ""),
         loader_public_url=loader_cfg.get("loader_public_url", ""),
         loader_private_url=loader_cfg.get("loader_private_url", ""),
         discord_public_url=discord_cfg.get("public_url", ""),
-        discord_private_url=discord_cfg.get("private_url", ""),
-        payfast_merchant_id=pf_cfg["merchant_id"],
-        payfast_merchant_key=pf_cfg["merchant_key"],
-        payfast_passphrase=pf_cfg["passphrase"])
+        discord_private_url=discord_cfg.get("private_url", ""))
 
 
 @admin_bp.route("/chairfbi")

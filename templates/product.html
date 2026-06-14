@@ -16,7 +16,6 @@
       activeTab: 'description',
       checkingOut: false,
       checkoutError: '',
-      paymentMethod: 'payfast',
       get currentVariant() {
         return this.variants.find(function(v) { return v.id === this.selectedVariantId; }.bind(this)) || this.variants[0] || null;
       },
@@ -48,30 +47,12 @@
         try {
           var formData = new FormData();
           formData.append('tier_id', this.selectedVariantId);
-
-          var endpoint = this.paymentMethod === 'payfast'
-            ? '{{ url_for('checkout.payfast_session') }}'
-            : '{{ url_for('checkout.create_session') }}';
-
-          var resp = await fetch(endpoint, { method: 'POST', body: formData });
+          var resp = await fetch('{{ url_for('checkout.create_session') }}', {
+            method: 'POST',
+            body: formData
+          });
           var data = await resp.json();
-
-          if (this.paymentMethod === 'payfast' && data.action_url) {
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = data.action_url;
-            form.style.display = 'none';
-            var fields = data.fields || {};
-            for (var key in fields) {
-              var input = document.createElement('input');
-              input.type = 'hidden';
-              input.name = key;
-              input.value = fields[key];
-              form.appendChild(input);
-            }
-            document.body.appendChild(form);
-            form.submit();
-          } else if (data.payment_url) {
+          if (data.payment_url) {
             window.location.href = data.payment_url;
           } else {
             this.checkoutError = data.error || 'Payment initialization failed';
@@ -184,22 +165,6 @@
       <form @submit.prevent="handleCheckout()" autocomplete="off"
             x-data="{ subTiers: variants.filter(function(v) { return v.billing_type === 'subscription'; }), oneTiers: variants.filter(function(v) { return v.billing_type !== 'subscription'; }) }">
         <input type="hidden" name="tier_id" :value="selectedVariantId">
-
-        <template x-if="!isSubscription && oneTiers.length > 0">
-          <div class="field" x-data>
-            <span class="field-label">Payment Method</span>
-            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-              <label style="font-size:0.76rem;color:var(--text-soft);display:flex;align-items:center;gap:0.3rem;cursor:pointer;">
-                <input type="radio" value="payfast" x-model="paymentMethod" checked>
-                PayFast
-              </label>
-              <label style="font-size:0.76rem;color:var(--text-soft);display:flex;align-items:center;gap:0.3rem;cursor:pointer;">
-                <input type="radio" value="ivno" x-model="paymentMethod">
-                Card (Ivno)
-              </label>
-            </div>
-          </div>
-        </template>
 
         <template x-if="subTiers.length > 0">
           <div class="field">

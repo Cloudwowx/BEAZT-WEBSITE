@@ -161,7 +161,7 @@
     <option value="one_time">One-time</option>
     <option value="subscription" {% if product.visibility == 'private' %}selected{% endif %}>Subscription</option>
   </select>
-  <input type="text" name="ivno_subscription_link" placeholder="Ivno sub link" style="width:180px;font-family:var(--mono);font-size:0.72rem;padding:0.5rem 0.6rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);">
+  <input type="text" name="ivno_subscription_link" placeholder="Subscription link" style="width:180px;font-family:var(--mono);font-size:0.72rem;padding:0.5rem 0.6rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);">
   <button type="submit" class="btn-xs" style="background:var(--accent);color:#fff;border:none;">Add Tier</button>
 </form>
 {% endblock %}

@@ -2,17 +2,17 @@
 {% block admin_content %}
 <div class="page-header-admin">
   <h1>Settings</h1>
-  <p>Configure Ivno + ChairFBI integration. Values save to the database and override <code>.env</code> settings.</p>
+  <p>Configure NexaPay + ChairFBI integration. Values save to the database and override <code>.env</code> settings.</p>
 </div>
 
 <div x-data="{ reveal: {} }">
   <form method="POST">
     <div style="display:flex;flex-direction:column;gap:2.5rem;max-width:640px;">
 
-      <!-- ===== IVNO SECTION ===== -->
+      <!-- ===== NEXAPAY SECTION ===== -->
       <div>
         <h3 style="font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:1rem;letter-spacing:0.04em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;">
-            <span class="icon icon-sm" data-lucide="credit-card"></span> Ivno Payments
+            <span class="icon icon-sm" data-lucide="credit-card"></span> NexaPay Payments
         </h3>
 
         <div style="display:flex;flex-direction:column;gap:1.25rem;">
@@ -20,54 +20,19 @@
           <div style="display:flex;flex-direction:column;gap:0.35rem;">
             <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">API Key</label>
             <div style="display:flex;gap:0.5rem;">
-              <input :type="reveal.ivno_key ? 'text' : 'password'" name="ivno_api_key" value="{{ ivno_api_key }}" placeholder="iv_live_..." style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-              <button type="button" @click="reveal.ivno_key = !reveal.ivno_key" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.ivno_key ? 'HIDE' : 'SHOW'"></button>
+              <input :type="reveal.nxp_key ? 'text' : 'password'" name="nexapay_api_key" value="{{ nexapay_api_key }}" placeholder="cg_live_..." style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
+              <button type="button" @click="reveal.nxp_key = !reveal.nxp_key" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.nxp_key ? 'HIDE' : 'SHOW'"></button>
             </div>
-            {% if ivno_api_key %}<span style="font-size:0.68rem;color:var(--success);">Set ({{ ivno_api_key[:12] }}...)</span>{% else %}<span style="font-size:0.68rem;color:var(--error);">Required for checkout.</span>{% endif %}
+            {% if nexapay_api_key %}<span style="font-size:0.68rem;color:var(--success);">Set ({{ nexapay_api_key[:12] }}...)</span>{% else %}<span style="font-size:0.68rem;color:var(--error);">Required for checkout.</span>{% endif %}
           </div>
 
           <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">API Secret</label>
+            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Webhook Secret</label>
             <div style="display:flex;gap:0.5rem;">
-              <input :type="reveal.ivno_secret ? 'text' : 'password'" name="ivno_api_secret" value="{{ ivno_api_secret }}" placeholder="iv_secret_..." style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-              <button type="button" @click="reveal.ivno_secret = !reveal.ivno_secret" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.ivno_secret ? 'HIDE' : 'SHOW'"></button>
+              <input :type="reveal.nxp_secret ? 'text' : 'password'" name="nexapay_webhook_secret" value="{{ nexapay_webhook_secret }}" placeholder="NexaPay webhook signing secret" style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
+              <button type="button" @click="reveal.nxp_secret = !reveal.nxp_secret" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.nxp_secret ? 'HIDE' : 'SHOW'"></button>
             </div>
-            {% if ivno_api_secret %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--warn);">Required for checkout.</span>{% endif %}
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ===== PAYFAST SECTION ===== -->
-      <div>
-        <h3 style="font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:1rem;letter-spacing:0.04em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;">
-            <span class="icon icon-sm" data-lucide="wallet"></span> PayFast
-        </h3>
-
-        <div style="display:flex;flex-direction:column;gap:1.25rem;">
-
-          <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Merchant ID</label>
-            <input type="text" name="payfast_merchant_id" value="{{ payfast_merchant_id }}" placeholder="10000100" style="padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-            {% if payfast_merchant_id %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--text-mut);">From PayFast Dashboard → Settings.</span>{% endif %}
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Merchant Key</label>
-            <div style="display:flex;gap:0.5rem;">
-              <input :type="reveal.pf_key ? 'text' : 'password'" name="payfast_merchant_key" value="{{ payfast_merchant_key }}" placeholder="abc123..." style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-              <button type="button" @click="reveal.pf_key = !reveal.pf_key" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.pf_key ? 'HIDE' : 'SHOW'"></button>
-            </div>
-            {% if payfast_merchant_key %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--text-mut);">From PayFast Dashboard → Settings.</span>{% endif %}
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Passphrase</label>
-            <div style="display:flex;gap:0.5rem;">
-              <input :type="reveal.pf_pass ? 'text' : 'password'" name="payfast_passphrase" value="{{ payfast_passphrase }}" placeholder="Your passphrase" style="flex:1;padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-              <button type="button" @click="reveal.pf_pass = !reveal.pf_pass" style="padding:0 0.85rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer;font-family:var(--font);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;" x-text="reveal.pf_pass ? 'HIDE' : 'SHOW'"></button>
-            </div>
-            {% if payfast_passphrase %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--warn);">Required for ITN signature validation.</span>{% endif %}
+            {% if nexapay_webhook_secret %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--warn);">Recommended for webhook security.</span>{% endif %}
           </div>
 
         </div>
