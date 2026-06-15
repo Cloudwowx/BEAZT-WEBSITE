@@ -227,6 +227,14 @@ with app.app_context():
                 mc.execute("ALTER TABLE keys ADD COLUMN {} {}".format(col, ddl))
             except Exception:
                 pass
+        for col, ddl in [
+            ("quantity", "INTEGER DEFAULT 1"),
+            ("stripe_subscription_id", "VARCHAR(128)"),
+        ]:
+            try:
+                mc.execute("ALTER TABLE orders ADD COLUMN {} {}".format(col, ddl))
+            except Exception:
+                pass
         mn_conn.commit()
         mc.close()
         mn_conn.close()
