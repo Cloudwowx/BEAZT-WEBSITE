@@ -82,6 +82,7 @@ class Order(db.Model):
     stripe_session_id = db.Column(db.String(128), unique=True, nullable=True)
     stripe_subscription_id = db.Column(db.String(128), nullable=True)
     status = db.Column(db.String(32), default="pending")
+    quantity = db.Column(db.Integer, default=1)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     key = db.relationship("Key", backref="order", uselist=False)

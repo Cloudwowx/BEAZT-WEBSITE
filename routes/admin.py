@@ -83,7 +83,9 @@ def _backup_products_safe():
 
 
 _FALLBACK_TIERS = [
-    ("3 Days", 1, 9.99, 3),
+    ("1 Day", 1, 3.99, 1),
+    ("3 Days", 3, 8.99, 1),
+    ("7 Days", 7, 16.99, 1),
     ("30 Days", 30, 49.99, 1),
 ]
 
@@ -128,10 +130,7 @@ def _sync_product_tiers(product):
         except Exception:
             pass
 
-    MARKUP = 1.20
-    IVNO_MIN_USD = 20.0
-    GBP_USD = 1.27
-    MIN_GBP = IVNO_MIN_USD / GBP_USD
+    MARKUP = 1.30
 
     existing_durations = {t.duration_days for t in PricingTier.query.filter_by(product_id=product.id).all()}
 
@@ -142,8 +141,6 @@ def _sync_product_tiers(product):
         bundle = entry[3] if len(entry) > 3 else 1
 
         marked_up = round(price * MARKUP, 2)
-        if marked_up < MIN_GBP:
-            continue
         if days in existing_durations:
             continue
         db.session.add(PricingTier(
@@ -162,8 +159,6 @@ def _sync_product_tiers(product):
             price = entry[2]
 
             marked_up = round(price * MARKUP, 2)
-            if marked_up < MIN_GBP:
-                continue
             if days in existing_durations:
                 continue
             db.session.add(PricingTier(

@@ -16,12 +16,31 @@
       activeTab: 'description',
       checkingOut: false,
       checkoutError: '',
+      quantity: 1,
+      IVNO_MIN_GBP: 16,
       get currentVariant() {
         return this.variants.find(function(v) { return v.id === this.selectedVariantId; }.bind(this)) || this.variants[0] || null;
       },
       get currentPrice() {
         var v = this.currentVariant;
         return v ? v.price_pounds : 0;
+      },
+      get cartTotal() {
+        return this.currentPrice * this.quantity;
+      },
+      get meetsMinimum() {
+        return this.cartTotal >= this.IVNO_MIN_GBP;
+      },
+      get buyLabel() {
+        if (!d.isAuthenticated) return 'Sign in to Buy';
+        if (!this.meetsMinimum) return 'Min £16 for card (' + this.quantity + ' × £' + this.currentPrice.toFixed(2) + ' = £' + this.cartTotal.toFixed(2) + ')';
+        var v = this.currentVariant;
+        if (!v) return 'Buy Now';
+        if (v.billing_type === 'subscription') return 'Subscribe - ' + v.label;
+        return 'Buy ' + this.quantity + ' × ' + v.label + ' — £' + this.cartTotal.toFixed(2);
+      },
+      get canBuy() {
+        return d.isAuthenticated && this.meetsMinimum;
       },
       get isSubscription() {
         var v = this.currentVariant;
@@ -31,23 +50,13 @@
         var v = this.currentVariant;
         return v ? v.subscription_link : '';
       },
-      get buyLabel() {
-        if (!d.isAuthenticated) return 'Sign in to Buy';
-        var v = this.currentVariant;
-        if (!v) return 'Buy Now';
-        if (v.billing_type === 'subscription') return 'Subscribe - ' + v.label;
-        return 'Buy ' + v.label + ' Plan';
-      },
-      get canBuy() {
-        return d.isAuthenticated;
-      },
       async handleCheckout() {
         this.checkoutError = '';
         this.checkingOut = true;
         try {
           var formData = new FormData();
           formData.append('tier_id', this.selectedVariantId);
-          formData.append('payment_method', this.paymentMethod);
+          formData.append('quantity', this.quantity);
           var resp = await fetch('{{ url_for('checkout.create_session') }}', {
             method: 'POST',
             body: formData
@@ -197,6 +206,25 @@
                   <span class="v-price">&pound;<span x-text="t.price_pounds.toFixed(2)"></span></span>
                 </label>
               </template>
+            </div>
+          </div>
+        </template>
+
+        <template x-if="!isSubscription && currentPrice > 0">
+          <div class="field">
+            <div style="display:flex;align-items:center;gap:0.75rem;justify-content:space-between;flex-wrap:wrap;">
+              <span class="field-label" style="margin-bottom:0;">Quantity</span>
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <button type="button" @click="if(quantity>1) quantity--" class="btn-xs" style="min-width:32px;padding:0.25rem 0.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;font-size:0.9rem;">−</button>
+                <input type="number" x-model.number="quantity" min="1" max="10" style="width:50px;text-align:center;padding:0.35rem 0.2rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:0.82rem;">
+                <button type="button" @click="if(quantity<10) quantity++" class="btn-xs" style="min-width:32px;padding:0.25rem 0.5rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;font-size:0.9rem;">+</button>
+              </div>
+            </div>
+            <div style="margin-top:0.5rem;font-size:0.78rem;color:var(--text-dim);text-align:center;">
+              <span x-text="quantity"></span> × £<span x-text="currentPrice.toFixed(2)"></span> = <strong style="color:var(--text);" x-text="'£' + cartTotal.toFixed(2)"></strong>
+              <span x-show="!meetsMinimum" style="display:block;color:var(--warn);margin-top:0.25rem;">
+                +£<span x-text="(IVNO_MIN_GBP - cartTotal).toFixed(2)"></span> more for card payment
+              </span>
             </div>
           </div>
         </template>

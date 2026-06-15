@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 @login_required
 def create_session():
     tier_id = request.form.get("tier_id")
+    quantity = int(request.form.get("quantity", 1))
+
     if not tier_id:
         return jsonify({"error": "No tier selected"}), 400
 
@@ -22,11 +24,13 @@ def create_session():
     if not tier:
         return jsonify({"error": "Invalid tier"}), 400
 
+    order_total = tier.price_pounds * quantity
+
     cfg = get_ivno_config()
     if not cfg["api_key"]:
         return jsonify({"error": "Ivno not configured"}), 500
 
-    order = Order(user_id=current_user.id, tier_id=tier.id, status="pending")
+    order = Order(user_id=current_user.id, tier_id=tier.id, status="pending", quantity=quantity)
     db.session.add(order)
     db.session.flush()
 
@@ -37,7 +41,7 @@ def create_session():
         domain = request.host.split(":")[0] if ":" in (request.host or "") else request.host
 
         result = ivno.create_payment(
-            amount=tier.price_pounds,
+            amount=order_total,
             currency="GBP",
             order_id=f"BEAZT-{order.id}",
             return_url=url_for("main.my_keys", _external=True),
@@ -129,19 +133,21 @@ def handle_fulfillment(order):
     cheat_id = product.chairfbi_cheat_id if product else ""
 
     bundle_count = getattr(tier, "bundle_count", 1) or 1
+    buy_quantity = getattr(order, "quantity", 1) or 1
+    total_keys = bundle_count * buy_quantity
     key_values = []
 
     if cheat_id and api_token:
         try:
             from utils.chairfbi import ChairFBI
             cf = ChairFBI(api_token=api_token, base_url=cfg.get("api_base"))
-            result = cf.create_key(cheat_id=cheat_id, days=duration_days, amount=bundle_count)
+            result = cf.create_key(cheat_id=cheat_id, days=duration_days, amount=total_keys)
             key_values = result.get("keys", [])
         except Exception:
             logger.exception("ChairFBI key creation failed for order %s", order.id)
 
     if not key_values:
-        key_values = ["BEAZT-" + secrets.token_hex(16).upper() for _ in range(bundle_count)]
+        key_values = ["BEAZT-" + secrets.token_hex(16).upper() for _ in range(total_keys)]
 
     order.status = "completed"
     for kv in key_values:
