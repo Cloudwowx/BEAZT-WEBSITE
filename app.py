@@ -189,6 +189,50 @@ with app.app_context():
     except Exception:
         pass
 
+    try:
+        mn_conn = db.engine.raw_connection()
+        mc = mn_conn.cursor()
+        for col, ddl in [
+            ("bundle_count", "INTEGER DEFAULT 1"),
+            ("ivno_subscription_link", "VARCHAR(512)"),
+            ("billing_type", "VARCHAR(16) DEFAULT 'one_time'"),
+            ("is_subscription", "BOOLEAN DEFAULT 0"),
+            ("visibility", "VARCHAR(16) DEFAULT 'public'"),
+            ("features_text", "TEXT"),
+            ("buyer_notes", "TEXT"),
+            ("venomcheats_data", "TEXT"),
+            ("last_synced_at", "DATETIME"),
+            ("gallery_images", "TEXT"),
+        ]:
+            try:
+                mc.execute("ALTER TABLE products ADD COLUMN {} {}".format(col, ddl))
+            except Exception:
+                pass
+        for col, ddl in [
+            ("bundle_count", "INTEGER DEFAULT 1"),
+            ("ivno_subscription_link", "VARCHAR(512)"),
+            ("billing_type", "VARCHAR(16) DEFAULT 'one_time'"),
+            ("is_subscription", "BOOLEAN DEFAULT 0"),
+        ]:
+            try:
+                mc.execute("ALTER TABLE pricing_tiers ADD COLUMN {} {}".format(col, ddl))
+            except Exception:
+                pass
+        for col, ddl in [
+            ("is_subscription", "BOOLEAN DEFAULT 0"),
+            ("tier_id", "INTEGER REFERENCES pricing_tiers(id)"),
+            ("assigned_at", "DATETIME"),
+        ]:
+            try:
+                mc.execute("ALTER TABLE keys ADD COLUMN {} {}".format(col, ddl))
+            except Exception:
+                pass
+        mn_conn.commit()
+        mc.close()
+        mn_conn.close()
+    except Exception:
+        pass
+
     from utils.kv_store import (
         restore_users_to_db, restore_products_to_db,
         restore_orders_to_db, restore_keys_to_db, restore_settings_to_db,

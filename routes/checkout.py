@@ -252,3 +252,8 @@ def handle_fulfillment(order):
         )
         db.session.add(key)
     db.session.commit()
+    try:
+        from utils.kv_store import backup_everything
+        backup_everything()
+    except Exception:
+        pass
