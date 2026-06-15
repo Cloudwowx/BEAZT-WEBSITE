@@ -83,10 +83,8 @@ def _backup_products_safe():
 
 
 _FALLBACK_TIERS = [
-    ("1 Day", 1, 4.99),
-    ("3 Days", 3, 9.99),
-    ("7 Days", 7, 16.99),
-    ("30 Days", 30, 49.99),
+    ("3 Days", 1, 9.99, 3),
+    ("30 Days", 30, 49.99, 1),
 ]
 
 _PRIVATE_TIERS = [
@@ -138,7 +136,12 @@ def _sync_product_tiers(product):
     GBP_USD = 1.27
     MIN_GBP = IVNO_MIN_USD / GBP_USD
 
-    for label, days, price in tiers_data:
+    for entry in tiers_data:
+        label = entry[0]
+        days = entry[1]
+        price = entry[2]
+        bundle = entry[3] if len(entry) > 3 else 1
+
         marked_up = round(price * MARKUP, 2)
         if marked_up < MIN_GBP:
             continue
@@ -147,6 +150,7 @@ def _sync_product_tiers(product):
             label=label,
             duration_days=days,
             price_pence=int(marked_up * 100),
+            bundle_count=bundle,
         ))
     db.session.commit()
 
