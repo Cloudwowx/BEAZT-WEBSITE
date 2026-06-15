@@ -27,8 +27,6 @@ class Config:
     CHAIRFBI_API_BASE = os.getenv("CHAIRFBI_API_BASE", "https://access.chairfbi.com")
     LOADER_TOKEN = os.getenv("LOADER_TOKEN", "")
     LOADER_URL = os.getenv("LOADER_URL", "")
-    NEXAPAY_API_KEY = os.getenv("NEXAPAY_API_KEY", "")
-    NEXAPAY_WEBHOOK_SECRET = os.getenv("NEXAPAY_WEBHOOK_SECRET", "")
     IVNO_API_KEY = os.getenv("IVNO_API_KEY", "")
     IVNO_API_SECRET = os.getenv("IVNO_API_SECRET", "")
     NOWPAYMENTS_API_KEY = os.getenv("NOWPAYMENTS_API_KEY", "")
