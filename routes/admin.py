@@ -128,15 +128,14 @@ def _sync_product_tiers(product):
         except Exception:
             pass
 
-    if not tiers_data:
-        tiers_data = _FALLBACK_TIERS
-
     MARKUP = 1.20
     IVNO_MIN_USD = 20.0
     GBP_USD = 1.27
     MIN_GBP = IVNO_MIN_USD / GBP_USD
 
-    for entry in tiers_data:
+    existing_durations = {t.duration_days for t in PricingTier.query.filter_by(product_id=product.id).all()}
+
+    for entry in _FALLBACK_TIERS:
         label = entry[0]
         days = entry[1]
         price = entry[2]
@@ -145,6 +144,8 @@ def _sync_product_tiers(product):
         marked_up = round(price * MARKUP, 2)
         if marked_up < MIN_GBP:
             continue
+        if days in existing_durations:
+            continue
         db.session.add(PricingTier(
             product_id=product.id,
             label=label,
@@ -152,6 +153,27 @@ def _sync_product_tiers(product):
             price_pence=int(marked_up * 100),
             bundle_count=bundle,
         ))
+        existing_durations.add(days)
+
+    if tiers_data:
+        for entry in tiers_data:
+            label = entry[0]
+            days = entry[1]
+            price = entry[2]
+
+            marked_up = round(price * MARKUP, 2)
+            if marked_up < MIN_GBP:
+                continue
+            if days in existing_durations:
+                continue
+            db.session.add(PricingTier(
+                product_id=product.id,
+                label=label,
+                duration_days=days,
+                price_pence=int(marked_up * 100),
+            ))
+            existing_durations.add(days)
+
     db.session.commit()
 
 
