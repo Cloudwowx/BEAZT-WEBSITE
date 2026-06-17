@@ -323,10 +323,10 @@ def create_product():
     if Product.query.filter_by(slug=slug).first():
         flash(f"Slug '{slug}' already exists. Choose a different name.", "error")
         return redirect(url_for("admin.products"))
-    if key_source not in ("pool", "chairfbi"):
-        flash("Key source must be pool or chairfbi.", "error")
+    if key_source not in ("pool", "chairfbi", "license"):
+        flash("Key source must be pool, chairfbi, or license.", "error")
         return redirect(url_for("admin.products"))
-    if key_source == "pool":
+    if key_source in ("pool", "license"):
         chairfbi_cheat_id = None
     visibility_val = request.form.get("visibility", "public").strip()
     if visibility_val not in ("private", "public"):
@@ -338,7 +338,7 @@ def create_product():
         description=description or None,
         image_url=image_url or None,
         is_private=(visibility_val == "private"),
-        key_source=key_source,
+        key_source="chairfbi" if key_source in ("chairfbi", "license") else "pool",
         chairfbi_cheat_id=chairfbi_cheat_id or None,
         license_api_app_id=license_api_app_id,
         visibility=visibility_val,
@@ -501,19 +501,19 @@ def product_tiers(product_id):
     if request.method == "POST":
         cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
         key_source_val = request.form.get("key_source", "").strip()
-        if key_source_val in ("pool", "chairfbi"):
-            product.key_source = key_source_val
+        if key_source_val in ("pool", "chairfbi", "license"):
+            product.key_source = "chairfbi" if key_source_val == "license" else key_source_val
             if key_source_val == "pool":
                 product.chairfbi_cheat_id = None
                 cheat_id = None
+                product.license_api_app_id = None
+            elif key_source_val == "license":
+                product.chairfbi_cheat_id = None
+                cheat_id = None
+                product.license_api_app_id = request.form.get("license_api_app_id", "").strip() or None
+            else:
+                product.license_api_app_id = None
         product.chairfbi_cheat_id = cheat_id if cheat_id else None
-        key_api = request.form.get("key_api", "").strip()
-        license_app = request.form.get("license_api_app_id", "").strip()
-        if key_api == "chairfbi" or not license_app:
-            product.license_api_app_id = None
-        else:
-            product.chairfbi_cheat_id = None
-            product.license_api_app_id = license_app
         visibility_val = request.form.get("visibility", "").strip()
         if visibility_val in ("private", "public"):
             product.visibility = visibility_val
@@ -606,7 +606,7 @@ def product_tiers(product_id):
             pass
         _backup_products_safe()
         db.session.refresh(product)
-        flash(f"Saved — key_api submitted: '{key_api}', app_id: '{product.license_api_app_id or 'none'}'", "success")
+        flash(f"Saved — key_source: {product.key_source}, app_id: {product.license_api_app_id or 'none'}", "success")
         return redirect(url_for("admin.product_tiers", product_id=product.id))
 
     gallery_imgs = []
