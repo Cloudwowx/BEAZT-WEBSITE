@@ -221,19 +221,36 @@ def handle_fulfillment(order):
     product_id = product.id if product else 1
     duration_days = tier.duration_days
     expires_at = datetime.utcnow() + timedelta(days=duration_days)
+    total_keys = (getattr(tier, "bundle_count", 1) or 1) * (getattr(order, "quantity", 1) or 1)
 
-    logger.info("Fulfilling order %s — product=%s tier=%s key_source=%s pool=%s",
+    logger.info("Fulfilling order %s — product=%s tier=%s key_source=%s app_id=%s",
                 order.id, product.name if product else "?", tier.label,
                 product.key_source if product else "?", product.license_api_app_id if product else "?")
 
-    pool_key = (
-        Key.query
-        .filter_by(product_id=product_id, tier_id=tier.id, user_id=None, is_active=False)
-        .order_by(Key.created_at.asc())
-        .first()
-    )
+    # 1) License API — primary auto-generate source
+    if product and product.license_api_app_id:
+        try:
+            from config import Config
+            from utils.license_api import LicenseAPI
+            api = LicenseAPI(api_token=Config.LICENSE_API_TOKEN, base_url=Config.LICENSE_API_URL)
+            keys_data = api.create_keys(app_id=product.license_api_app_id, duration_days=duration_days, quantity=total_keys)
+            if isinstance(keys_data, list) and keys_data:
+                order.status = "completed"
+                for k in keys_data:
+                    kv = k if isinstance(k, str) else (k.get("key") or k.get("license") or str(k))
+                    key = Key(user_id=order.user_id, order_id=order.id, product_id=product_id,
+                              tier_id=tier.id, key_value=kv, expires_at=expires_at, is_active=True)
+                    db.session.add(key)
+                db.session.commit()
+                logger.info("License API generated %d key(s) for order %s", len(keys_data), order.id)
+                return
+        except Exception:
+            logger.exception("License API failed for order %s — falling back", order.id)
+
+    # 2) Pool key — fallback if available
+    pool_key = (Key.query.filter_by(product_id=product_id, tier_id=tier.id, user_id=None, is_active=False)
+                .order_by(Key.created_at.asc()).first())
     if pool_key:
-        logger.info("Assigning pool key %s to user %s", pool_key.id, order.user_id)
         pool_key.user_id = order.user_id
         pool_key.order_id = order.id
         pool_key.expires_at = expires_at
@@ -243,94 +260,37 @@ def handle_fulfillment(order):
         db.session.commit()
         return
 
-    logger.info("No pool key found for product_id=%s tier_id=%s", product_id, tier.id)
     if product and product.key_source == "pool":
-        logger.warning("Pool depleted — order %s awaiting keys", order.id)
         order.status = "awaiting_keys"
         db.session.commit()
         return
 
-    # Try License API if product has app_id
-    if product and product.license_api_app_id:
-        try:
-            from config import Config
-            from utils.license_api import LicenseAPI
-            api = LicenseAPI(
-                api_token=Config.LICENSE_API_TOKEN,
-                base_url=Config.LICENSE_API_URL,
-            )
-            keys_data = api.create_keys(
-                app_id=product.license_api_app_id,
-                duration_days=duration_days,
-                quantity=total_keys,
-            )
-            if isinstance(keys_data, list) and keys_data:
-                key_values = []
-                for k in keys_data:
-                    kv = k if isinstance(k, str) else (k.get("key") or k.get("license") or str(k))
-                    key_values.append(kv)
-                if key_values:
-                    order.status = "completed"
-                    for kv in key_values:
-                        key = Key(
-                            user_id=order.user_id,
-                            order_id=order.id,
-                            product_id=product_id,
-                            tier_id=tier.id,
-                            key_value=kv,
-                            expires_at=expires_at,
-                            is_active=True,
-                        )
-                        db.session.add(key)
-                    db.session.commit()
-                    try:
-                        from utils.kv_store import backup_everything
-                        backup_everything()
-                    except Exception:
-                        pass
-                    return
-        except Exception:
-            logger.exception("License API key creation failed for order %s", order.id)
-
+    # 3) ChairFBI — final fallback
     from config import get_chairfbi_config
     cfg = get_chairfbi_config()
     api_token = cfg.get("api_token", "")
     cheat_id = product.chairfbi_cheat_id if product else ""
-
     bundle_count = getattr(tier, "bundle_count", 1) or 1
     buy_quantity = getattr(order, "quantity", 1) or 1
-    total_keys = bundle_count * buy_quantity
+    total_keys_cf = bundle_count * buy_quantity
     key_values = []
 
     if cheat_id and api_token:
         try:
             from utils.chairfbi import ChairFBI
             cf = ChairFBI(api_token=api_token, base_url=cfg.get("api_base"))
-            result = cf.create_key(cheat_id=cheat_id, days=duration_days, amount=total_keys)
+            result = cf.create_key(cheat_id=cheat_id, days=duration_days, amount=total_keys_cf)
             key_values = result.get("keys", [])
         except Exception:
             logger.exception("ChairFBI key creation failed for order %s", order.id)
 
     if not key_values:
-        key_values = ["BEAZT-" + secrets.token_hex(16).upper() for _ in range(total_keys)]
+        key_values = ["BEAZT-" + secrets.token_hex(16).upper() for _ in range(total_keys_cf)]
 
     order.status = "completed"
     for kv in key_values:
-        key = Key(
-            user_id=order.user_id,
-            order_id=order.id,
-            product_id=product_id,
-            tier_id=tier.id,
-            key_value=kv,
-            expires_at=expires_at,
-            is_active=True,
-            chairfbi_key_id=kv if cheat_id else None,
-            chairfbi_cheat_id=cheat_id if cheat_id else None,
-        )
+        key = Key(user_id=order.user_id, order_id=order.id, product_id=product_id,
+                  tier_id=tier.id, key_value=kv, expires_at=expires_at, is_active=True,
+                  chairfbi_key_id=kv if cheat_id else None, chairfbi_cheat_id=cheat_id if cheat_id else None)
         db.session.add(key)
     db.session.commit()
-    try:
-        from utils.kv_store import backup_everything
-        backup_everything()
-    except Exception:
-        pass

@@ -606,7 +606,7 @@ def product_tiers(product_id):
             pass
         _backup_products_safe()
         db.session.refresh(product)
-        flash(f"Updated — api: {key_api}, app_id: {product.license_api_app_id or 'none'}", "success")
+        flash(f"Saved — key_api submitted: '{key_api}', app_id: '{product.license_api_app_id or 'none'}'", "success")
         return redirect(url_for("admin.product_tiers", product_id=product.id))
 
     gallery_imgs = []
