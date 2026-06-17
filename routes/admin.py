@@ -604,9 +604,9 @@ def product_tiers(product_id):
             backup_everything()
         except Exception:
             pass
-        ok = _backup_products_safe()
-        product = db.session.get(Product, product_id)
-        flash(f"Updated — visibility: {product.visibility}, key_api: {key_api}, app_id: {product.license_api_app_id or 'none'}", "success")
+        _backup_products_safe()
+        db.session.refresh(product)
+        flash(f"Updated — api: {key_api}, app_id: {product.license_api_app_id or 'none'}", "success")
         return redirect(url_for("admin.product_tiers", product_id=product.id))
 
     gallery_imgs = []
