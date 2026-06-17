@@ -48,6 +48,7 @@ def create_session():
             email=current_user.email,
             webhook_url=url_for("checkout.ivno_webhook", _external=True),
             domain=domain,
+            fee_preference="absorb",
         )
 
         if not result.get("success") or not result.get("payment_url"):

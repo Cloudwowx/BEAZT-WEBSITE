@@ -1,19 +1,19 @@
 {% extends "base.html" %}
-{% block title %}All Cheats | BEAZT{% endblock %}
+{% block title %}Store | BEAZT{% endblock %}
 
 {% block content %}
 <section class="page-section">
   <div class="container">
     <div class="page-header reveal">
       <span class="section-eyebrow">Inventory</span>
-      <h1 class="t-h1">All Cheats</h1>
-      <p class="text-muted">Browse our full catalog. Click any cheat for details and purchase options.</p>
+      <h1 class="t-h1">Store</h1>
+      <p class="text-muted">Browse our full catalog. Click any product for details and purchase options.</p>
     </div>
 
     {% if private_products %}
     <div class="section-header reveal" style="margin-bottom:1.2rem;">
       <span class="section-eyebrow" style="color:var(--accent-h)">BeaZt</span>
-      <h2 class="t-h2">Private Cheats</h2>
+      <h2 class="t-h2">Private Software</h2>
     </div>
     <div class="cheats-grid cheats-grid--private reveal" style="margin-bottom:2.5rem;">
       {% for p in private_products %}
