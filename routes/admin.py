@@ -311,6 +311,7 @@ def create_product():
     slug = request.form.get("slug", "").strip()
     key_source = request.form.get("key_source", "chairfbi").strip()
     chairfbi_cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
+    license_api_app_id = request.form.get("license_api_app_id", "").strip() or None
     description = request.form.get("description", "").strip()
     image_url = request.form.get("image_url", "").strip()
 
@@ -339,6 +340,7 @@ def create_product():
         is_private=(visibility_val == "private"),
         key_source=key_source,
         chairfbi_cheat_id=chairfbi_cheat_id or None,
+        license_api_app_id=license_api_app_id,
         visibility=visibility_val,
     )
     db.session.add(product)
@@ -510,8 +512,12 @@ def product_tiers(product_id):
             product.chairfbi_cheat_id = None
             product.key_source = "chairfbi"
             product.license_api_app_id = request.form.get("license_api_app_id", "").strip() or None
+            logger.info("Key API set to License — app_id=%s", product.license_api_app_id)
         elif key_api == "chairfbi":
             product.license_api_app_id = None
+            logger.info("Key API set to ChairFBI")
+        else:
+            logger.warning("Unknown key_api value: '%s'", key_api)
         visibility_val = request.form.get("visibility", "").strip()
         if visibility_val in ("private", "public"):
             product.visibility = visibility_val
@@ -549,27 +555,9 @@ def product_tiers(product_id):
                     product.image_url = f"/static/images/products/{product.slug}/banner{ext}"
                     saved = True
                 except OSError:
-                    pass
+                    flash("Image upload failed — check directory permissions.", "error")
                 if not saved:
-                    import base64
-                    imgbb_key = os.environ.get("IMGBB_API_KEY", "")
-                    if imgbb_key:
-                        try:
-                            import requests as _req
-                            resp = _req.post(
-                                "https://api.imgbb.com/1/upload",
-                                data={"key": imgbb_key, "image": base64.b64encode(file_bytes).decode()},
-                                timeout=15,
-                            )
-                            data = resp.json()
-                            if data.get("success"):
-                                product.image_url = data["data"]["url"]
-                            else:
-                                flash("imgbb upload failed. Use the URL field instead.", "error")
-                        except Exception:
-                            flash("Banner upload failed. Use the URL field instead.", "error")
-                    else:
-                        flash("Banner upload unavailable. Set IMGBB_API_KEY or use the URL field.", "warn")
+                    pass  # already flashed error
             else:
                 flash("Only PNG and JPEG files are accepted.", "error")
                 return redirect(url_for("admin.product_tiers", product_id=product.id))
@@ -610,33 +598,7 @@ def product_tiers(product_id):
                     gallery.append(f"/static/images/products/{product.slug}/{fname}")
                     saved = True
                 except OSError:
-                    pass
-
-                # Fallback: upload to imgbb
-                if not saved:
-                    import base64
-                    imgbb_key = os.environ.get("IMGBB_API_KEY", "")
-                    if imgbb_key:
-                        try:
-                            import requests as _req
-                            resp = _req.post(
-                                "https://api.imgbb.com/1/upload",
-                                data={
-                                    "key": imgbb_key,
-                                    "image": base64.b64encode(file_bytes).decode(),
-                                },
-                                timeout=15,
-                            )
-                            data = resp.json()
-                            if data.get("success"):
-                                gallery.append(data["data"]["url"])
-                                flash("Image uploaded via imgbb.", "success")
-                            else:
-                                flash("imgbb upload failed. Use the URL field instead.", "error")
-                        except Exception:
-                            flash("Image upload failed. Use the URL field instead.", "error")
-                    else:
-                        flash("Upload unavailable. Set IMGBB_API_KEY or use the URL field.", "warn")
+                    flash("Gallery upload failed — check directory permissions.", "error")
 
         product.gallery_images = json.dumps(gallery) if gallery else None
 
@@ -648,7 +610,7 @@ def product_tiers(product_id):
             pass
         ok = _backup_products_safe()
         product = db.session.get(Product, product_id)
-        flash(f"Product updated — visibility: {product.visibility}, tiers: {product.tiers.count()}", "success")
+        flash(f"Updated — visibility: {product.visibility}, key_api: {key_api}, app_id: {product.license_api_app_id or 'none'}", "success")
         return redirect(url_for("admin.product_tiers", product_id=product.id))
 
     gallery_imgs = []
