@@ -502,10 +502,6 @@ def product_tiers(product_id):
         cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
         key_source_val = request.form.get("key_source", "").strip()
         license_app = request.form.get("license_api_app_id", "").strip()
-        # Also try hidden field populated by JS button
-        if not license_app:
-            license_app = request.form.get("license_app_id_hidden", "").strip()
-        flash(f"DEBUG: license_app={repr(license_app)} all_vals={repr(all_vals)} KEYS={list(request.form.keys())}", "info")
         if license_app:
             key_source_val = "license"
         if key_source_val in ("pool", "chairfbi", "license"):
