@@ -27,7 +27,7 @@
         <label style="display:block;font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.25rem;">License App ID</label>
         <div style="display:flex;gap:0.3rem;">
           <input type="text" id="license_app_id_val" value="{{ product.license_api_app_id or '' }}" placeholder="App ID from license dashboard" style="flex:1;min-width:0;padding:0.6rem 0.8rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-size:0.82rem;">
-          <button type="button" class="btn-xs" style="background:var(--accent);color:#fff;border:none;white-space:nowrap;padding:0.6rem 0.8rem;" onclick="setLicenseApp({{ product.id }})">Set</button>
+          <button type="button" class="btn-xs" style="background:var(--accent);color:#fff;border:none;white-space:nowrap;padding:0.6rem 0.8rem;" onclick="setLicenseApp({{ product.id }}, '{{ url_for('admin.set_license_app', product_id=product.id) }}')">Set</button>
         </div>
       </div>
       <div style="flex:1;min-width:180px;">
@@ -168,18 +168,18 @@
 </form>
 
 <script>
-function setLicenseApp(pid) {
+function setLicenseApp(pid, url) {
   var v = document.getElementById('license_app_id_val').value.trim();
-  fetch('/admin/products/' + pid + '/set-license-app', {
+  fetch(url, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({app_id: v})
-  }).then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.ok) { location.reload(); }
-      else { alert(d.error || 'Failed'); }
+  }).then(function(r) { return r.json().then(function(d) { return {ok: r.ok, data: d}; }); })
+    .then(function(r) {
+      if (r.ok && r.data.ok) { location.reload(); }
+      else { alert('Error: ' + (r.data && r.data.error ? r.data.error : 'Unknown')); }
     })
-    .catch(function(e) { alert('Error: ' + e.message); });
+    .catch(function(e) { alert('Network error: ' + e.message); });
 }
 </script>
 {% endblock %}

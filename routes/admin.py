@@ -633,23 +633,24 @@ def product_tiers(product_id):
 @admin_bp.route("/products/<int:product_id>/set-license-app", methods=["POST"])
 @admin_required
 def set_license_app(product_id):
-    product = db.session.get(Product, product_id)
-    if not product:
-        return {"ok": False, "error": "Not found"}, 404
-    data = request.get_json(silent=True) or {}
-    app_id = (data.get("app_id") or "").strip()
-    if app_id:
-        product.license_api_app_id = app_id
-        product.key_source = "chairfbi"
-        db.session.commit()
-        flash(f"License App ID set to: {app_id}", "success")
-        return {"ok": True, "app_id": app_id}
-    else:
-        product.license_api_app_id = None
-        product.key_source = "chairfbi"
-        db.session.commit()
-        flash("License App ID cleared.", "info")
-        return {"ok": True, "app_id": None}
+    try:
+        product = db.session.get(Product, product_id)
+        if not product:
+            return {"ok": False, "error": "Not found"}, 404
+        data = request.get_json(force=True, silent=True) or {}
+        app_id = (data.get("app_id") or "").strip()
+        if app_id:
+            product.license_api_app_id = app_id
+            product.key_source = "chairfbi"
+            db.session.commit()
+            return {"ok": True, "app_id": app_id}
+        else:
+            product.license_api_app_id = None
+            product.key_source = "chairfbi"
+            db.session.commit()
+            return {"ok": True, "app_id": None}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}, 500
 
 
 @admin_bp.route("/products/<int:product_id>/tiers/add", methods=["POST"])
