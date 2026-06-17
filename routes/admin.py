@@ -502,9 +502,11 @@ def product_tiers(product_id):
         cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
         key_source_val = request.form.get("key_source", "").strip()
         license_app = request.form.get("license_api_app_id", "").strip()
-        # DEBUG
-        print(f"[DEBUG PRODUCT_TIERS POST] key_source_val={repr(key_source_val)} license_app={repr(license_app)} ALL_KEYS={list(request.form.keys())}", flush=True)
-        flash(f"DEBUG: form keys={list(request.form.keys())} key_src={repr(key_source_val)} license_app={repr(license_app)}", "info")
+        # DIAGNOSTIC: dump everything about this field
+        all_vals = request.form.getlist("license_api_app_id")
+        content_type = request.content_type or "?"
+        content_len = request.content_length or "?"
+        flash(f"DEBUG: key_src={repr(key_source_val)} ctype={content_type} clen={content_len} license_app={repr(license_app)} all_vals={repr(all_vals)} KEYS={list(request.form.keys())}", "info")
         if license_app:
             key_source_val = "license"
         if key_source_val in ("pool", "chairfbi", "license"):
