@@ -155,6 +155,7 @@ def _create_payfast_payment(tier, quantity, order_total):
 
 @checkout_bp.route("/payfast-notify", methods=["POST"])
 def payfast_notify():
+    logger.info("PayFast ITN received: %s", dict(request.form))
     pf_host, pf_data, pf_param_string = "https://www.payfast.co.za/eng/query/validate", {}, ""
     for k, v in request.form.items():
         if k != "signature":
@@ -164,16 +165,22 @@ def payfast_notify():
 
     import requests as _r
     resp = _r.post(pf_host, data=pf_data, params=pf_param_string, timeout=15)
+    logger.info("PayFast validation response: %s", resp.text)
     if resp.text != "VALID":
         return "INVALID", 400
 
     order_id = int(pf_data.get("m_payment_id", 0))
+    logger.info("PayFast ITN for order %s, payment_status=%s", order_id, pf_data.get("payment_status", "?"))
     order = db.session.get(Order, order_id)
     if not order:
+        logger.warning("PayFast ITN: order %s not found", order_id)
         return "OK"
 
     if order.status != "completed":
+        logger.info("Fulfilling order %s", order.id)
         handle_fulfillment(order)
+    else:
+        logger.info("Order %s already completed", order.id)
     return "OK"
 
 
@@ -205,12 +212,17 @@ def ivno_webhook():
 def handle_fulfillment(order):
     tier = order.tier
     if not tier:
+        logger.warning("Fulfill: no tier for order %s", order.id)
         return
 
     product = tier.product
     product_id = product.id if product else 1
     duration_days = tier.duration_days
     expires_at = datetime.utcnow() + timedelta(days=duration_days)
+
+    logger.info("Fulfilling order %s — product=%s tier=%s key_source=%s pool=%s",
+                order.id, product.name if product else "?", tier.label,
+                product.key_source if product else "?", product.license_api_app_id if product else "?")
 
     pool_key = (
         Key.query
@@ -219,6 +231,7 @@ def handle_fulfillment(order):
         .first()
     )
     if pool_key:
+        logger.info("Assigning pool key %s to user %s", pool_key.id, order.user_id)
         pool_key.user_id = order.user_id
         pool_key.order_id = order.id
         pool_key.expires_at = expires_at
@@ -228,7 +241,9 @@ def handle_fulfillment(order):
         db.session.commit()
         return
 
+    logger.info("No pool key found for product_id=%s tier_id=%s", product_id, tier.id)
     if product and product.key_source == "pool":
+        logger.warning("Pool depleted — order %s awaiting keys", order.id)
         order.status = "awaiting_keys"
         db.session.commit()
         return
