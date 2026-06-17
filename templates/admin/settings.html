@@ -6,7 +6,7 @@
 </div>
 
 <div x-data="{ reveal: {} }">
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
     <div style="display:flex;flex-direction:column;gap:2.5rem;max-width:640px;">
 
       <!-- ===== IVNO SECTION ===== -->
@@ -127,15 +127,25 @@
           </div>
 
           <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Public Loader Download URL</label>
-            <input type="text" name="loader_public_url" value="{{ loader_public_url }}" placeholder="https://example.com/public-loader.zip" style="padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-            {% if loader_public_url %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--text-mut);">Download link visible to all users.</span>{% endif %}
+            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Public Loader</label>
+            <div style="display:flex;gap:0.5rem;align-items:end;flex-wrap:wrap;">
+              <input type="file" name="loader_public_file" accept=".exe,.zip,.rar,.7z" style="font-size:0.72rem;color:var(--text-dim);flex:1;min-width:200px;">
+              {% if loader_public_url %}
+              <a href="{{ loader_public_url }}" target="_blank" style="font-size:0.68rem;color:var(--accent-h);white-space:nowrap;">Download current</a>
+              {% endif %}
+            </div>
+            <span style="font-size:0.68rem;color:var(--text-mut);">Upload an .exe/.zip/.rar/.7z file. Shown to all users on My Keys.</span>
           </div>
 
           <div style="display:flex;flex-direction:column;gap:0.35rem;">
-            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Private Loader Download URL</label>
-            <input type="text" name="loader_private_url" value="{{ loader_private_url }}" placeholder="https://example.com/private-loader.zip" style="padding:0.6rem 0.85rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font);font-size:0.82rem;outline:none;">
-            {% if loader_private_url %}<span style="font-size:0.68rem;color:var(--success);">Set.</span>{% else %}<span style="font-size:0.68rem;color:var(--text-mut);">Only shown to users with active private keys.</span>{% endif %}
+            <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Private Loader</label>
+            <div style="display:flex;gap:0.5rem;align-items:end;flex-wrap:wrap;">
+              <input type="file" name="loader_private_file" accept=".exe,.zip,.rar,.7z" style="font-size:0.72rem;color:var(--text-dim);flex:1;min-width:200px;">
+              {% if loader_private_url %}
+              <a href="{{ loader_private_url }}" target="_blank" style="font-size:0.68rem;color:var(--accent-h);white-space:nowrap;">Download current</a>
+              {% endif %}
+            </div>
+            <span style="font-size:0.68rem;color:var(--text-mut);">Only shown to users with active private keys.</span>
           </div>
 
         </div>

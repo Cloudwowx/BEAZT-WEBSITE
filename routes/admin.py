@@ -937,6 +937,29 @@ def settings():
                     db.session.delete(row)
                     db.session.commit()
                     flash(f"{label} cleared.", "info")
+
+        # Handle loader file uploads
+        for field_name, setting_key, label in [
+            ("loader_public_file", "loader_public_url", "Public Loader"),
+            ("loader_private_file", "loader_private_url", "Private Loader"),
+        ]:
+            loader_file = request.files.get(field_name)
+            if loader_file and loader_file.filename:
+                ext = os.path.splitext(loader_file.filename)[1].lower()
+                if ext in (".exe", ".zip", ".rar", ".7z"):
+                    try:
+                        upload_dir = os.path.join(current_app.root_path, "static", "loaders")
+                        os.makedirs(upload_dir, exist_ok=True)
+                        fname = {"loader_public_file": "loader-public", "loader_private_file": "loader-private"}[field_name] + ext
+                        path = os.path.join(upload_dir, fname)
+                        with open(path, "wb") as f:
+                            f.write(loader_file.read())
+                        url = f"/static/loaders/{fname}"
+                        Setting.set(setting_key, url)
+                        flash(f"{label} uploaded.", "success")
+                    except OSError:
+                        flash(f"{label} upload failed.", "error")
+
         try:
             from utils.kv_store import backup_everything
             backup_everything()
