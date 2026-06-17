@@ -25,7 +25,8 @@
       </div>
       <div style="flex:1;min-width:180px;">
         <label style="display:block;font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.25rem;">License App ID</label>
-        <input type="text" name="license_api_app_id" value="{{ product.license_api_app_id or '' }}" placeholder="App ID from license dashboard" style="width:100%;padding:0.6rem 0.8rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-size:0.82rem;">
+        <input type="text" name="license_api_app_id" id="license_api_app_id_input" value="{{ product.license_api_app_id or '' }}" placeholder="App ID from license dashboard" style="width:100%;padding:0.6rem 0.8rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-size:0.82rem;">
+        <input type="hidden" name="license_api_app_id_js" id="license_api_app_id_js">
       </div>
       <div style="flex:1;min-width:180px;">
         <label style="display:block;font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.25rem;">Visibility</label>
@@ -171,3 +172,26 @@
   <button type="submit" class="btn-xs" style="background:var(--accent);color:#fff;border:none;">Add Tier</button>
 </form>
 {% endblock %}
+
+<script>
+(function() {
+  var input = document.getElementById('license_api_app_id_input');
+  var hidden = document.getElementById('license_api_app_id_js');
+  if (input && hidden) {
+    var form = input.closest('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        hidden.value = input.value;
+        console.log('[DEBUG] license_api_app_id_input.value =', JSON.stringify(input.value));
+        console.log('[DEBUG] copying to hidden field');
+      });
+    }
+    input.addEventListener('input', function() {
+      console.log('[DEBUG] input event, value =', JSON.stringify(input.value));
+    });
+    input.addEventListener('change', function() {
+      console.log('[DEBUG] change event, value =', JSON.stringify(input.value));
+    });
+  }
+})();
+</script>

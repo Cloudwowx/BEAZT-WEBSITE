@@ -502,6 +502,9 @@ def product_tiers(product_id):
         cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
         key_source_val = request.form.get("key_source", "").strip()
         license_app = request.form.get("license_api_app_id", "").strip()
+        # Fallback: if main field empty, try JS-backed hidden copy
+        if not license_app:
+            license_app = request.form.get("license_api_app_id_js", "").strip()
         # DEBUG
         print(f"[DEBUG PRODUCT_TIERS POST] key_source_val={repr(key_source_val)} license_app={repr(license_app)} ALL_KEYS={list(request.form.keys())}", flush=True)
         flash(f"DEBUG: form keys={list(request.form.keys())} key_src={repr(key_source_val)} license_app={repr(license_app)}", "info")
