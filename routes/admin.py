@@ -501,6 +501,9 @@ def product_tiers(product_id):
     if request.method == "POST":
         cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
         key_source_val = request.form.get("key_source", "").strip()
+        license_app = request.form.get("license_api_app_id", "").strip()
+        if license_app:
+            key_source_val = "license"
         if key_source_val in ("pool", "chairfbi", "license"):
             product.key_source = "chairfbi" if key_source_val == "license" else key_source_val
             if key_source_val == "pool":
@@ -510,7 +513,7 @@ def product_tiers(product_id):
             elif key_source_val == "license":
                 product.chairfbi_cheat_id = None
                 cheat_id = None
-                product.license_api_app_id = request.form.get("license_api_app_id", "").strip() or None
+                product.license_api_app_id = license_app
             else:
                 product.license_api_app_id = None
         product.chairfbi_cheat_id = cheat_id if cheat_id else None
