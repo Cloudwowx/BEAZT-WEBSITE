@@ -36,13 +36,12 @@ class LicenseAPI:
 
     def create_keys(self, app_id, duration_days, quantity=1):
         path = f"/backend/dashboard/api/v1/apps/{app_id}/licenses"
-        params = {"duration": duration_days, "quantity": quantity}
-        resp = self._request("POST", path, params=params)
+        body = {"duration": str(duration_days), "quantity": str(quantity)}
+        resp = self._request("POST", path, json=body)
         resp.raise_for_status()
         data = resp.json()
-        if isinstance(data, list):
-            return data
-        return data.get("licenses") or data.get("keys") or []
+        license_list = data.get("licenses") or []
+        return license_list
 
     def delete_key(self, app_id, license_key):
         resp = self._request("DELETE", f"/backend/dashboard/api/v1/apps/{app_id}/licenses/{license_key}")

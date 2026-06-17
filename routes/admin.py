@@ -505,6 +505,12 @@ def product_tiers(product_id):
                 product.chairfbi_cheat_id = None
                 cheat_id = None
         product.chairfbi_cheat_id = cheat_id if cheat_id else None
+        key_api = request.form.get("key_api", "").strip()
+        if key_api == "license":
+            product.chairfbi_cheat_id = None
+            product.key_source = "chairfbi"
+        elif key_api == "chairfbi":
+            product.license_api_app_id = None
         if "license_api_app_id" in request.form:
             product.license_api_app_id = request.form.get("license_api_app_id", "").strip() or None
         visibility_val = request.form.get("visibility", "").strip()

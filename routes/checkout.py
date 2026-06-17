@@ -259,7 +259,7 @@ def handle_fulfillment(order):
             if isinstance(keys_data, list) and keys_data:
                 key_values = []
                 for k in keys_data:
-                    kv = k.get("key") or k.get("license") or str(k)
+                    kv = k if isinstance(k, str) else (k.get("key") or k.get("license") or str(k))
                     key_values.append(kv)
                 if key_values:
                     order.status = "completed"
