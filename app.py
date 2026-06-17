@@ -73,6 +73,13 @@ with app.app_context():
             _cursor.execute("ALTER TABLE products ADD COLUMN chairfbi_cheat_id VARCHAR(64)")
             _conn.commit()
 
+        # Ensure products table has license_api_app_id
+        _cursor.execute("PRAGMA table_info(products)")
+        _cols = [r[1] for r in _cursor.fetchall()]
+        if "license_api_app_id" not in _cols:
+            _cursor.execute("ALTER TABLE products ADD COLUMN license_api_app_id VARCHAR(64)")
+            _conn.commit()
+
         # Ensure products table has key_source
         _cursor.execute("PRAGMA table_info(products)")
         _cols = [r[1] for r in _cursor.fetchall()]

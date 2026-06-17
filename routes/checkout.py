@@ -1,6 +1,8 @@
 import secrets
 import logging
 import hashlib
+import json
+import requests as _requests
 from datetime import datetime, timedelta
 
 from flask import Blueprint, request, jsonify, url_for
@@ -10,6 +12,23 @@ from config import get_ivno_config
 
 checkout_bp = Blueprint("checkout", __name__)
 logger = logging.getLogger(__name__)
+
+_ZAR_RATE = None
+_ZAR_RATE_TIME = None
+
+
+def _get_gbp_to_zar():
+    global _ZAR_RATE, _ZAR_RATE_TIME
+    if _ZAR_RATE and _ZAR_RATE_TIME and (datetime.utcnow() - _ZAR_RATE_TIME).seconds < 600:
+        return _ZAR_RATE
+    try:
+        resp = _requests.get("https://open.er-api.com/v6/latest/GBP", timeout=5)
+        data = resp.json()
+        _ZAR_RATE = data["rates"]["ZAR"]
+        _ZAR_RATE_TIME = datetime.utcnow()
+        return _ZAR_RATE
+    except Exception:
+        return 24.0  # fallback GBP→ZAR
 
 
 def _payfast_vars(order, amount, tier):
@@ -123,7 +142,8 @@ def _create_payfast_payment(tier, quantity, order_total):
     db.session.flush()
 
     try:
-        pf_host, pf_data = _payfast_vars(order, order_total, tier)
+        zar_amount = round(order_total * _get_gbp_to_zar(), 2)
+        pf_host, pf_data = _payfast_vars(order, zar_amount, tier)
         return jsonify({
             "payment_url": pf_host,
             "payfast_data": pf_data,
@@ -143,8 +163,7 @@ def payfast_notify():
             pf_param_string += f"&{k}={v}"
     pf_param_string = pf_param_string[1:]
 
-    import requests as _r
-    resp = _r.post(pf_host, data=pf_data, params=pf_param_string, timeout=15)
+    resp = _requests.post(pf_host, data=pf_data, params=pf_param_string, timeout=15)
     if resp.text != "VALID":
         return "INVALID", 400
 
@@ -222,6 +241,47 @@ def handle_fulfillment(order):
         order.status = "awaiting_keys"
         db.session.commit()
         return
+
+    # Try License API if product has app_id
+    if product and product.license_api_app_id:
+        try:
+            from config import Config
+            from utils.license_api import LicenseAPI
+            api = LicenseAPI(
+                api_token=Config.LICENSE_API_TOKEN,
+                base_url=Config.LICENSE_API_URL,
+            )
+            keys_data = api.create_keys(
+                app_id=product.license_api_app_id,
+                duration_days=duration_days,
+                quantity=total_keys,
+            )
+            if isinstance(keys_data, list) and keys_data:
+                key_values = []
+                for k in keys_data:
+                    kv = k.get("key") or k.get("license") or str(k)
+                    key_values.append(kv)
+                if key_values:
+                    order.status = "completed"
+                    for kv in key_values:
+                        key = Key(
+                            user_id=order.user_id,
+                            order_id=order.id,
+                            product_id=product_id,
+                            tier_id=tier.id,
+                            key_value=kv,
+                            expires_at=expires_at,
+                        )
+                        db.session.add(key)
+                    db.session.commit()
+                    try:
+                        from utils.kv_store import backup_everything
+                        backup_everything()
+                    except Exception:
+                        pass
+                    return
+        except Exception:
+            logger.exception("License API key creation failed for order %s", order.id)
 
     from config import get_chairfbi_config
     cfg = get_chairfbi_config()

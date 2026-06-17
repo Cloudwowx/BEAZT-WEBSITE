@@ -32,6 +32,8 @@ class Config:
     LOADER_PUBLIC_URL = os.getenv("LOADER_PUBLIC_URL", "")
     LOADER_PRIVATE_URL = os.getenv("LOADER_PRIVATE_URL", "")
     IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
+    LICENSE_API_URL = os.getenv("LICENSE_API_URL", "https://panel.projectinfinity.co.za:3845")
+    LICENSE_API_TOKEN = os.getenv("LICENSE_API_TOKEN", "")
 
 
 def get_chairfbi_config():

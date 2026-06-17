@@ -37,6 +37,7 @@ class Product(db.Model):
     image_url = db.Column(db.String(256), nullable=True)
     is_private = db.Column(db.Boolean, default=False)
     chairfbi_cheat_id = db.Column(db.String(64), nullable=True)
+    license_api_app_id = db.Column(db.String(64), nullable=True)
     key_source = db.Column(db.String(16), default="chairfbi")
     visibility = db.Column(db.String(16), default="public")
     features_text = db.Column(db.Text, nullable=True)
