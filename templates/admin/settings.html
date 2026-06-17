@@ -130,17 +130,19 @@
             <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Public Loader</label>
             <div style="display:flex;gap:0.5rem;align-items:end;flex-wrap:wrap;">
               <input type="file" name="loader_public_file" accept=".exe,.zip,.rar,.7z" style="font-size:0.72rem;color:var(--text-dim);flex:1;min-width:200px;">
+              <button type="submit" name="upload_loader_public" value="1" class="btn-xs" style="background:var(--accent);color:#fff;border:none;padding:0.6rem 0.9rem;white-space:nowrap;">Upload</button>
               {% if loader_public_url %}
               <a href="{{ loader_public_url }}" target="_blank" style="font-size:0.68rem;color:var(--accent-h);white-space:nowrap;">Download current</a>
               {% endif %}
             </div>
-            <span style="font-size:0.68rem;color:var(--text-mut);">Upload an .exe/.zip/.rar/.7z file. Shown to all users on My Keys.</span>
+            <span style="font-size:0.68rem;color:var(--text-mut);">Select file and click Upload. Shown to all users on My Keys.</span>
           </div>
 
           <div style="display:flex;flex-direction:column;gap:0.35rem;">
             <label style="font-family:var(--font);font-size:0.72rem;font-weight:600;color:var(--text-dim);letter-spacing:0.06em;text-transform:uppercase;">Private Loader</label>
             <div style="display:flex;gap:0.5rem;align-items:end;flex-wrap:wrap;">
               <input type="file" name="loader_private_file" accept=".exe,.zip,.rar,.7z" style="font-size:0.72rem;color:var(--text-dim);flex:1;min-width:200px;">
+              <button type="submit" name="upload_loader_private" value="1" class="btn-xs" style="background:var(--accent);color:#fff;border:none;padding:0.6rem 0.9rem;white-space:nowrap;">Upload</button>
               {% if loader_private_url %}
               <a href="{{ loader_private_url }}" target="_blank" style="font-size:0.68rem;color:var(--accent-h);white-space:nowrap;">Download current</a>
               {% endif %}
