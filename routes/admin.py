@@ -499,14 +499,20 @@ def product_tiers(product_id):
         abort(404)
 
     if request.method == "POST":
+        # DUMP RAW BODY FIRST (before form parsing consumes stream)
+        try:
+            raw = request.get_data(as_text=True)
+            dump_path = os.path.join(current_app.root_path, "tmp", "form_dump.txt")
+            os.makedirs(os.path.dirname(dump_path), exist_ok=True)
+            with open(dump_path, "a", encoding="utf-8") as df:
+                df.write(f"\n=== {datetime.utcnow()} ===\n{raw[:4000]}\n")
+        except Exception:
+            pass
         cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
         key_source_val = request.form.get("key_source", "").strip()
         license_app = request.form.get("license_api_app_id", "").strip()
-        # DIAGNOSTIC: dump everything about this field
         all_vals = request.form.getlist("license_api_app_id")
-        content_type = request.content_type or "?"
-        content_len = request.content_length or "?"
-        flash(f"DEBUG: key_src={repr(key_source_val)} ctype={content_type} clen={content_len} license_app={repr(license_app)} all_vals={repr(all_vals)} KEYS={list(request.form.keys())}", "info")
+        flash(f"DEBUG: license_app={repr(license_app)} all_vals={repr(all_vals)} KEYS={list(request.form.keys())}", "info")
         if license_app:
             key_source_val = "license"
         if key_source_val in ("pool", "chairfbi", "license"):
