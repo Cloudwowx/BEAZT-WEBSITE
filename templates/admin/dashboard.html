@@ -90,7 +90,7 @@
         {% for k in recent_keys %}
         <tr>
           <td><code>{{ k.key_value[:20] }}...</code></td>
-          <td><span class="badge-sm {{ 'badge-green' if k.is_active else 'badge-red' }}">{{ 'Active' if k.is_active else 'Expired' }}</span></td>
+          <td><span class="badge-sm {{ 'badge-green' if k.is_active else 'badge-blue' }}">{{ 'Active' if k.is_active else ('Pool' if not k.user_id else 'Expired') }}</span></td>
           <td>{{ k.expires_at.strftime('%d %b %Y') if k.expires_at else '-' }}</td>
         </tr>
         {% endfor %}
