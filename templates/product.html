@@ -17,7 +17,8 @@
       checkingOut: false,
       checkoutError: '',
       quantity: 1,
-      IVNO_MIN_GBP: 16,
+      selectedGateway: 'payfast',
+      IVNO_MIN_GBP: 20,
       get currentVariant() {
         return this.variants.find(function(v) { return v.id === this.selectedVariantId; }.bind(this)) || this.variants[0] || null;
       },
@@ -28,16 +29,20 @@
       get cartTotal() {
         return this.currentPrice * this.quantity;
       },
+      get gatewayMin() {
+        return this.selectedGateway === 'ivno' ? this.IVNO_MIN_GBP : 0;
+      },
       get meetsMinimum() {
-        return this.cartTotal >= this.IVNO_MIN_GBP;
+        return this.cartTotal >= this.gatewayMin;
       },
       get buyLabel() {
         if (!d.isAuthenticated) return 'Sign in to Buy';
-        if (!this.meetsMinimum) return 'Min £16 for card (' + this.quantity + ' × £' + this.currentPrice.toFixed(2) + ' = £' + this.cartTotal.toFixed(2) + ')';
         var v = this.currentVariant;
-        if (!v) return 'Buy Now';
+        var gw = this.selectedGateway === 'payfast' ? 'PayFast' : 'Card';
+        if (!v) return 'Buy with ' + gw;
         if (v.billing_type === 'subscription') return 'Subscribe - ' + v.label;
-        return 'Buy ' + this.quantity + ' × ' + v.label + ' — £' + this.cartTotal.toFixed(2);
+        if (!this.meetsMinimum) return 'Min £' + this.gatewayMin + ' for ' + gw + ' — total £' + this.cartTotal.toFixed(2);
+        return 'Buy ' + this.quantity + ' × ' + v.label + ' — £' + this.cartTotal.toFixed(2) + ' via ' + gw;
       },
       get canBuy() {
         return d.isAuthenticated && this.meetsMinimum;
@@ -57,12 +62,28 @@
           var formData = new FormData();
           formData.append('tier_id', this.selectedVariantId);
           formData.append('quantity', this.quantity);
+          formData.append('gateway', this.selectedGateway);
           var resp = await fetch('{{ url_for('checkout.create_session') }}', {
             method: 'POST',
             body: formData
           });
           var data = await resp.json();
-          if (data.payment_url) {
+          if (data.payfast) {
+            // Auto-submit form to PayFast
+            var pfForm = document.createElement('form');
+            pfForm.method = 'POST';
+            pfForm.action = data.payment_url;
+            pfForm.style.display = 'none';
+            for (var k in data.payfast_data) {
+              var inp = document.createElement('input');
+              inp.type = 'hidden';
+              inp.name = k;
+              inp.value = data.payfast_data[k];
+              pfForm.appendChild(inp);
+            }
+            document.body.appendChild(pfForm);
+            pfForm.submit();
+          } else if (data.payment_url) {
             window.location.href = data.payment_url;
           } else {
             this.checkoutError = data.error || 'Payment initialization failed';
@@ -235,6 +256,27 @@
             <span class="icon" data-lucide="credit-card"></span>
             <span x-text="buyLabel">Subscribe</span>
           </a>
+        </template>
+        <template x-if="!isSubscription">
+          <div class="field">
+            <span class="field-label">Payment Method</span>
+            <div style="display:flex;gap:0.4rem;">
+              <label style="flex:1;cursor:pointer;">
+                <input type="radio" name="gateway" value="payfast" x-model="selectedGateway" style="display:none;">
+                <div :class="selectedGateway === 'payfast' ? 'variant-card is-active' : 'variant-card'" style="padding:0.5rem 0.7rem;text-align:center;">
+                  <span class="v-name">PayFast</span>
+                  <span class="v-price" style="font-size:0.62rem;color:var(--success);">No minimum</span>
+                </div>
+              </label>
+              <label style="flex:1;cursor:pointer;">
+                <input type="radio" name="gateway" value="ivno" x-model="selectedGateway" style="display:none;">
+                <div :class="selectedGateway === 'ivno' ? 'variant-card is-active' : 'variant-card'" style="padding:0.5rem 0.7rem;text-align:center;">
+                  <span class="v-name">Card</span>
+                  <span class="v-price" style="font-size:0.62rem;color:var(--warn);">Min £20</span>
+                </div>
+              </label>
+            </div>
+          </div>
         </template>
         <template x-if="!isSubscription">
           <button type="submit" class="btn btn-primary btn-block btn-lg"

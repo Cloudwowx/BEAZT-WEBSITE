@@ -1,14 +1,44 @@
 import secrets
 import logging
+import hashlib
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
 
 from flask import Blueprint, request, jsonify, url_for
 from flask_login import current_user, login_required
-from models import db, PricingTier, Order, Key, Product
+from models import db, PricingTier, Order, Key, Product, Setting
 from config import get_ivno_config
 
 checkout_bp = Blueprint("checkout", __name__)
 logger = logging.getLogger(__name__)
+
+
+def _payfast_vars(order, amount, tier):
+    pf_host = "https://www.payfast.co.za/eng/process"
+    merchant_id = Setting.get("payfast_merchant_id") or ""
+    merchant_key = Setting.get("payfast_merchant_key") or ""
+    passphrase = Setting.get("payfast_passphrase") or ""
+    name = f"BEAZT - {tier.product.name} ({tier.label})" if tier else "BEAZT Order"
+
+    pf_data = {
+        "merchant_id": merchant_id,
+        "merchant_key": merchant_key,
+        "return_url": url_for("main.my_keys", _external=True),
+        "cancel_url": url_for("main.product_detail", slug=tier.product.slug, _external=True),
+        "notify_url": url_for("checkout.payfast_notify", _external=True),
+        "name_first": current_user.username or "",
+        "email_address": current_user.email,
+        "m_payment_id": str(order.id),
+        "amount": f"{amount:.2f}",
+        "item_name": name,
+    }
+
+    if passphrase:
+        pf_string = "&".join(f"{k}={urlencode({k: pf_data[k]})[k]}" for k in sorted(pf_data) if pf_data[k])
+        pf_string += f"&passphrase={urlencode({'passphrase': passphrase})['passphrase']}"
+        pf_data["signature"] = hashlib.md5(pf_string.encode()).hexdigest()
+
+    return pf_host, pf_data
 
 
 @checkout_bp.route("/create-session", methods=["POST"])
@@ -16,6 +46,7 @@ logger = logging.getLogger(__name__)
 def create_session():
     tier_id = request.form.get("tier_id")
     quantity = int(request.form.get("quantity", 1))
+    gateway = request.form.get("gateway", "payfast")
 
     if not tier_id:
         return jsonify({"error": "No tier selected"}), 400
@@ -26,6 +57,15 @@ def create_session():
 
     order_total = tier.price_pounds * quantity
 
+    if gateway == "ivno":
+        if order_total < 20:
+            return jsonify({"error": f"Minimum £20 required for card payments. Your total: £{order_total:.2f}"}), 400
+        return _create_ivno_payment(tier, quantity, order_total)
+
+    return _create_payfast_payment(tier, quantity, order_total)
+
+
+def _create_ivno_payment(tier, quantity, order_total):
     cfg = get_ivno_config()
     if not cfg["api_key"]:
         return jsonify({"error": "Ivno not configured"}), 500
@@ -37,7 +77,6 @@ def create_session():
     try:
         from utils.ivno import IvnoPayments
         ivno = IvnoPayments(api_key=cfg["api_key"], api_secret=cfg["api_secret"])
-
         domain = request.host.split(":")[0] if ":" in (request.host or "") else request.host
 
         result = ivno.create_payment(
@@ -56,17 +95,56 @@ def create_session():
             return jsonify({"error": msg}), 500
 
         return jsonify({"payment_url": result["payment_url"]})
-
     except Exception as e:
-        err_msg = str(e)
-        try:
-            import json as _json
-            if hasattr(e, "response") and e.response is not None:
-                err_msg = _json.loads(e.response.text).get("message", err_msg)
-        except Exception:
-            pass
-        logger.exception("Ivno session creation failed: %s", err_msg)
-        return jsonify({"error": err_msg}), 500
+        logger.exception("Ivno payment failed")
+        return jsonify({"error": str(e)}), 500
+
+
+def _create_payfast_payment(tier, quantity, order_total):
+    order = Order(user_id=current_user.id, tier_id=tier.id, status="pending", quantity=quantity)
+    db.session.add(order)
+    db.session.flush()
+
+    try:
+        pf_host, pf_data = _payfast_vars(order, order_total, tier)
+        return jsonify({
+            "payment_url": pf_host,
+            "payfast_data": pf_data,
+            "payfast": True,
+        })
+    except Exception as e:
+        logger.exception("PayFast payment failed")
+        return jsonify({"error": str(e)}), 500
+
+
+@checkout_bp.route("/payfast-notify", methods=["POST"])
+def payfast_notify():
+    pf_host, pf_data, pf_param_string = "https://www.payfast.co.za/eng/query/validate", {}, ""
+    for k, v in request.form.items():
+        if k != "signature":
+            pf_data[k] = v
+            pf_param_string += f"&{k}={v}"
+    pf_param_string = pf_param_string[1:]
+
+    import requests as _r
+    resp = _r.post(pf_host, data=pf_data, params=pf_param_string, timeout=15)
+    if resp.text != "VALID":
+        return "INVALID", 400
+
+    order_id = int(pf_data.get("m_payment_id", 0))
+    order = db.session.get(Order, order_id)
+    if not order:
+        return "OK"
+
+    amount_gross = float(pf_data.get("amount_gross", 0))
+    expected = order.tier.price_pounds * (order.quantity or 1)
+    if abs(amount_gross - expected) > 0.01:
+        logger.warning("PayFast amount mismatch: got %s, expected %s", amount_gross, expected)
+        return "OK"
+
+    if order.status != "completed":
+        handle_fulfillment(order)
+    return "OK"
 
 
 @checkout_bp.route("/ivno-webhook", methods=["POST"])

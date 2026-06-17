@@ -67,6 +67,8 @@ def get_loader_config():
     return {
         "loader_token": _lookup("loader_token", Config.LOADER_TOKEN),
         "loader_url": _lookup("loader_url", Config.LOADER_URL),
+        "loader_public_url": _lookup("loader_public_url", Config.LOADER_PUBLIC_URL),
+        "loader_private_url": _lookup("loader_private_url", Config.LOADER_PRIVATE_URL),
     }
 
 
