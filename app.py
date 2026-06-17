@@ -286,6 +286,14 @@ with app.app_context():
     except Exception:
         pass
 
+    # Ensure license_api_app_id column exists on MySQL
+    try:
+        from sqlalchemy import text
+        db.session.execute(text("ALTER TABLE products ADD COLUMN license_api_app_id VARCHAR(64)"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
     seed_products()
 
     try:

@@ -108,6 +108,7 @@ def _create_ivno_payment(tier, quantity, order_total):
     order = Order(user_id=current_user.id, tier_id=tier.id, status="pending", quantity=quantity)
     db.session.add(order)
     db.session.flush()
+    db.session.commit()
 
     try:
         from utils.ivno import IvnoPayments
@@ -139,6 +140,7 @@ def _create_payfast_payment(tier, quantity, order_total):
     order = Order(user_id=current_user.id, tier_id=tier.id, status="pending", quantity=quantity)
     db.session.add(order)
     db.session.flush()
+    db.session.commit()
 
     try:
         zar_amount = round(order_total * _get_gbp_to_zar(), 2)
