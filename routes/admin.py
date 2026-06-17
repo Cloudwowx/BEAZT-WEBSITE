@@ -499,19 +499,12 @@ def product_tiers(product_id):
         abort(404)
 
     if request.method == "POST":
-        # DUMP RAW BODY FIRST (before form parsing consumes stream)
-        try:
-            raw = request.get_data(as_text=True)
-            dump_path = os.path.join(current_app.root_path, "tmp", "form_dump.txt")
-            os.makedirs(os.path.dirname(dump_path), exist_ok=True)
-            with open(dump_path, "a", encoding="utf-8") as df:
-                df.write(f"\n=== {datetime.utcnow()} ===\n{raw[:4000]}\n")
-        except Exception:
-            pass
         cheat_id = request.form.get("chairfbi_cheat_id", "").strip()
         key_source_val = request.form.get("key_source", "").strip()
         license_app = request.form.get("license_api_app_id", "").strip()
-        all_vals = request.form.getlist("license_api_app_id")
+        # Also try hidden field populated by JS button
+        if not license_app:
+            license_app = request.form.get("license_app_id_hidden", "").strip()
         flash(f"DEBUG: license_app={repr(license_app)} all_vals={repr(all_vals)} KEYS={list(request.form.keys())}", "info")
         if license_app:
             key_source_val = "license"
@@ -524,7 +517,8 @@ def product_tiers(product_id):
             elif key_source_val == "license":
                 product.chairfbi_cheat_id = None
                 cheat_id = None
-                product.license_api_app_id = license_app
+                if license_app:
+                    product.license_api_app_id = license_app
             else:
                 product.license_api_app_id = None
         product.chairfbi_cheat_id = cheat_id if cheat_id else None
@@ -634,6 +628,28 @@ def product_tiers(product_id):
 
     tiers = PricingTier.query.filter_by(product_id=product.id).order_by(PricingTier.duration_days).all()
     return render_template("admin/product_tiers.html", product=product, tiers=tiers, gallery_imgs=gallery_imgs)
+
+
+@admin_bp.route("/products/<int:product_id>/set-license-app", methods=["POST"])
+@admin_required
+def set_license_app(product_id):
+    product = db.session.get(Product, product_id)
+    if not product:
+        return {"ok": False, "error": "Not found"}, 404
+    data = request.get_json(silent=True) or {}
+    app_id = (data.get("app_id") or "").strip()
+    if app_id:
+        product.license_api_app_id = app_id
+        product.key_source = "chairfbi"
+        db.session.commit()
+        flash(f"License App ID set to: {app_id}", "success")
+        return {"ok": True, "app_id": app_id}
+    else:
+        product.license_api_app_id = None
+        product.key_source = "chairfbi"
+        db.session.commit()
+        flash("License App ID cleared.", "info")
+        return {"ok": True, "app_id": None}
 
 
 @admin_bp.route("/products/<int:product_id>/tiers/add", methods=["POST"])
