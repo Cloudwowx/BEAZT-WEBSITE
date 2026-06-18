@@ -735,12 +735,9 @@ def delete_tier(tier_id):
     if not tier:
         abort(404)
     pid = tier.product_id
-    # Check for dependent keys/orders first
-    has_keys = Key.query.filter_by(tier_id=tier_id).first() is not None
-    has_orders = Order.query.filter_by(tier_id=tier_id).first() is not None
-    if has_keys or has_orders:
-        flash("Cannot delete tier — it has existing keys or orders attached. Remove those first.", "error")
-        return redirect(url_for("admin.product_tiers", product_id=pid))
+    # Null tier_id on keys, delete dependent orders
+    Key.query.filter_by(tier_id=tier_id).update({"tier_id": None, "is_active": False}, synchronize_session="fetch")
+    Order.query.filter_by(tier_id=tier_id).delete(synchronize_session="fetch")
     db.session.delete(tier)
     db.session.commit()
     flash("Tier deleted.", "success")
