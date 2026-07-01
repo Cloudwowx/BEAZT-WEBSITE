@@ -307,13 +307,13 @@
 
   <!-- Tabs -->
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" :class="{ 'is-active': activeTab === 'description' }" @click="activeTab = 'description'">Features</button>
-    <button class="tab" role="tab" :class="{ 'is-active': activeTab === 'architecture' }" @click="activeTab = 'architecture'">Architecture</button>
-    <button class="tab" role="tab" :class="{ 'is-active': activeTab === 'reviews' }" @click="activeTab = 'reviews'">Buyer Info</button>
+    <button class="tab" role="tab" id="tab-description" aria-controls="panel-description" :aria-selected="activeTab === 'description'.toString()" :class="{ 'is-active': activeTab === 'description' }" @click="activeTab = 'description'">Features</button>
+    <button class="tab" role="tab" id="tab-architecture" aria-controls="panel-architecture" :aria-selected="(activeTab === 'architecture').toString()" :class="{ 'is-active': activeTab === 'architecture' }" @click="activeTab = 'architecture'">Architecture</button>
+    <button class="tab" role="tab" id="tab-reviews" aria-controls="panel-reviews" :aria-selected="(activeTab === 'reviews').toString()" :class="{ 'is-active': activeTab === 'reviews' }" @click="activeTab = 'reviews'">Buyer Info</button>
   </div>
 
   <!-- Features tab -->
-  <div x-show="activeTab === 'description'" role="tabpanel">
+  <div id="panel-description" role="tabpanel" aria-labelledby="tab-description" x-show="activeTab === 'description'">
     {% if product.description %}
     <div class="card" style="margin-bottom:1.5rem;">
       <p class="t-body">{{ product.description }}</p>
@@ -345,7 +345,7 @@
   </div>
 
   <!-- Architecture tab -->
-  <div x-show="activeTab === 'architecture'" role="tabpanel" x-cloak>
+  <div id="panel-architecture" role="tabpanel" aria-labelledby="tab-architecture" x-show="activeTab === 'architecture'" x-cloak>
     {% if vc_system_features %}
     <div class="card" style="margin-bottom:1.5rem;">
       <h3 style="font-size:0.95rem;font-weight:600;margin-bottom:0.8rem;">System Architecture</h3>
@@ -370,7 +370,7 @@
   </div>
 
   <!-- Buyer Info tab -->
-  <div x-show="activeTab === 'reviews'" role="tabpanel" x-cloak>
+  <div id="panel-reviews" role="tabpanel" aria-labelledby="tab-reviews" x-show="activeTab === 'reviews'" x-cloak>
     <div class="card" style="margin-bottom:1.5rem;">
       <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.6rem;">Setup Instructions</h3>
       {% if product.buyer_notes %}
@@ -390,6 +390,18 @@
       <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.6rem;">Important</h3>
       <p class="text-muted" style="font-size:0.84rem;">No product guarantees zero enforcement risk. Use responsibly.</p>
     </div>
+  </div>
+
+  <!-- Mobile sticky buy bar -->
+  <div class="mobile-buy-bar">
+    <div class="mobile-buy-bar-price">
+      <small>From</small>
+      <strong>&pound;<span x-text="currentPrice.toFixed(2)">{{ "%.2f"|format(selected_tier.price_pounds) if selected_tier else '0.00' }}</span></strong>
+    </div>
+    <button type="button" class="btn btn-primary btn-lg" @click="$el.closest('.product-detail-page').querySelector('form')?.requestSubmit()">
+      <span class="icon icon-sm" data-lucide="shopping-cart"></span>
+      <span x-text="buyLabel">Buy Now</span>
+    </button>
   </div>
 </div>
 {% endblock %}

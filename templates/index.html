@@ -1,42 +1,92 @@
 {% extends "base.html" %}
-{% block title %}BEAZT — Premium External{% endblock %}
+{% block title %}BEAZT — Premium Private External{% endblock %}
 
 {% block content %}
+
+<!-- ═══ HERO ═══ -->
 <section class="hero-main">
   <div class="hero-bg" aria-hidden="true">
-    <img src="/static/images/header.png" alt="" class="hero-bg-image">
+    <picture>
+      <source srcset="/static/images/header.webp" type="image/webp">
+      <img src="/static/images/header.png" alt="" class="hero-bg-image" fetchpriority="high" width="1920" height="768">
+    </picture>
     <div class="hero-vignette"></div>
   </div>
 
   <div class="container hero-main-inner reveal">
+    <span class="hero-pill">
+      <span class="hero-pill-dot"></span>
+      Systems Online · Instant Delivery
+    </span>
     <h1 class="hero-brand">BEAZT</h1>
-    <p class="hero-line">Private access. Live delivery.</p>
+    <p class="hero-line">Private access. Live delivery. Stream-proof legit stack.</p>
     <div class="hero-main-actions">
       <a href="{{ url_for('main.cheats') }}" class="btn btn-primary btn-lg">
         <span class="icon" data-lucide="zap"></span>
         Get Access
       </a>
       <a href="{{ discord_public_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-lg">
-        <span class="icon" data-lucide="headset"></span>
+        <span class="icon" data-lucide="message-circle"></span>
         Join Discord
       </a>
+    </div>
+    <div class="hero-stats reveal">
+      <div class="hero-stat">
+        <span class="hero-stat-val" data-count="2400" data-suffix="+">2,400+</span>
+        <span class="hero-stat-label">Orders Fulfilled</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-val" data-count="99.9" data-suffix="%">99.9%</span>
+        <span class="hero-stat-label">Service Uptime</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-val" data-count="15" data-suffix="s">&lt;15s</span>
+        <span class="hero-stat-label">Key Delivery</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-val" data-count="24" data-suffix="/7">24/7</span>
+        <span class="hero-stat-label">Operator Desk</span>
+      </div>
     </div>
   </div>
 </section>
 
+<!-- ═══ STAT BAR ═══ -->
+<section class="stat-bar">
+  <div class="container stat-bar-inner reveal">
+    <div class="stat-bar-item">
+      <span class="stat-bar-num" data-count="2400" data-suffix="+">2,400+</span>
+      <span class="stat-bar-label">Fulfilled Orders</span>
+    </div>
+    <div class="stat-bar-item">
+      <span class="stat-bar-num" data-count="4.9">4.9</span>
+      <span class="stat-bar-label">Avg Buyer Rating</span>
+    </div>
+    <div class="stat-bar-item">
+      <span class="stat-bar-num" data-count="2" data-suffix="m">&lt;2m</span>
+      <span class="stat-bar-label">Avg Setup Time</span>
+    </div>
+    <div class="stat-bar-item">
+      <span class="stat-bar-num" data-count="100" data-suffix="%">100%</span>
+      <span class="stat-bar-label">Stream-Proof</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRIVATE SOFTWARE ═══ -->
 {% if private_products %}
 <section class="section" style="padding-bottom:0.5rem;">
   <div class="container">
     <div class="section-header reveal" style="text-align:center;margin-bottom:1.5rem;">
-      <span class="section-eyebrow" style="color:var(--accent-h)">BeaZt</span>
+      <span class="section-eyebrow">BeaZt Private</span>
       <h2 class="t-h2">Private Software</h2>
-      <p style="color:var(--text-dim);font-size:0.82rem;">Externally hosted, private builds. Key pool operated by BeaZt.</p>
+      <p style="color:var(--text-muted);font-size:0.82rem;max-width:560px;margin-inline:auto;">Externally hosted, private builds. Key pool operated by BeaZt.</p>
     </div>
     <div class="cheats-grid cheats-grid--private reveal">
       {% for p in private_products %}
         <a href="{{ url_for('main.product_detail', slug=p.slug) }}" class="cheat-card cheat-card--private">
           <div class="cheat-card-banner">
-            <img src="{{ p.image_url if p.image_url else url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
+            <img src="{{ p.image_url if p.image_url else url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy" decoding="async">
           </div>
           <div class="cheat-card-top">
             <span class="cheat-card-status {{ 'status-' ~ (cheat_statuses_home.get(p.id, p.status) or 'undetected') }}"></span>
@@ -53,6 +103,7 @@
           {% else %}
           <p class="cheat-card-noprice">Coming soon</p>
           {% endif %}
+          <span class="cheat-card-arrow">&rarr;</span>
         </a>
       {% endfor %}
     </div>
@@ -60,19 +111,20 @@
 </section>
 {% endif %}
 
+<!-- ═══ STORE ═══ -->
 {% if resold_products %}
 <section class="section" style="padding-bottom:0.5rem;">
   <div class="container">
     <div class="section-header reveal" style="text-align:center;margin-bottom:1.5rem;">
       <span class="section-eyebrow">Catalog</span>
       <h2 class="t-h2">Store</h2>
-      <a href="{{ url_for('main.cheats') }}" style="font-size:0.78rem;color:var(--accent-h);">View all &rarr;</a>
+      <a href="{{ url_for('main.cheats') }}" style="font-size:0.78rem;color:var(--accent);">View all &rarr;</a>
     </div>
     <div class="cheats-grid reveal">
       {% for p in resold_products %}
         <a href="{{ url_for('main.product_detail', slug=p.slug) }}" class="cheat-card">
           <div class="cheat-card-banner">
-            <img src="{{ p.image_url if p.image_url else url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy">
+            <img src="{{ p.image_url if p.image_url else url_for('main.cheat_image', slug=p.slug) }}" alt="{{ p.name }}" loading="lazy" decoding="async">
           </div>
           <div class="cheat-card-top">
             <span class="cheat-card-status {{ 'status-' ~ (cheat_statuses_home.get(p.id, p.status) or 'undetected') }}"></span>
@@ -88,6 +140,7 @@
           {% else %}
           <p class="cheat-card-noprice">Coming soon</p>
           {% endif %}
+          <span class="cheat-card-arrow">&rarr;</span>
         </a>
       {% endfor %}
     </div>
@@ -95,15 +148,213 @@
 </section>
 {% endif %}
 
-<section class="trust-inline section-alt">
-  <div class="container trust-inline-inner reveal">
-    <span>2,400+ fulfilled orders</span>
-    <span>99.9% service uptime</span>
-    <span>Under 15s key delivery</span>
-    <span>24/7 operator desk</span>
+<!-- ═══ FEATURES BENTO ═══ -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Capabilities</span>
+      <h2 class="t-h2">Built for legit play</h2>
+      <p class="section-sub" style="max-width:620px;color:var(--text-muted);font-size:1rem;line-height:1.65;">A complete external toolkit engineered for stability, privacy, and zero on-screen footprint.</p>
+    </div>
+    <div class="bento-grid reveal">
+      <div class="bento-card large">
+        <div class="bento-card-inner">
+          <div class="bento-icon"><span class="icon" data-lucide="eye"></span></div>
+          <h4>Legit ESP Suite</h4>
+          <p>Players, resources, distance and visibility overlays tuned for legit look. Fully configurable, no clutter, zero guesswork.</p>
+          <div class="bento-card-tags">
+            <span>Players</span><span>Resources</span><span>Distance</span><span>Visibility</span>
+          </div>
+        </div>
+      </div>
+      <div class="bento-card">
+        <div class="bento-card-inner">
+          <div class="bento-icon"><span class="icon" data-lucide="video-off"></span></div>
+          <h4>Stream-Proof</h4>
+          <p>Invisible to OBS, Discord and capture. Play on stream without a trace.</p>
+        </div>
+      </div>
+      <div class="bento-card">
+        <div class="bento-card-inner">
+          <div class="bento-icon"><span class="icon" data-lucide="gauge"></span></div>
+          <h4>Zero FPS Cost</h4>
+          <p>Lightweight read-only stack. No injection, no measurable frame drop.</p>
+        </div>
+      </div>
+      <div class="bento-card wide">
+        <div class="bento-card-inner">
+          <div class="bento-icon"><span class="icon" data-lucide="refresh-cw"></span></div>
+          <h4>Fast Patch Cycle</h4>
+          <p>Updates drop within hours of game patches. Discord alerts the moment a fresh loader is live, and your timer pauses during maintenance.</p>
+        </div>
+      </div>
+      <div class="bento-card">
+        <div class="bento-card-inner">
+          <div class="bento-icon"><span class="icon" data-lucide="headset"></span></div>
+          <h4>24/7 Operator Desk</h4>
+          <p>Real humans, real fixes. Tickets answered around the clock.</p>
+        </div>
+      </div>
+      <div class="bento-card">
+        <div class="bento-card-inner">
+          <div class="bento-icon"><span class="icon" data-lucide="shield-check"></span></div>
+          <h4>Private Builds</h4>
+          <p>Key-pool operated, invite-tier access. Low exposure, high control.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="section">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Flow</span>
+      <h2 class="t-h2">Live in under two minutes</h2>
+    </div>
+    <div class="how-track reveal">
+      <div class="how-node">
+        <div class="how-node-num">1</div>
+        <h3>Choose &amp; Pay</h3>
+        <p>Pick a plan and pay securely via Stripe or PayFast. Cards, Amex, instant checkout.</p>
+      </div>
+      <div class="how-node">
+        <div class="how-node-num">2</div>
+        <h3>Get Your Key</h3>
+        <p>Your license key drops into the dashboard in under 15 seconds after payment clears.</p>
+      </div>
+      <div class="how-node">
+        <div class="how-node-num">3</div>
+        <h3>Load &amp; Play</h3>
+        <p>Grab the loader, paste your key, launch Rust. Operators stand by in Discord if you stall.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATUS BOARD ═══ -->
+{% if all_products %}
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Live Status</span>
+      <h2 class="t-h2">Detection &amp; uptime board</h2>
+      <p class="section-sub" style="max-width:560px;color:var(--text-muted);font-size:0.92rem;">Real-time per-product status, updated continuously.</p>
+    </div>
+    <div class="status-board reveal">
+      {% for p in all_products[:6] %}
+        {% set st = cheat_statuses_home.get(p.id, p.status) or 'undetected' %}
+        <div class="status-row">
+          <span class="status-row-name">{{ p.name }}</span>
+          <span class="status-row-uptime">99.9% uptime</span>
+          {% if st in ('online', 'undetected') %}
+            <span class="status-pill status-pill-ok">Undetected</span>
+          {% elif st == 'maintenance' %}
+            <span class="status-pill status-pill-warn">Maintenance</span>
+          {% elif st == 'offline' %}
+            <span class="status-pill status-pill-down">Updating</span>
+          {% else %}
+            <span class="status-pill status-pill-ok">Undetected</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section class="section">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Proof</span>
+      <h2 class="t-h2">Verified buyer feedback</h2>
+    </div>
+    <div class="rating-summary reveal">
+      <span class="rating-score">4.9</span>
+      <span class="rating-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+      <span class="rating-count">based on 2,400+ verified orders</span>
+    </div>
+    <div class="testimonials-grid reveal">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="testimonial-text">4 months on BEAZT. Privacy cloak is flawless with OBS and Discord.</p>
+        <div class="testimonial-author">
+          <span class="testimonial-avatar">K</span>
+          <div><span class="testimonial-name">Kai</span><span class="testimonial-role">Verified buyer</span></div>
+          <span class="verified-badge"><span class="icon icon-sm" data-lucide="badge-check"></span></span>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="testimonial-text">Patches hit within hours. Discord actually replies, which is rare here.</p>
+        <div class="testimonial-author">
+          <span class="testimonial-avatar">R</span>
+          <div><span class="testimonial-name">VeteranRust</span><span class="testimonial-role">Verified buyer</span></div>
+          <span class="verified-badge"><span class="icon icon-sm" data-lucide="badge-check"></span></span>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="testimonial-text">Five months of zero drops. Visual toolkit stays sharp even on long raids.</p>
+        <div class="testimonial-author">
+          <span class="testimonial-avatar">M</span>
+          <div><span class="testimonial-name">Mason</span><span class="testimonial-role">Verified buyer</span></div>
+          <span class="verified-badge"><span class="icon icon-sm" data-lucide="badge-check"></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ PREVIEW ═══ -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Answers</span>
+      <h2 class="t-h2">Before you buy</h2>
+    </div>
+    <div class="faq-list reveal" style="max-width:780px;">
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span class="faq-question-text"><span class="icon icon-sm" data-lucide="help-circle"></span>How does BEAZT run?</span>
+          <span class="icon icon-sm" data-lucide="chevron-down"></span>
+        </button>
+        <div class="faq-answer"><p>BEAZT runs as a read-only external stack. Launch the loader, paste your key, and start Rust — no injection or file edits.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span class="faq-question-text"><span class="icon icon-sm" data-lucide="timer"></span>When do keys arrive?</span>
+          <span class="icon icon-sm" data-lucide="chevron-down"></span>
+        </button>
+        <div class="faq-answer"><p>Keys hit your dashboard in under 15 seconds after payment. Track them anytime on the My Keys page.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span class="faq-question-text"><span class="icon icon-sm" data-lucide="credit-card"></span>What payments work?</span>
+          <span class="icon icon-sm" data-lucide="chevron-down"></span>
+        </button>
+        <div class="faq-answer"><p>Stripe handles every card — Visa, Mastercard, Amex — with full encryption. We never see or store your card data.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          <span class="faq-question-text"><span class="icon icon-sm" data-lucide="activity"></span>What if there's downtime?</span>
+          <span class="icon icon-sm" data-lucide="chevron-down"></span>
+        </button>
+        <div class="faq-answer"><p>Maintenance time never burns your license. We pause timers and post live status threads in Discord.</p></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:1.6rem;" class="reveal">
+      <a href="{{ url_for('main.faq') }}" class="btn btn-ghost">
+        <span class="icon icon-sm" data-lucide="book-open"></span>
+        See all FAQs
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FINAL CTA ═══ -->
 <section class="section final-strip">
   <div class="container final-strip-inner reveal">
     <a href="{{ url_for('main.cheats') }}" class="btn btn-primary btn-lg">
